@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  time-tracker:
+    image: ${APP_IMAGE:-ghcr.io/wojciechpolak/time-tracker:latest}
+    restart: unless-stopped
+    build: .
+    ports:
+      - "8080:80"

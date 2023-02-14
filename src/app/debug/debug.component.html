@@ -1,0 +1,18 @@
+<section class="debug">
+    <p>
+        DB Info: {{ storageEstimated }}
+    </p>
+    <div>
+        <button mat-raised-button color="primary" (click)="clearConsole()">
+            Clear Console
+        </button>
+        <button mat-raised-button color="warn" (click)="deleteAll()">
+            Delete All Items
+        </button>
+        <button mat-raised-button color="warn" (click)="clearLocalDB()">
+            Clear Local DB
+        </button>
+    </div>
+
+    <ul id="output"></ul>
+</section>

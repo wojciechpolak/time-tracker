@@ -1,0 +1,475 @@
+/**
+ * styles.scss
+ *
+ * Time Tracker Copyright (C) 2023 Wojciech Polak
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+@use 'sass:map';
+@use '@angular/material' as mat;
+@include mat.all-component-typographies();
+@include mat.core();
+
+@import '@fontsource/material-icons';
+@import '@fontsource/roboto/300.css';
+@import '@fontsource/roboto/400.css';
+@import '@fontsource/roboto/500.css';
+
+// light theme
+$light-primary: mat.define-palette(mat.$indigo-palette);
+$light-accent: mat.define-palette(mat.$pink-palette);
+$light-theme: mat.define-light-theme((
+    color: (
+        primary: $light-primary,
+        accent: $light-accent,
+    )
+));
+
+// dark theme
+$dark-primary: mat.define-palette(mat.$pink-palette);
+$dark-accent: mat.define-palette(mat.$blue-gray-palette);
+$dark-theme: mat.define-dark-theme((
+    color: (
+        primary: $dark-primary,
+        accent: $dark-accent,
+    )
+));
+
+mat-icon {
+    overflow: visible !important;
+}
+
+:root {
+    --color-time: #666;
+    --color-spinner: #3f51b5;
+    --color-spinner-bg: #cfd0d1;
+    --color-card-idle: #ddd;
+    --color-card-active: forestgreen;
+    --color-card-age-1d: forestgreen;
+    --color-card-age-1w: forestgreen;
+    --color-card-age-1m: #e8c20a;
+    --color-card-age-3m: orange;
+    --color-card-age-default: orangered;
+    --color-card-age-1y: red;
+    --mat-toolbar-standard-height: 32px;
+}
+
+@include mat.all-component-themes($light-theme);
+
+@media (prefers-color-scheme: dark) {
+    @include mat.all-component-colors($dark-theme);
+    :root {
+        --color-time: #ccc;
+        --color-spinner: #e91e63;
+        --color-spinner-bg: #424242;
+        --color-card-idle: #333;
+    }
+}
+
+.mat-mdc-outlined-button > .mat-icon {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+.mat-mdc-tab-nav-bar {
+    border-bottom: 1px solid rgba(0,0,0,.12);
+}
+
+html, body {
+    height: 100%;
+    overscroll-behavior: none;
+}
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    // touch-action: pan-x pan-y; /* iOS */
+}
+
+#main {
+    padding: 1em;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+form {
+    min-width: 150px;
+    max-width: 500px;
+    width: 100%;
+
+    button {
+        margin-left: 0.5em !important;
+    }
+}
+
+form, .lastTimeItem, .stopwatchItem {
+    .mat-mdc-form-field {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+nav.mat-mdc-tab-nav-bar {
+    margin-bottom: 1em;
+    user-select: none;
+}
+
+mat-toolbar {
+    font-size: 16px !important;
+    .title a {
+        cursor: pointer;
+        @media (prefers-color-scheme: dark) {
+            $config: mat.get-color-config($dark-theme);
+            $foreground: map.get($config, foreground);
+            color: mat.get-color-from-palette($foreground, text);
+        }
+        @media (prefers-color-scheme: light) {
+            $config: mat.get-color-config($light-theme);
+            $foreground: map.get($config, foreground);
+            color: mat.get-color-from-palette($foreground, text);
+        }
+        text-decoration: none;
+    }
+    .spacer {
+        flex: 1 1 auto;
+    }
+}
+.mat-toolbar-single-row {
+    height: 32px;
+}
+
+#connection-status {
+    float: right;
+    padding: 2px;
+    .connected span {
+        color: green;
+    }
+    .disconnected span {
+        color: gray;
+    }
+    .no-auth span {
+        color: red;
+    }
+}
+
+.empty-list {
+    color: #ddd;
+    font-size: 48px;
+    text-align: center;
+    margin-top: 1em;
+    user-select: none;
+}
+
+.stopwatchItem,
+.lastTimeItem {
+    margin-bottom: 1em;
+    border-left: 4px solid var(--color-card-idle) !important;
+    &.active {
+        border-left-color: var(--color-card-active) !important;
+    }
+
+    &.age-default {
+        border-left-color: var(--color-card-age-default) !important;
+    }
+    &.age-1d {
+        border-left-color: var(--color-card-age-1d) !important;
+    }
+    &.age-1w {
+        border-left-color: var(--color-card-age-1w) !important;
+    }
+    &.age-1m {
+        border-left-color: var(--color-card-age-1m) !important;
+    }
+    &.age-3m {
+        border-left-color: var(--color-card-age-3m) !important;
+    }
+    &.age-1y {
+        border-left-color: var(--color-card-age-1y) !important;
+    }
+
+    .mat-mdc-card-title {
+        font-size: 20px;
+        @media only screen and (min-width: 320px) and (max-width: 767px) {
+            font-size: 16px;
+        }
+    }
+    .edit {
+        margin-bottom: 1em;
+        button:last-child {
+            margin-left: 4px;
+        }
+        .mat-mdc-raised-button > .mat-icon {
+            margin-right: 0;
+        }
+    }
+    .time {
+        color: var(--color-time);
+    }
+    .round-label, .ts-label {
+        font-weight: bolder;
+        margin-left: .5em;
+    }
+    .round-edit, .round-remove,
+    .ts-alter, .ts-edit, .ts-remove {
+        font-size: 14px;
+        margin-left: .5em;
+        cursor: pointer;
+    }
+    .ts-actions {
+        display: inline-block;
+        vertical-align: top;
+        margin-left: 1em;
+        user-select: none;
+        button {
+            top: -15px;
+            left: -22px;
+            .mat-icon {
+                font-size: 20px;
+            }
+        }
+        .mat-mdc-card-actions {
+            position: absolute;
+            min-height: auto !important;
+            padding: 0 !important;
+            i {
+                font-size: 18px;
+            }
+        }
+    }
+    .event-ts, .lt-ts {
+        margin-top: -24px;
+        @media only screen and (max-width: 400px) {
+            display: flex;
+            position: relative;
+            &:has(.round-label) {
+                height: 74px;
+            }
+            .round-label {
+                position: absolute;
+                top: 24px;
+            }
+        }
+    }
+    .event-ts-input, .lastTime-ts-input {
+        width: 190px;
+        height: 50px;
+        margin-left: 6px;
+        font-size: 14px;
+        .mdc-text-field {
+            background-color: transparent !important;
+            border: 0 !important;
+            padding: 0 !important;
+        }
+        .mat-mdc-form-field-infix {
+            padding: 0 !important;
+            border-top: 0;
+        }
+        .mat-mdc-form-field-icon-suffix {
+            margin-top: -30px;
+        }
+        .mat-mdc-form-field-underline {
+            height: 0;
+        }
+        .mdc-line-ripple--deactivating {
+            display: none;
+        }
+    }
+    .more-timestamps {
+        cursor: pointer;
+        user-select: none;
+    }
+    .toggle {
+        font-size: 16px;
+    }
+    ol {
+        padding-inline-start: 20px;
+    }
+    .stopwatch-events {
+        padding-top: 30px !important;
+    }
+    .timestamps .intro {
+        margin-bottom: 3em;
+    }
+    .timestamps li,
+    .stopwatch-events .event-ts,
+    .stopwatch-rounds div {
+        @media only screen and (max-width: 400px) {
+            font-size: 12px;
+        }
+        nav {
+            display: inline-block;
+            vertical-align: text-top;
+        }
+        .start {
+            color: green;
+        }
+        .end {
+            color: red;
+        }
+    }
+    .finished {
+        color: green !important;
+    }
+    .stats {
+        h4 {
+            text-transform: uppercase;
+        }
+    }
+}
+
+.debug {
+    button {
+        @media only screen and (min-width: 320px) and (max-width: 767px) {
+            font-size: smaller;
+        }
+    }
+    button:not(:first-child) {
+        margin-left: .5em;
+    }
+}
+
+.mat-mdc-card {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between;
+    padding: 16px;
+
+    .mat-card-container {
+        width: 100%;
+    }
+    .mat-mdc-card-actions.bottom {
+        padding: 0;
+        margin-left: 0;
+        .mdc-button {
+            &:first-child {
+                margin: 0;
+            }
+            margin: 0 8px;
+        }
+    }
+    @media only screen and (max-width: 320px) {
+        padding: 8px !important;
+    }
+}
+.mat-mdc-card-content {
+    margin-bottom: 8px !important;
+    padding: 0 !important;
+    padding-top: 16px !important;
+}
+.mat-mdc-card-actions {
+    .mat-card-actions-container & {
+        float: right;
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+    a, button {
+        cursor: pointer;
+    }
+    margin-bottom: 0 !important;
+}
+
+.add-sticky {
+    top: auto;
+    right: 20px;
+    bottom: 10px;
+    left: auto;
+    position: fixed !important;
+    z-index: 100;
+}
+
+@keyframes spinner {
+    0% {
+        transform: translate3d(-50%, -50%, 0) rotate(0deg);
+    }
+    100% {
+        transform: translate3d(-50%, -50%, 0) rotate(360deg);
+    }
+}
+
+.spinner {
+    margin-right: 1em;
+    &::before {
+        animation: 1.5s linear infinite spinner;
+        animation-play-state: inherit;
+        border: solid 5px var(--color-spinner-bg);
+        border-bottom-color: var(--color-spinner);
+        border-radius: 50%;
+        content: "";
+        height: 12px;
+        width: 12px;
+        position: absolute;
+        transform: translate3d(-50%, -50%, 0);
+        will-change: transform;
+    }
+}
+
+#output {
+    background-color: #444;
+    color: #eee;
+    width: 100%;
+    height: 550px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    font-family: Menlo, monospace;
+    font-size: 11px;
+    padding: 1em;
+    white-space: pre-wrap;
+    box-sizing: border-box;
+    li {
+        list-style: none;
+        margin-bottom: 4px;
+    }
+}
+
+app-settings {
+    #fileSelector {
+        margin-left: 1em;
+    }
+    .mat-form-field {
+        display: block;
+    }
+    .mdc-text-field {
+        font-size: 14px;
+    }
+}
+
+.ignored {
+    color: #ccc;
+}
+
+/* mat-datepicker workaround fix v16 */
+
+.mat-datepicker-content {
+  box-shadow: 0 2px 4px -1px #ccc, 0 4px 5px #ccc, 0 1px 10px #ccc;
+  background-color: #fff;
+}
+.mat-calendar-body-selected {
+  background-color: forestgreen;
+  color: #fff;
+}
+.mat-calendar-body-cell-content {
+  border: none !important;
+}
+@media (prefers-color-scheme: dark) {
+    .mat-datepicker-content {
+        box-shadow: 0 2px 4px -1px #222, 0 4px 5px #222, 0 1px 10px #222;
+        background-color: #444;
+    }
+    .mat-calendar-body-selected {
+        background-color: forestgreen;
+    }
+    .mat-calendar-body-cell {
+        color: #fff;
+    }
+}

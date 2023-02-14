@@ -1,0 +1,130 @@
+<mat-card appearance="outlined" class="stopwatchItem" [ngClass]="{'active': !item.finished}">
+    <div class="mat-card-container">
+        <div *ngIf="isEditTitle" class="edit">
+            <mat-form-field appearance="fill">
+                <mat-label>Name</mat-label>
+                <input matInput [(ngModel)]="editedTitle">
+            </mat-form-field>
+            <div>
+                <button mat-raised-button color="basic" (click)="cancelEditTitle()">
+                    <mat-icon>cancel</mat-icon>
+                </button>
+                <button mat-raised-button color="primary" (click)="finishEditTitle()">
+                    <mat-icon>done</mat-icon>
+                </button>
+            </div>
+        </div>
+        <mat-card-title (dblclick)="editTitle($event)">
+            <span *ngIf="!isEditTitle" class="title"
+                  title="Double click to edit">
+                {{ item.name }}
+            </span>
+        </mat-card-title>
+        <mat-card-subtitle class="time">
+            {{ titleTime }}
+        </mat-card-subtitle>
+        <mat-card-content *ngIf="!displayEvents && roundsOnly.length > 1" class="stopwatch-rounds">
+            <div *ngFor="let event of roundsOnly; index as i; trackBy: trackByEventId">
+                <span>
+                    Round #{{ roundsOnly.length - i }}
+                    - {{ event.round ? roundsTimeStr[event._id] : '' }}
+                </span>
+                <span class="round-label">{{ event.name }}</span>
+                <span class="ts-actions" *ngIf="!item.tsArch">
+                    <mat-card-actions>
+                        <button mat-icon-button matTooltip="Actions" [matMenuTriggerFor]="menu">
+                            <mat-icon>more_vert</mat-icon>
+                            <mat-menu [overlapTrigger]="false" #menu="matMenu">
+                                <button mat-menu-item (click)="editEvent(event, roundsOnly.length - i - 1)">Edit Label</button>
+                                <button mat-menu-item (click)="removeEvent(event, roundsOnly.length - i - 1)">Remove Event</button>
+                            </mat-menu>
+                        </button>
+                    </mat-card-actions>
+                </span>
+            </div>
+        </mat-card-content>
+        <mat-card-content *ngIf="displayEvents" class="stopwatch-events">
+            <div *ngFor="let event of revertedEvents; index as i; trackBy: trackByEventId" class="event-ts">
+                <span [ngClass]="{'ignored': !event.inUse}">
+                    #{{ revertedEvents.length - i }}:
+                    <span [ngClass]="{start: event.ss, end: !event.ss}">●</span>
+                    <mat-form-field class="event-ts-input">
+                        <input matInput
+                               [formControl]="$any(event.tsFormControl)"
+                               [ngxMatDatetimePicker]="$any(datePicker)"
+                               (dateChange)="modifyEvent($event, event, revertedEvents.length - i - 1)"
+                               matTooltip="{{ UtilsService.formatFromNow(event.ts) }}"
+                               matTooltipPosition="above">
+                        <mat-datepicker-toggle matSuffix [for]="$any(datePicker)"></mat-datepicker-toggle>
+                        <ngx-mat-datetime-picker #datePicker [touchUi]="UtilsService.isMobile()">
+                            <ngx-mat-datepicker-actions>
+                                <button mat-button ngxMatDatepickerCancel>Cancel</button>
+                                <button mat-raised-button color="primary" ngxMatDatepickerApply>Apply</button>
+                            </ngx-mat-datepicker-actions>
+                        </ngx-mat-datetime-picker>
+                    </mat-form-field>
+                    {{ event.round ? '[R]' : '' }}
+                </span>
+                <span *ngIf="event.name" class="round-label">{{ event.name }}</span>
+                <span class="ts-actions" *ngIf="!item.tsArch">
+                    <mat-card-actions>
+                        <button mat-icon-button matTooltip="Actions" [matMenuTriggerFor]="menu">
+                            <mat-icon>more_vert</mat-icon>
+                            <mat-menu [overlapTrigger]="false" #menu="matMenu">
+                                <button mat-menu-item (click)="editEvent(event, revertedEvents.length - i - 1)">Edit Label</button>
+                                <button mat-menu-item (click)="removeEvent(event, revertedEvents.length - i - 1)">Remove Event</button>
+                            </mat-menu>
+                        </button>
+                    </mat-card-actions>
+                </span>
+            </div>
+        </mat-card-content>
+        <mat-card-content *ngIf="statsContent" class="stats">
+            <p *ngIf="statsFreq">
+                Frequency of events: every {{ statsFreq.avgDays.toFixed(2) }} days
+                (or {{ statsFreq.avgHours.toFixed(2) }} hours)
+                <br>Average time per day: {{ statsAvgDay.avgTimeByDayMinutes }} minutes
+            </p>
+            <div *ngFor="let stats of statsContent">
+                <h4>{{ stats['name'] }}</h4>
+                <canvas baseChart class="chart"
+                        [data]="stats['data']"
+                        [options]="barChartOptions"
+                        [type]="'bar'">
+                </canvas>
+            </div>
+        </mat-card-content>
+        <mat-card-actions *ngIf="!item.tsArch" class="bottom">
+            <button mat-stroked-button color="accent"
+                    [disabled]="addEventLocked"
+                    (click)="addEvent(true)">
+                NEW ROUND
+            </button>
+            <button mat-stroked-button color="accent"
+                    [ngClass]="{'finished': item.finished}"
+                    [disabled]="addEventLocked"
+                    (click)="startStopStopwatch()">
+                {{ item.finished ? 'START' : 'STOP' }}
+            </button>
+        </mat-card-actions>
+    </div>
+    <div class="mat-card-actions-container">
+        <mat-card-actions>
+            <button mat-icon-button matTooltip="Actions" [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+                <mat-menu [overlapTrigger]="false" #menu="matMenu">
+                    <button mat-menu-item (click)="toggleArchiveItem()">
+                        {{ item.tsArch ? 'Un-archive' : 'Archive' }}
+                    </button>
+                    <button mat-menu-item (click)="deleteItem()">Delete</button>
+                    <button mat-menu-item (click)="switchDisplayRoundsEvents()">
+                        {{ displayEvents ? 'Show Rounds' : 'Show Events' }}
+                    </button>
+                    <button mat-menu-item (click)="toggleStats()">
+                        {{ statsContent ? 'Hide Stats' : 'Show Stats' }}
+                    </button>
+                </mat-menu>
+            </button>
+        </mat-card-actions>
+    </div>
+</mat-card>

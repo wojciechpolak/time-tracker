@@ -1,0 +1,112 @@
+<mat-card appearance="outlined" class="lastTimeItem {{ getAgeCssClass() }}">
+    <div class="mat-card-container">
+        <div *ngIf="isEditTitle" class="edit">
+            <mat-form-field appearance="fill">
+                <mat-label>Name</mat-label>
+                <input matInput [(ngModel)]="editedTitle">
+            </mat-form-field>
+            <div>
+                <button mat-raised-button color="basic" (click)="cancelEditTitle()">
+                    <mat-icon>cancel</mat-icon>
+                </button>
+                <button mat-raised-button color="primary" (click)="finishEditTitle()">
+                    <mat-icon>done</mat-icon>
+                </button>
+            </div>
+        </div>
+        <mat-card-title (dblclick)="editTitle($event)">
+            <span *ngIf="!isEditTitle" class="title"
+                  title="Double click to edit">
+                {{ item.name }}
+            </span>
+        </mat-card-title>
+        <mat-card-subtitle class="time">
+            <span matTooltip="{{ UtilsService.toDate(lastTimestamp) }}"
+                  matTooltipPosition="right">
+                {{ UtilsService.formatFromNow(lastTimestamp) }}
+            </span>
+        </mat-card-subtitle>
+        <mat-card-content *ngIf="item.timestamps && (item.timestamps.length > 1) || false">
+            <span (click)="expandTimestamps = !expandTimestamps"
+                  class="more-timestamps">
+                Recent entries
+                <mat-icon class="toggle">
+                    unfold_more
+                </mat-icon>
+            </span>
+            <ol *ngIf="expandTimestamps" reversed class="timestamps">
+                <p class="intro">
+                    First time: {{ UtilsService.formatFromNow(item.timestamps[(item.timestamps.length - 1)].ts) }}
+                    <br>Last time: {{ UtilsService.formatFromNow(item.timestamps[0].ts) }}
+                    <br>Next prediction: {{ getNextPredictedTime() }}
+                </p>
+                <li *ngFor="let ts of item.timestamps; let i = index; trackBy: trackByTimeStampId" class="lt-ts">
+                    <mat-form-field class="lastTime-ts-input">
+                        <input matInput
+                               [formControl]="$any(ts.tsFormControl)"
+                               [ngxMatDatetimePicker]="$any(datePicker)"
+                               (dateChange)="modifyTimestamp($event, ts, item.timestamps.length - i - 1)"
+                               matTooltip="{{ UtilsService.formatFromNow(ts.ts) }}"
+                               matTooltipPosition="above">
+                        <mat-datepicker-toggle matSuffix [for]="$any(datePicker)"></mat-datepicker-toggle>
+                        <ngx-mat-datetime-picker #datePicker [touchUi]="UtilsService.isMobile()">
+                            <ngx-mat-datepicker-actions>
+                                <button mat-button ngxMatDatepickerCancel>Cancel</button>
+                                <button mat-raised-button color="primary" ngxMatDatepickerApply>Apply</button>
+                            </ngx-mat-datepicker-actions>
+                        </ngx-mat-datetime-picker>
+                    </mat-form-field>
+                    <span class="ts-label">{{ ts.label }}</span>
+                    <span class="ts-actions">
+                        <mat-card-actions>
+                            <button mat-icon-button matTooltip="Actions" [matMenuTriggerFor]="menu">
+                                <mat-icon>more_vert</mat-icon>
+                                <mat-menu [overlapTrigger]="false" #menu="matMenu">
+                                    <button mat-menu-item (click)="editTimestampLabel(ts, item.timestamps.length - i - 1)">Label Timestamp</button>
+                                    <button mat-menu-item (click)="removeTimestamp(ts, item.timestamps.length - i - 1)">Remove Timestamp</button>
+                                </mat-menu>
+                            </button>
+                        </mat-card-actions>
+                    </span>
+                </li>
+                <nav *ngIf="item.hasMoreTs">
+                    <button mat-stroked-button (click)="showOlderTimestamps(item)">
+                        show older
+                    </button>
+                </nav>
+            </ol>
+        </mat-card-content>
+        <mat-card-content *ngIf="statsContent" class="stats">
+            <p *ngIf="statsFreq">
+                Frequency of events: every {{ statsFreq.avgDays.toFixed(2) }} days
+                (or {{ statsFreq.avgHours.toFixed(2) }} hours)
+            </p>
+            <div *ngFor="let stats of statsContent">
+                <h4>{{ stats['name'] }}</h4>
+                <canvas baseChart class="chart"
+                        [data]="stats['data']"
+                        [options]="barChartOptions"
+                        [type]="'bar'">
+                </canvas>
+            </div>
+        </mat-card-content>
+        <mat-card-actions class="bottom">
+            <button mat-stroked-button color="accent" (click)="touch()">
+                <mat-icon>check</mat-icon>
+            </button>
+        </mat-card-actions>
+    </div>
+    <div class="mat-card-actions-container">
+        <mat-card-actions>
+            <button mat-icon-button matTooltip="Actions" [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+                <mat-menu [overlapTrigger]="false" #menu="matMenu">
+                    <button mat-menu-item (click)="deleteItem()">Delete</button>
+                    <button mat-menu-item (click)="toggleStats()">
+                        {{ statsContent ? 'Hide Stats' : 'Show Stats' }}
+                    </button>
+                </mat-menu>
+            </button>
+        </mat-card-actions>
+    </div>
+</mat-card>

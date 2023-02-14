@@ -1,0 +1,15 @@
+<section>
+    <button class="add-sticky" mat-fab color="primary" aria-label="Add Last Time"
+            (click)="addLastTime()">
+        <mat-icon>add</mat-icon>
+    </button>
+    <div *ngFor="let item of lastTime; trackBy: trackByLastTimeId">
+        <app-last-time [item]="item"></app-last-time>
+    </div>
+    <div *ngIf="!lastTime.length && lastTimeLoading" class="empty-list">
+        Loading...
+    </div>
+    <div *ngIf="!lastTime.length && !lastTimeLoading" class="empty-list">
+        Empty list
+    </div>
+</section>

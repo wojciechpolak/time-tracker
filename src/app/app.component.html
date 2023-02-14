@@ -1,0 +1,21 @@
+<mat-toolbar>
+    <span class="title"><a (click)="navigateToMain()">Time Tracker</a></span>
+    <span class="spacer"></span>
+    <div *ngIf="isSyncActive" class="spinner"></div>
+    <div id="connection-status">
+        <span *ngIf="isConnected" class="connected" [ngClass]="{'no-auth': isSyncError}">
+            <span>●</span>
+        </span>
+        <span *ngIf="!isConnected" class="disconnected">
+            <span>●</span>
+        </span>
+    </div>
+    <button mat-icon-button class="settings-icon" aria-label="Settings"
+            (click)="onClickSettings()">
+        <mat-icon>settings</mat-icon>
+    </button>
+</mat-toolbar>
+
+<div id="main">
+    <router-outlet></router-outlet>
+</div>
