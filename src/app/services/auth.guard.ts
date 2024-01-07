@@ -1,7 +1,7 @@
 /**
  * auth.guard
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023, 2024 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -33,12 +33,11 @@ export class AuthGuard  {
 
     canActivate(route: ActivatedRouteSnapshot,
                 state: RouterStateSnapshot): boolean | UrlTree {
-        if (this.settingsService.getUser &&
-            this.settingsService.getPassword) {
-            return true;
-        }
-        else {
+        if (this.settingsService.hasEnabledRemoteSync() &&
+            !this.settingsService.getUser &&
+            !this.settingsService.getPassword) {
             return this.router.parseUrl(`/${PATHS.Settings}`);
         }
+        return true;
     }
 }

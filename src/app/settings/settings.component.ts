@@ -1,7 +1,7 @@
 /**
  * settings.component
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023, 2024 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,13 +18,11 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { SwUpdate } from '@angular/service-worker';
 
 import { environment } from '../../environments/environment';
 import { DataService } from '../services/data.service';
-import { LocalStorageService } from '../services/storage.service';
 import { SettingsService } from './settings.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -38,10 +36,8 @@ export class SettingsComponent implements OnInit {
     protected importFile?: File;
     protected importFileReady: boolean = false;
 
-    constructor(private router: Router,
-                private swUpdate: SwUpdate,
+    constructor(private swUpdate: SwUpdate,
                 private snackBar: MatSnackBar,
-                private localStorage: LocalStorageService,
                 private settingsService: SettingsService,
                 private dataService: DataService) {
         this.form = new UntypedFormGroup({
