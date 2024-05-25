@@ -39,16 +39,17 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { NgxMatDatetimePickerModule } from '@angular-material-components/datetime-picker';
-import { NgxMatMomentModule } from '@angular-material-components/moment-adapter';
+import { MtxDatetimepickerModule } from '@ng-matero/extensions/datetimepicker';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { NgChartsModule } from 'ng2-charts';
+import { provideMomentDatetimeAdapter } from '@ng-matero/extensions-moment-adapter';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { CoreModule } from './core/core.module';
 import { DataService } from './services/data.service';
+import { DATE_FORMAT } from './models';
 import { DebugComponent } from './debug/debug.component';
 import { environment } from '../environments/environment';
 import { LastTimeComponent } from './last-time/last-time.component';
@@ -101,8 +102,7 @@ import { TimerService } from './services/timer.service';
         MatTabsModule,
         MatToolbarModule,
         MatTooltipModule,
-        NgxMatDatetimePickerModule,
-        NgxMatMomentModule,
+        MtxDatetimepickerModule,
         ReactiveFormsModule,
         FormsModule,
         NgChartsModule,
@@ -111,6 +111,7 @@ import { TimerService } from './services/timer.service';
         DataService,
         SettingsService,
         TimerService,
+        provideMomentDatetimeAdapter(DATE_FORMAT),
         {provide: APP_BASE_HREF, useValue: environment.baseHref}
     ],
     bootstrap: [AppComponent]

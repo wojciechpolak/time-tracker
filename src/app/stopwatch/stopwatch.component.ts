@@ -19,7 +19,6 @@
 
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { NGX_MAT_DATE_FORMATS, NgxMatDateFormats } from '@angular-material-components/datetime-picker';
 import { Subscription } from 'rxjs';
 import { ChartConfiguration } from 'chart.js';
 import { Moment } from 'moment';
@@ -27,15 +26,12 @@ import { Moment } from 'moment';
 import { DataService } from '../services/data.service';
 import { LoggerService } from '../services/logger.service';
 import { TimerService } from '../services/timer.service';
-import { DATE_FORMAT, Stopwatch, StopwatchEvent, StopwatchRoundTime, Types } from '../models';
+import { Stopwatch, StopwatchEvent, StopwatchRoundTime, Types } from '../models';
 import { UtilsService } from '../services/utils.service';
 
 @Component({
     selector: 'app-stopwatch',
     templateUrl: './stopwatch.component.html',
-    providers: [
-        {provide: NGX_MAT_DATE_FORMATS, useValue: DATE_FORMAT},
-    ]
 })
 export class StopwatchComponent implements OnInit, OnDestroy {
 

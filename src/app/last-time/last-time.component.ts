@@ -27,12 +27,11 @@ import {
     SimpleChanges
 } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
 import { ChartConfiguration } from 'chart.js';
 import { Moment } from 'moment';
 
 import { DataService } from '../services/data.service';
-import { DATE_FORMAT, LastTime, TimeStamp, Types } from '../models';
+import { LastTime, TimeStamp, Types } from '../models';
 import { LoggerService } from '../services/logger.service';
 import { UtilsService } from '../services/utils.service';
 
@@ -40,9 +39,6 @@ import { UtilsService } from '../services/utils.service';
     selector: 'app-last-time',
     templateUrl: './last-time.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [
-        {provide: NGX_MAT_DATE_FORMATS, useValue: DATE_FORMAT},
-    ]
 })
 export class LastTimeComponent implements OnInit, OnChanges {
 

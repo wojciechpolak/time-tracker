@@ -51,17 +51,20 @@
                     <mat-form-field class="event-ts-input">
                         <input matInput
                                [formControl]="$any(event.tsFormControl)"
-                               [ngxMatDatetimePicker]="$any(datePicker)"
+                               [mtxDatetimepicker]="datePicker"
                                (dateChange)="modifyEvent($event, event, revertedEvents.length - i - 1)"
                                matTooltip="{{ UtilsService.formatFromNow(event.ts) }}"
                                matTooltipPosition="above">
-                        <mat-datepicker-toggle matSuffix [for]="$any(datePicker)"></mat-datepicker-toggle>
-                        <ngx-mat-datetime-picker #datePicker [touchUi]="UtilsService.isMobile()">
-                            <ngx-mat-datepicker-actions>
-                                <button mat-button ngxMatDatepickerCancel>Cancel</button>
-                                <button mat-raised-button color="primary" ngxMatDatepickerApply>Apply</button>
-                            </ngx-mat-datepicker-actions>
-                        </ngx-mat-datetime-picker>
+                        <mtx-datetimepicker #datePicker
+                                            [type]="'datetime'"
+                                            [mode]="'auto'"
+                                            [touchUi]="UtilsService.isMobile()"
+                                            [timeInput]="true">
+                        </mtx-datetimepicker>
+                        <mtx-datetimepicker-toggle
+                            [for]="$any(datePicker)"
+                            matSuffix>
+                        </mtx-datetimepicker-toggle>
                     </mat-form-field>
                     {{ event.round ? '[R]' : '' }}
                 </span>

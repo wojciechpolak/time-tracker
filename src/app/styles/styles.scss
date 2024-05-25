@@ -19,6 +19,7 @@
 
 @use 'sass:map';
 @use '@angular/material' as mat;
+@use '@ng-matero/extensions' as mtx;
 @include mat.all-component-typographies();
 @include mat.core();
 
@@ -67,9 +68,11 @@ mat-icon {
 }
 
 @include mat.all-component-themes($light-theme);
+@include mtx.all-component-themes($light-theme);
 
 @media (prefers-color-scheme: dark) {
     @include mat.all-component-colors($dark-theme);
+    @include mtx.all-component-colors($dark-theme);
     :root {
         --color-time: #ccc;
         --color-spinner: #e91e63;
@@ -454,30 +457,4 @@ app-settings {
 
 .ignored {
     color: #ccc;
-}
-
-/* mat-datepicker workaround fix v16 */
-
-.mat-datepicker-content {
-  box-shadow: 0 2px 4px -1px #ccc, 0 4px 5px #ccc, 0 1px 10px #ccc;
-  background-color: #fff;
-}
-.mat-calendar-body-selected {
-  background-color: forestgreen;
-  color: #fff;
-}
-.mat-calendar-body-cell-content {
-  border: none !important;
-}
-@media (prefers-color-scheme: dark) {
-    .mat-datepicker-content {
-        box-shadow: 0 2px 4px -1px #222, 0 4px 5px #222, 0 1px 10px #222;
-        background-color: #444;
-    }
-    .mat-calendar-body-selected {
-        background-color: forestgreen;
-    }
-    .mat-calendar-body-cell {
-        color: #fff;
-    }
 }

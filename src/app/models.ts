@@ -18,7 +18,7 @@
  */
 
 import { FormControl } from '@angular/forms';
-import { NgxMatDateFormats } from '@angular-material-components/datetime-picker';
+import { MtxDatetimeFormats } from '@ng-matero/extensions/core';
 
 export const AppTitle = 'Time Tracker';
 
@@ -73,14 +73,23 @@ export interface TimeStamp {
     tsFormControl?: FormControl<Date>;
 }
 
-export const DATE_FORMAT: NgxMatDateFormats = {
+export const DATE_FORMAT: MtxDatetimeFormats = {
     parse: {
-        dateInput: 'MM/YYYY',
+        dateInput: 'YYYY-MM-DD',
+        monthInput: 'MMMM',
+        yearInput: 'YYYY',
+        timeInput: 'HH:mm',
+        datetimeInput: 'YYYY-MM-DD HH:mm',
     },
     display: {
         dateInput: 'YYYY-MM-DD HH:mm:ss',
-        monthYearLabel: 'MMM YYYY',
+        monthInput: 'MMMM',
+        yearInput: 'YYYY',
+        timeInput: 'HH:mm',
+        datetimeInput: 'YYYY-MM-DD HH:mm',
+        monthYearLabel: 'YYYY MMMM',
         dateA11yLabel: 'LL',
         monthYearA11yLabel: 'MMMM YYYY',
+        popupHeaderDateLabel: 'MMM DD, ddd',
     },
 }
