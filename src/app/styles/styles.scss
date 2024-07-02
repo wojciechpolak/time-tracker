@@ -70,6 +70,10 @@ mat-icon {
 @include mat.all-component-themes($light-theme);
 @include mtx.all-component-themes($light-theme);
 
+.mtx-calendar {
+    background-color: var(--mtx-datetimepicker-container-background-color);
+}
+
 @media (prefers-color-scheme: dark) {
     @include mat.all-component-colors($dark-theme);
     @include mtx.all-component-colors($dark-theme);
