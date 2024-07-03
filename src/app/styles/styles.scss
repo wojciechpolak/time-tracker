@@ -29,9 +29,9 @@
 @import '@fontsource/roboto/500.css';
 
 // light theme
-$light-primary: mat.define-palette(mat.$indigo-palette);
-$light-accent: mat.define-palette(mat.$pink-palette);
-$light-theme: mat.define-light-theme((
+$light-primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+$light-accent: mat.m2-define-palette(mat.$m2-pink-palette);
+$light-theme: mat.m2-define-light-theme((
     color: (
         primary: $light-primary,
         accent: $light-accent,
@@ -39,9 +39,9 @@ $light-theme: mat.define-light-theme((
 ));
 
 // dark theme
-$dark-primary: mat.define-palette(mat.$pink-palette);
-$dark-accent: mat.define-palette(mat.$blue-gray-palette);
-$dark-theme: mat.define-dark-theme((
+$dark-primary: mat.m2-define-palette(mat.$m2-pink-palette);
+$dark-accent: mat.m2-define-palette(mat.$m2-blue-gray-palette);
+$dark-theme: mat.m2-define-dark-theme((
     color: (
         primary: $dark-primary,
         accent: $dark-accent,
@@ -141,14 +141,14 @@ mat-toolbar {
     .title a {
         cursor: pointer;
         @media (prefers-color-scheme: dark) {
-            $config: mat.get-color-config($dark-theme);
+            $config: mat.m2-get-color-config($dark-theme);
             $foreground: map.get($config, foreground);
-            color: mat.get-color-from-palette($foreground, text);
+            color: mat.m2-get-color-from-palette($foreground, text);
         }
         @media (prefers-color-scheme: light) {
-            $config: mat.get-color-config($light-theme);
+            $config: mat.m2-get-color-config($light-theme);
             $foreground: map.get($config, foreground);
-            color: mat.get-color-from-palette($foreground, text);
+            color: mat.m2-get-color-from-palette($foreground, text);
         }
         text-decoration: none;
     }
