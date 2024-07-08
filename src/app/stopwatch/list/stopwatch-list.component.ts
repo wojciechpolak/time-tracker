@@ -71,8 +71,4 @@ export class StopwatchListComponent implements OnInit {
             });
         });
     }
-
-    protected trackByStopwatchId(index: number, item: Stopwatch): string {
-        return item._id;
-    }
 }

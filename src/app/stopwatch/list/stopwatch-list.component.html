@@ -1,15 +1,21 @@
 <section>
-    <button class="add-sticky" mat-fab color="primary" aria-label="Add Stopwatch"
-            (click)="addStopwatch()">
-        <mat-icon>add</mat-icon>
-    </button>
-    <div *ngFor="let item of stopwatches; trackBy: trackByStopwatchId">
-        <app-stopwatch [item]="item"></app-stopwatch>
+  <button class="add-sticky" mat-fab color="primary" aria-label="Add Stopwatch"
+          (click)="addStopwatch()">
+    <mat-icon>add</mat-icon>
+  </button>
+  @for (item of stopwatches; track item._id) {
+    <div>
+      <app-stopwatch [item]="item"></app-stopwatch>
     </div>
-    <div *ngIf="!stopwatches.length && stopwatchesLoading" class="empty-list">
+  }
+  @empty {
+    <div class="empty-list">
+      @if (stopwatchesLoading) {
         Loading...
-    </div>
-    <div *ngIf="!stopwatches.length && !stopwatchesLoading" class="empty-list">
+      }
+      @else {
         Empty list
+      }
     </div>
+  }
 </section>

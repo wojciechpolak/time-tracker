@@ -1,23 +1,25 @@
 <nav mat-tab-nav-bar [tabPanel]="tabPanel"
      mat-stretch-tabs="true">
-    <a mat-tab-link #rla1="routerLinkActive"
-       routerLinkActive="active-link"
-       [routerLink]="['/main/last-time']"
-       [active]="rla1.isActive">
-        Last Time
-    </a>
-    <a mat-tab-link #rla2="routerLinkActive"
-       routerLinkActive="active-link"
-       [routerLink]="['/main/stopwatch']"
-       [active]="rla2.isActive">
-        Stopwatch
-    </a>
-    <a *ngIf="showDebug" mat-tab-link #rla3="routerLinkActive"
+  <a mat-tab-link #rla1="routerLinkActive"
+     routerLinkActive="active-link"
+     [routerLink]="['/main/last-time']"
+     [active]="rla1.isActive">
+    Last Time
+  </a>
+  <a mat-tab-link #rla2="routerLinkActive"
+     routerLinkActive="active-link"
+     [routerLink]="['/main/stopwatch']"
+     [active]="rla2.isActive">
+    Stopwatch
+  </a>
+  @if (showDebug) {
+    <a mat-tab-link #rla3="routerLinkActive"
        routerLinkActive="active-link"
        [routerLink]="['/main/debug']"
        [active]="rla3.isActive">
-        DEBUG
+      DEBUG
     </a>
+  }
 </nav>
 <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
 

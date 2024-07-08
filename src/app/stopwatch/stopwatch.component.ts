@@ -487,8 +487,4 @@ export class StopwatchComponent implements OnInit, OnDestroy {
             avgTimeByDayMinutes: avgTimeByDayMinutes,
         };
     }
-
-    protected trackByEventId(index: number, item: StopwatchEvent): string {
-        return item._id;
-    }
 }

@@ -68,8 +68,4 @@ export class LastTimeListComponent implements OnInit {
             });
         });
     }
-
-    protected trackByLastTimeId(index: number, item: LastTime): string {
-        return item._id;
-    }
 }

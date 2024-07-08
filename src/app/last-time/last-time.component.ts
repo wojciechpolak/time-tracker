@@ -221,8 +221,4 @@ export class LastTimeComponent implements OnInit, OnChanges {
         }
         return '--';
     }
-
-    protected trackByTimeStampId(index: number, item: TimeStamp): string {
-        return item._id;
-    }
 }

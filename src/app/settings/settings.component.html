@@ -2,98 +2,99 @@
 
 <form id="settingsForm" [formGroup]="form" (ngSubmit)="save()">
 
-    <mat-form-field>
-        <mat-label>Database name</mat-label>
-        <input matInput formControlName="dbName">
-    </mat-form-field>
+  <mat-form-field>
+    <mat-label>Database name</mat-label>
+    <input matInput formControlName="dbName">
+  </mat-form-field>
 
-    <div class="mat-form-field">
-        <div class="mat-form-field-wrapper">
-            <mat-checkbox class="mat-form-field-flex" formControlName="redirectToHttps">
-                Redirect to HTTPS
-            </mat-checkbox>
-        </div>
+  <div class="mat-form-field">
+    <div class="mat-form-field-wrapper">
+      <mat-checkbox class="mat-form-field-flex" formControlName="redirectToHttps">
+        Redirect to HTTPS
+      </mat-checkbox>
     </div>
+  </div>
 
-    <div class="mat-form-field">
-        <div class="mat-form-field-wrapper">
-            <mat-checkbox class="mat-form-field-flex" formControlName="showDebug">
-                Show DEBUG Tab
-            </mat-checkbox>
-        </div>
+  <div class="mat-form-field">
+    <div class="mat-form-field-wrapper">
+      <mat-checkbox class="mat-form-field-flex" formControlName="showDebug">
+        Show DEBUG Tab
+      </mat-checkbox>
     </div>
+  </div>
 
-    <hr class="section">
-    <h3>Remote Sync</h3>
+  <hr class="section">
+  <h3>Remote Sync</h3>
 
-    <div class="mat-form-field">
-        <div class="mat-form-field-wrapper">
-            <mat-checkbox class="mat-form-field-flex" formControlName="enableRemoteSync">
-                Enable Remote Sync
-            </mat-checkbox>
-        </div>
+  <div class="mat-form-field">
+    <div class="mat-form-field-wrapper">
+      <mat-checkbox class="mat-form-field-flex" formControlName="enableRemoteSync">
+        Enable Remote Sync
+      </mat-checkbox>
     </div>
+  </div>
 
-    <mat-form-field>
-        <mat-label>User</mat-label>
-        <input matInput formControlName="user"
-               autocomplete="username"
-               [required]="form.controls['enableRemoteSync'].value">
-    </mat-form-field>
+  <mat-form-field>
+    <mat-label>User</mat-label>
+    <input matInput formControlName="user"
+           autocomplete="username"
+           [required]="form.controls['enableRemoteSync'].value">
+  </mat-form-field>
 
-    <mat-form-field>
-        <mat-label>Password</mat-label>
-        <input matInput formControlName="password" type="password"
-               autocomplete="current-password"
-               [required]="form.controls['enableRemoteSync'].value">
-    </mat-form-field>
+  <mat-form-field>
+    <mat-label>Password</mat-label>
+    <input matInput formControlName="password" type="password"
+           autocomplete="current-password"
+           [required]="form.controls['enableRemoteSync'].value">
+  </mat-form-field>
 
-    <mat-form-field>
-        <mat-label>Remote database endpoint</mat-label>
-        <input matInput placeholder="CouchDB URL" formControlName="endpoint"
-               [required]="form.controls['enableRemoteSync'].value">
-        <button matSuffix mat-icon-button aria-label="Add default"
-                (click)="fillDefaultEndpoint($event)">
-            <mat-icon>add</mat-icon>
-        </button>
-    </mat-form-field>
+  <mat-form-field>
+    <mat-label>Remote database endpoint</mat-label>
+    <input matInput placeholder="CouchDB URL" formControlName="endpoint"
+           [required]="form.controls['enableRemoteSync'].value">
+    <button matSuffix mat-icon-button aria-label="Add default"
+            (click)="fillDefaultEndpoint($event)">
+      <mat-icon>add</mat-icon>
+    </button>
+  </mat-form-field>
 
-    <div>
-        <button mat-raised-button (click)="cancel($event)">Cancel</button>
-        <button mat-raised-button color="primary"
-                type="submit"
-                [disabled]="!form.valid || !form.dirty">
-            Save
-        </button>
-    </div>
+  <div>
+    <button mat-raised-button (click)="cancel($event)">Cancel</button>
+    <button mat-raised-button color="primary"
+            type="submit"
+            [disabled]="!form.valid || !form.dirty">
+      Save
+    </button>
+  </div>
 
-    <hr class="section">
+  <hr class="section">
 
-    <div>
-        <p><b>DB Info:</b> {{ storageEstimated }}</p>
-        <p>
-            <button mat-raised-button color="primary"
-                    (click)="dbExport($event)">
-                DB Export
-            </button>
-        </p>
-        <p>
-            <button mat-raised-button color="warn"
-                    [disabled]="!importFileReady"
-                    (click)="dbImport($event)">
-                DB Import
-            </button>
-            <input id="fileSelector" type="file"
-                   (change)="importFileChange($event)">
-        </p>
-    </div>
-
-    <hr class="section">
-
-    <p>App Version:
-        <b matTooltip="{{ version.commit_date }}">{{ version.commit }}</b>
-        <button mat-stroked-button color="primary"
-                (click)="checkForUpdate($event)"
-                [disabled]="!isOnline()">check for update</button>
+  <div>
+    <p><b>DB Info:</b> {{ storageEstimated }}</p>
+    <p>
+      <button mat-raised-button color="primary"
+              (click)="dbExport($event)">
+        DB Export
+      </button>
     </p>
+    <p>
+      <button mat-raised-button color="warn"
+              [disabled]="!importFileReady"
+              (click)="dbImport($event)">
+        DB Import
+      </button>
+      <input id="fileSelector" type="file"
+             (change)="importFileChange($event)">
+    </p>
+  </div>
+
+  <hr class="section">
+
+  <p>App Version:
+    <b matTooltip="{{ version.commit_date }}">{{ version.commit }}</b>
+    <button mat-stroked-button color="primary"
+            (click)="checkForUpdate($event)"
+            [disabled]="!isOnline()">check for update
+    </button>
+  </p>
 </form>
