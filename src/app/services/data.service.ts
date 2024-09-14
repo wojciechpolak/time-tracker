@@ -24,7 +24,6 @@ import PouchDB from 'pouchdb-browser';
 import PouchDbFind from 'pouchdb-find';
 
 import { AppTitle, LastTime, Stopwatch, Types } from '../models';
-import { LocalStorageService } from './storage.service';
 import { LoggerService } from './logger.service';
 import { SettingsService } from '../settings/settings.service';
 import { UtilsService } from './utils.service';
@@ -54,8 +53,7 @@ export class DataService {
     onRemoteDbError: Subject<void> = new Subject<void>();
     onRefresh: EventEmitter<any> = new EventEmitter();
 
-    constructor(private localService: LocalStorageService,
-                private loggerService: LoggerService,
+    constructor(private loggerService: LoggerService,
                 private snackBar: MatSnackBar,
                 private settingsService: SettingsService) {
 
@@ -74,8 +72,8 @@ export class DataService {
 
         this.onDbChange
             .pipe(debounceTime(500))
-            .subscribe(() => {
-                this.showChanges();
+            .subscribe((info: any) => {
+                this.showChanges(info);
             });
 
         this.onRemoteDbError
@@ -105,7 +103,7 @@ export class DataService {
                 live: true,
                 retry: true,
             })
-            .on('change', () => this.onDbChange.next())
+            .on('change', (info: any) => this.onDbChange.next(info))
             .on('error', (err: any) => {
                 this.loggerService.log('changes error', err);
             });
@@ -206,6 +204,17 @@ export class DataService {
             this.isOnline$.next(false);
             this.remoteSyncDisable();
         });
+        if (UtilsService.isMobile()) {
+            window.addEventListener('visibilitychange', () => {
+                const state = document.visibilityState;
+                if (state === 'hidden') {
+                    this.remoteSyncDisable();
+                }
+                else if (state === 'visible') {
+                    this.remoteSyncEnable();
+                }
+            });
+        }
     }
 
     async fetch() {
@@ -218,6 +227,7 @@ export class DataService {
         this.lastTimeLoading = true;
         let lastTime: LastTime[] = [];
         let result;
+        console.time('find-LT');
         try {
             result = await this.db.find({
                 selector: {
@@ -236,6 +246,7 @@ export class DataService {
         for (let item of lastTime) {
             await this.fetchTimestamps(item);
         }
+        console.timeEnd('find-LT');
         this.lastTime = lastTime
             .sort((a: LastTime, b: LastTime) => b.timestamps[0].ts - a.timestamps[0].ts);
         this.lastTimeLoading = false;
@@ -247,7 +258,7 @@ export class DataService {
      * @param limit Limit the number of items or 0 for unlimited
      */
     async fetchTimestamps(item: LastTime, limit: number = LT_TS_MAX_ITEMS) {
-        // console.time('find-LT');
+        // console.time('find-LTT');
         let timestamps = await this.db.find({
             selector: {
                 type: Types.LAST_TIME_TS,
@@ -257,7 +268,7 @@ export class DataService {
             ...(limit ? {limit: limit + 1} : {}),
         });
         timestamps.docs.sort((a: any, b: any) => b.ts - a.ts);
-        // console.timeEnd('find-LT');
+        // console.timeEnd('find-LTT');
         item.timestamps = timestamps.docs;
         if (limit && item.timestamps.length > limit) {
             item.timestamps = item.timestamps.slice(0, limit);
@@ -272,6 +283,7 @@ export class DataService {
         this.stopwatchesLoading = true;
         let stopwatches: Stopwatch[] = [];
         let res;
+        console.time('find-SW');
         try {
             res = await this.db.find({
                 selector: {
@@ -294,7 +306,25 @@ export class DataService {
             }
             await this.fetchStopwatchEvents(item);
         }
-        this.stopwatches = stopwatches;
+        console.timeEnd('find-SW');
+
+        this.stopwatches = stopwatches
+            .sort((a: Stopwatch, b: Stopwatch) => {
+                let tsA, tsB;
+                if (a.events.length) {
+                    tsA = a.events[a.events.length - 1].ts;
+                }
+                else {
+                    tsA = Number(a._id.split('-')[1]);
+                }
+                if (b.events.length) {
+                    tsB = b.events[b.events.length - 1].ts;
+                }
+                else {
+                    tsB = Number(b._id.split('-')[1]);
+                }
+                return tsB - tsA;
+            });
         this.stopwatchesLoading = false;
 
         // signal if at least one stopwatch is running...
@@ -311,7 +341,7 @@ export class DataService {
     }
 
     async fetchStopwatchEvents(item: Stopwatch) {
-        // console.time('find-SW');
+        // console.time('find-SWE');
         let rounds = await this.db.find({
             selector: {
                 type: Types.STOPWATCH_TS,
@@ -319,13 +349,23 @@ export class DataService {
             },
             // sort: [{_id: 'desc'}]
         });
-        // console.timeEnd('find-SW');
+        // console.timeEnd('find-SWE');
         item.events = rounds.docs;
     }
 
-    async showChanges() {
+    async showChanges(info: any) {
         if (!this.isSyncActive) {
-            await this.fetch();
+            if (info?.id?.startsWith('LT')) {
+                await this.fetchLastTime();
+                this.onRefresh.emit();
+            }
+            else if (info?.id?.startsWith('SW')) {
+                await this.fetchStopwatchList();
+                this.onRefresh.emit();
+            }
+            else {
+                await this.fetch();
+            }
         }
     }
 
@@ -335,13 +375,16 @@ export class DataService {
         });
     }
 
-    putItem(item: any, cb: Function): void {
+    putItem(item: any, onSuccess: Function, onError?: Function): void {
         this.db.put(item)
             .then((doc: any) => {
-                cb && cb(doc);
+                onSuccess && onSuccess(doc);
             })
             .catch((err: any) => {
                 this.loggerService.log('putItem error', err);
+                let msg = `DB putItem: ${err.status} - ${err.message}`;
+                this.snackBar.open(msg, 'Dismiss');
+                onError && onError(err);
             });
     }
 

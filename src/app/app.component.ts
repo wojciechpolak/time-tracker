@@ -25,7 +25,6 @@ import { concat, interval } from 'rxjs';
 import { first } from 'rxjs/operators';
 
 import { DataService } from './services/data.service';
-import { LocalStorageService } from './services/storage.service';
 import { LoggerService } from './services/logger.service';
 import { PATHS } from './app-routing.module';
 import { SettingsService } from './settings/settings.service';
@@ -43,7 +42,6 @@ export class AppComponent implements OnInit {
                 private snackBar: MatSnackBar,
                 private loggerService: LoggerService,
                 private settingsService: SettingsService,
-                private storageService: LocalStorageService,
                 private dataService: DataService) {
     }
 

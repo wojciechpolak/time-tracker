@@ -272,7 +272,11 @@ export class StopwatchComponent implements OnInit, OnDestroy {
                 this.dataService.putItem(event, () => {
                     this.addEventLocked = false;
                     this.loggerService.log('Successfully posted a new Stopwatch Event!');
+                }, () => {
+                    this.addEventLocked = false;
                 });
+            }, () => {
+                this.addEventLocked = false;
             });
         }
         else {
@@ -287,6 +291,8 @@ export class StopwatchComponent implements OnInit, OnDestroy {
             this.dataService.putItem(event, () => {
                 this.addEventLocked = false;
                 this.loggerService.log('Successfully posted a new Stopwatch Event!');
+            }, () => {
+                this.addEventLocked = false;
             });
         }
     }
