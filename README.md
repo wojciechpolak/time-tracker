@@ -13,7 +13,7 @@ favorite web browser or as a PWA from your phone's main screen.
 ## Running (out of the box)
 
 ```shell
-docker run -p 8080:80 --name time-tracker ghcr.io/wojciechpolak/time-tracker
+docker run -it -p 8080:80 --name time-tracker ghcr.io/wojciechpolak/time-tracker
 ```
 
 ### Running with Docker Compose
