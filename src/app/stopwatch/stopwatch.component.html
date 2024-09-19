@@ -22,6 +22,8 @@
               title="Double click to edit">
           {{ item.name }}
         </span>
+        <mat-icon class="edit-icon" aria-hidden="true"
+                  (click)="editTitle($event)">edit</mat-icon>
       }
     </mat-card-title>
     <mat-card-subtitle class="time">
