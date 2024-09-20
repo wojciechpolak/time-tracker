@@ -100,7 +100,10 @@ export class SettingsComponent implements OnInit {
     async checkForUpdate($event: Event) {
         $event.preventDefault();
         if (this.swUpdate.isEnabled) {
-            await this.swUpdate.checkForUpdate();
+            const res = await this.swUpdate.checkForUpdate();
+            if (!res) {
+                this.snackBar.open('Time Tracker is up to date', 'OK');
+            }
         }
     }
 

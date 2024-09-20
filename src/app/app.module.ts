@@ -28,6 +28,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatDivider } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
@@ -91,6 +92,7 @@ import { TimerService } from './services/timer.service';
         MatCheckboxModule,
         MatDatepickerModule,
         MatDialogModule,
+        MatDivider,
         MatFormFieldModule,
         MatGridListModule,
         MatIconModule,
