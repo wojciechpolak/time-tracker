@@ -46,6 +46,7 @@ export class LastTimeComponent implements OnInit, OnChanges {
 
     protected editedTitle!: string;
     protected isEditTitle: boolean = false;
+    protected isWaiting: boolean = false;
     protected expandTimestamps: boolean = false;
     protected statsContent: any = null;
     protected statsFreq: any = {};
@@ -103,6 +104,7 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     async deleteItem() {
+        this.isWaiting = true;
         let items = this.item.timestamps.map((r: any) => {
             return {
                 _id: r._id,
@@ -118,6 +120,7 @@ export class LastTimeComponent implements OnInit, OnChanges {
         finally {
             this.dataService.enableChangesListener();
             await this.dataService.fetch();
+            this.isWaiting = false;
         }
     }
 

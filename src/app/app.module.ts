@@ -34,6 +34,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatRippleModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -98,6 +99,7 @@ import { TimerService } from './services/timer.service';
         MatIconModule,
         MatInputModule,
         MatMenuModule,
+        MatProgressSpinner,
         MatRippleModule,
         MatSelectModule,
         MatSnackBarModule,

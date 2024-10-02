@@ -55,6 +55,7 @@ export class StopwatchComponent implements OnInit, OnDestroy {
     protected tsArch: number = 0;
     protected editedTitle!: string;
     protected isEditTitle: boolean = false;
+    protected isWaiting: boolean = false;
     protected UtilsService: typeof UtilsService = UtilsService;
 
     protected barChartOptions: ChartConfiguration['options'] = {
@@ -335,6 +336,7 @@ export class StopwatchComponent implements OnInit, OnDestroy {
         if (!confirm('Do you confirm removing stopwatch')) {
             return;
         }
+        this.isWaiting = true;
         let items = this.item.events.map((r: any) => {
             return {
                 _id: r._id,
@@ -350,6 +352,7 @@ export class StopwatchComponent implements OnInit, OnDestroy {
         finally {
             this.dataService.enableChangesListener();
             await this.dataService.fetch();
+            this.isWaiting = false;
         }
     }
 

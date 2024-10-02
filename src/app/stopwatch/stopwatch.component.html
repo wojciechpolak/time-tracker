@@ -145,6 +145,9 @@
   </div>
   <div class="mat-card-actions-container">
     <mat-card-actions>
+      @if (isWaiting) {
+        <mat-spinner [diameter]="20"></mat-spinner>
+      }
       <button mat-icon-button matTooltip="Actions" [matMenuTriggerFor]="menu">
         <mat-icon>more_vert</mat-icon>
         <mat-menu [overlapTrigger]="false" #menu="matMenu">

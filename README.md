@@ -10,6 +10,24 @@ remote database (CouchDB). This app has been dockerized, so you
 can easily run it locally or on a server, and access it via your
 favorite web browser or as a PWA from your phone's main screen.
 
+## Screenshots
+
+### Last Time
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./.screenshots/last-time-view-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./.screenshots/last-time-view-light.png">
+  <img alt="Screenshot of Last Time" src="./.screenshots/last-time-view-light.png">
+</picture>
+
+### Stopwatch
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./.screenshots/stopwatch-view-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="./.screenshots/stopwatch-view-light.png">
+  <img alt="Screenshot of Stopwatch" src="./.screenshots/stopwatch-view-light.png">
+</picture>
+
 ## Running (out of the box)
 
 ```shell
