@@ -37,7 +37,7 @@ docker run -it -p 8080:80 --name time-tracker ghcr.io/wojciechpolak/time-tracker
 ### Running with Docker Compose
 
 ```shell
-docker compose up
+curl https://raw.githubusercontent.com/wojciechpolak/time-tracker/master/docker-compose.yml | docker compose -f - up
 ```
 
 ## Building

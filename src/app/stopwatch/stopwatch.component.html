@@ -33,7 +33,7 @@
       <mat-card-content class="stopwatch-rounds">
         @for (event of roundsOnly; track event._id; let i = $index) {
           <div>
-            <span>
+            <span class="round">
               Round #{{ roundsOnly.length - i }}
               - {{ event.round ? roundsTimeStr[event._id] : '' }}
             </span>

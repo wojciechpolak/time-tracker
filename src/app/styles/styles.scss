@@ -244,9 +244,15 @@ mat-toolbar {
     .time {
         color: var(--color-time);
     }
+    .round {
+        flex: 0 0 auto; /* Prevent from growing or shrinking */
+    }
     .round-label, .ts-label {
         font-weight: bolder;
         margin-left: .5em;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
     .round-edit, .round-remove,
     .ts-alter, .ts-edit, .ts-remove {
@@ -255,6 +261,7 @@ mat-toolbar {
         cursor: pointer;
     }
     .ts-actions {
+        flex: 0 0 auto;
         display: inline-block;
         vertical-align: top;
         margin-left: 1em;
@@ -335,6 +342,8 @@ mat-toolbar {
         @media only screen and (max-width: 400px) {
             font-size: 12px;
         }
+        display: flex;
+        flex-wrap: nowrap;
         nav {
             display: inline-block;
             vertical-align: text-top;
@@ -396,6 +405,10 @@ app-last-time {
         margin-bottom: 8px !important;
         padding: 0 !important;
         padding-top: 16px !important;
+    }
+    .mat-card-actions-container .mat-mdc-card-actions {
+        width: 40px;
+        margin-top: -15px;
     }
     .mat-mdc-card-actions {
         .mat-card-actions-container & {

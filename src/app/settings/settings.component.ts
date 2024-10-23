@@ -19,12 +19,13 @@
 
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { SwUpdate } from '@angular/service-worker';
 
-import { environment } from '../../environments/environment';
 import { DataService } from '../services/data.service';
+import { environment } from '../../environments/environment';
+import { LoggerService } from '../services/logger.service';
 import { SettingsService } from './settings.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
     selector: 'app-settings',
@@ -38,6 +39,7 @@ export class SettingsComponent implements OnInit {
 
     constructor(private swUpdate: SwUpdate,
                 private snackBar: MatSnackBar,
+                private loggerService: LoggerService,
                 private settingsService: SettingsService,
                 private dataService: DataService) {
         this.form = new UntypedFormGroup({
@@ -99,10 +101,14 @@ export class SettingsComponent implements OnInit {
 
     async checkForUpdate($event: Event) {
         $event.preventDefault();
+        this.loggerService.log('swUpdate isEnabled:', this.swUpdate.isEnabled);
         if (this.swUpdate.isEnabled) {
             const res = await this.swUpdate.checkForUpdate();
             if (!res) {
                 this.snackBar.open('Time Tracker is up to date', 'OK');
+            }
+            else {
+                this.loggerService.log('swUpdate checkForUpdate:', res);
             }
         }
     }
