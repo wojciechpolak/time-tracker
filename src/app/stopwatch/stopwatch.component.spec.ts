@@ -19,8 +19,6 @@
 
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { CoreModule } from '../core/core.module';
 import { StopwatchComponent } from './stopwatch.component';
@@ -34,11 +32,7 @@ describe('StopwatchComponent', () => {
         await TestBed.configureTestingModule({
             imports: [
                 CoreModule,
-                MatMenuModule,
-                MatSnackBarModule,
-            ],
-            declarations: [
-                StopwatchComponent
+                StopwatchComponent,
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();

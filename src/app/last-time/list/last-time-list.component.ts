@@ -1,7 +1,7 @@
 /**
  * last-time-list.component
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2024 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,8 +19,10 @@
 
 import { Component, OnInit } from '@angular/core';
 
+import { AppMaterialModules } from '../../app-modules';
 import { DataService } from '../../services/data.service';
 import { LastTime, TimeStamp, Types } from '../../models';
+import { LastTimeComponent } from '../last-time.component';
 import { LoggerService } from '../../services/logger.service';
 import { PATHS } from '../../app-routing.module';
 import { SettingsService } from '../../settings/settings.service';
@@ -28,7 +30,12 @@ import { UtilsService } from '../../services/utils.service';
 
 @Component({
     selector: 'app-last-time-list',
-    templateUrl: './last-time-list.component.html'
+    templateUrl: './last-time-list.component.html',
+    standalone: true,
+    imports: [
+        ...AppMaterialModules,
+        LastTimeComponent,
+    ]
 })
 export class LastTimeListComponent implements OnInit {
 

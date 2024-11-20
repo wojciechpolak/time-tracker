@@ -1,7 +1,7 @@
 /**
  * stopwatch.component
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2024 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,11 +18,14 @@
  */
 
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { NgClass } from '@angular/common';
+import { NgChartsModule } from 'ng2-charts';
 import { Subscription } from 'rxjs';
 import { ChartConfiguration } from 'chart.js';
 import { Moment } from 'moment';
 
+import { AppMaterialModules } from '../app-modules';
 import { DataService } from '../services/data.service';
 import { LoggerService } from '../services/logger.service';
 import { TimerService } from '../services/timer.service';
@@ -32,6 +35,14 @@ import { UtilsService } from '../services/utils.service';
 @Component({
     selector: 'app-stopwatch',
     templateUrl: './stopwatch.component.html',
+    standalone: true,
+    imports: [
+        ...AppMaterialModules,
+        FormsModule,
+        NgChartsModule,
+        NgClass,
+        ReactiveFormsModule,
+    ],
 })
 export class StopwatchComponent implements OnInit, OnDestroy {
 

@@ -1,7 +1,7 @@
 /**
  * main
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2024 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,15 +17,49 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { enableProdMode } from '@angular/core';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { enableProdMode, importProvidersFrom } from '@angular/core';
+import { APP_BASE_HREF } from '@angular/common';
+import { AppRoutingModule } from './app/app-routing.module';
+import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
+import { NgChartsModule } from 'ng2-charts';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideMomentDatetimeAdapter } from '@ng-matero/extensions-moment-adapter';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { ServiceWorkerModule } from '@angular/service-worker';
 
-import { AppModule } from './app/app.module';
+import { AppComponent } from './app/app.component';
+import { CoreModule } from './app/core/core.module';
+import { DataService } from './app/services/data.service';
+import { DATE_FORMAT } from './app/models';
 import { environment } from './environments/environment';
+import { SettingsService } from './app/settings/settings.service';
+import { TimerService } from './app/services/timer.service';
 
 if (environment.production) {
     enableProdMode();
 }
 
-platformBrowserDynamic().bootstrapModule(AppModule)
-    .catch(err => console.error(err));
+bootstrapApplication(AppComponent, {
+    providers: [
+        importProvidersFrom(
+            BrowserModule,
+            AppRoutingModule,
+            ServiceWorkerModule.register('ngsw-worker.js', {
+                enabled: environment.production,
+                // Register the ServiceWorker as soon as the app is stable
+                // or after 30 seconds (whichever comes first).
+                registrationStrategy: 'registerWhenStable:30000'
+            }),
+            CoreModule,
+            ReactiveFormsModule,
+            FormsModule,
+            NgChartsModule
+        ),
+        DataService,
+        SettingsService,
+        TimerService,
+        provideMomentDatetimeAdapter(DATE_FORMAT),
+        provideAnimations(),
+        { provide: APP_BASE_HREF, useValue: environment.baseHref },
+    ]
+}).catch(err => console.error(err));

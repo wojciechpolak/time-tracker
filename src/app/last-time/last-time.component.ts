@@ -1,7 +1,7 @@
 /**
  * last-time.component
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2024 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -26,10 +26,12 @@ import {
     OnInit,
     SimpleChanges
 } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ChartConfiguration } from 'chart.js';
+import { NgChartsModule } from 'ng2-charts';
 import { Moment } from 'moment';
 
+import { AppMaterialModules } from '../app-modules';
 import { DataService } from '../services/data.service';
 import { LastTime, TimeStamp, Types } from '../models';
 import { LoggerService } from '../services/logger.service';
@@ -39,6 +41,13 @@ import { UtilsService } from '../services/utils.service';
     selector: 'app-last-time',
     templateUrl: './last-time.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: true,
+    imports: [
+        ...AppMaterialModules,
+        FormsModule,
+        NgChartsModule,
+        ReactiveFormsModule,
+    ],
 })
 export class LastTimeComponent implements OnInit, OnChanges {
 

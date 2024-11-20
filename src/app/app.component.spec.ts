@@ -21,7 +21,6 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServiceWorkerModule } from '@angular/service-worker';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { AppComponent } from './app.component';
 import { CoreModule } from './core/core.module';
@@ -32,11 +31,8 @@ describe('AppComponent', () => {
             imports: [
                 RouterTestingModule,
                 ServiceWorkerModule.register('ngsw-worker.js', {enabled: false}),
-                MatSnackBarModule,
                 CoreModule,
-            ],
-            declarations: [
-                AppComponent
+                AppComponent,
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();

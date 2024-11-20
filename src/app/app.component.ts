@@ -1,7 +1,7 @@
 /**
  * app.component
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2024 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,12 +18,14 @@
  */
 
 import { ApplicationRef, Component, OnInit } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { NgClass } from '@angular/common';
+import { Router, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { concat, interval } from 'rxjs';
 import { first } from 'rxjs/operators';
 
+import { AppMaterialModules } from './app-modules';
 import { DataService } from './services/data.service';
 import { LoggerService } from './services/logger.service';
 import { PATHS } from './app-routing.module';
@@ -33,6 +35,12 @@ import { SettingsService } from './settings/settings.service';
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
+    standalone: true,
+    imports: [
+        ...AppMaterialModules,
+        NgClass,
+        RouterOutlet,
+    ],
 })
 export class AppComponent implements OnInit {
 

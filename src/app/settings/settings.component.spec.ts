@@ -19,9 +19,9 @@
 
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServiceWorkerModule, SwUpdate } from '@angular/service-worker';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { CoreModule } from '../core/core.module';
 import { SettingsComponent } from './settings.component';
@@ -36,15 +36,13 @@ describe('SettingsComponent', () => {
             imports: [
                 RouterTestingModule,
                 ServiceWorkerModule.register('ngsw-worker.js', {enabled: false}),
-                MatSnackBarModule,
                 CoreModule,
-            ],
-            declarations: [
-                SettingsComponent
+                SettingsComponent,
             ],
             providers: [
                 SwUpdate,
                 SettingsService,
+                provideAnimations(),
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();

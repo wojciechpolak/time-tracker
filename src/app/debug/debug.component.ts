@@ -1,7 +1,7 @@
 /**
  * debug.component
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2024 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,13 +20,18 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 
+import { AppMaterialModules } from '../app-modules';
 import { DataService } from '../services/data.service';
 import { LoggerService } from '../services/logger.service';
 
 
 @Component({
     selector: 'app-debug',
-    templateUrl: './debug.component.html'
+    templateUrl: './debug.component.html',
+    standalone: true,
+    imports: [
+        ...AppMaterialModules,
+    ]
 })
 export class DebugComponent implements OnInit, OnDestroy {
 

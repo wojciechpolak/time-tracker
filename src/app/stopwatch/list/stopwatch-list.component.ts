@@ -1,7 +1,7 @@
 /**
  * stopwatch-list.component
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2024 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,16 +19,23 @@
 
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
+import { AppMaterialModules } from '../../app-modules';
 import { DataService } from '../../services/data.service';
 import { LoggerService } from '../../services/logger.service';
 import { PATHS } from '../../app-routing.module';
 import { SettingsService } from '../../settings/settings.service';
 import { Stopwatch, StopwatchEvent, Types } from '../../models';
 import { UtilsService } from '../../services/utils.service';
+import { StopwatchComponent } from '../stopwatch.component';
 
 @Component({
     selector: 'app-stopwatch-list',
     templateUrl: './stopwatch-list.component.html',
+    standalone: true,
+    imports: [
+        ...AppMaterialModules,
+        StopwatchComponent,
+    ],
 })
 export class StopwatchListComponent implements OnInit {
 

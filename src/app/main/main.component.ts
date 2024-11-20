@@ -18,14 +18,23 @@
  */
 
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { RouterLinkActive, RouterLink, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 
+import { AppMaterialModules } from '../app-modules';
 import { DataService } from '../services/data.service';
 import { SettingsService } from '../settings/settings.service';
 
 @Component({
     selector: 'app-main',
-    templateUrl: './main.component.html'
+    templateUrl: './main.component.html',
+    standalone: true,
+    imports: [
+        ...AppMaterialModules,
+        RouterLink,
+        RouterLinkActive,
+        RouterOutlet,
+    ]
 })
 export class MainComponent implements OnInit, OnDestroy {
 
