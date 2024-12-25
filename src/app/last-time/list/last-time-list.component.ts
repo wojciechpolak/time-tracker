@@ -31,7 +31,6 @@ import { UtilsService } from '../../services/utils.service';
 @Component({
     selector: 'app-last-time-list',
     templateUrl: './last-time-list.component.html',
-    standalone: true,
     imports: [
         ...AppMaterialModules,
         LastTimeComponent,

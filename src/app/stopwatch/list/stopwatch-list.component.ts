@@ -31,11 +31,10 @@ import { StopwatchComponent } from '../stopwatch.component';
 @Component({
     selector: 'app-stopwatch-list',
     templateUrl: './stopwatch-list.component.html',
-    standalone: true,
     imports: [
         ...AppMaterialModules,
         StopwatchComponent,
-    ],
+    ]
 })
 export class StopwatchListComponent implements OnInit {
 

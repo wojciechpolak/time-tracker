@@ -28,7 +28,6 @@ import { SettingsService } from '../settings/settings.service';
 @Component({
     selector: 'app-main',
     templateUrl: './main.component.html',
-    standalone: true,
     imports: [
         ...AppMaterialModules,
         RouterLink,

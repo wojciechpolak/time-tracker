@@ -20,13 +20,14 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 @use '@ng-matero/extensions' as mtx;
-@include mat.all-component-typographies();
-@include mat.core();
+@use '@fontsource/material-icons' as *;
+@use '@fontsource/roboto/300.css' as *;
+@use '@fontsource/roboto/400.css' as *;
+@use '@fontsource/roboto/500.css' as *;
 
-@import '@fontsource/material-icons';
-@import '@fontsource/roboto/300.css';
-@import '@fontsource/roboto/400.css';
-@import '@fontsource/roboto/500.css';
+@include mat.all-component-typographies();
+@include mat.elevation-classes();
+@include mat.app-background();
 
 // light theme
 $light-primary: mat.m2-define-palette(mat.$m2-indigo-palette);
@@ -100,6 +101,7 @@ html, body {
 body {
     margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif;
+    overflow-y: scroll !important;
     // touch-action: pan-x pan-y; /* iOS */
 }
 
@@ -141,6 +143,7 @@ mat-toolbar {
     font-size: 16px !important;
     .title a {
         cursor: pointer;
+        text-decoration: none;
         @media (prefers-color-scheme: dark) {
             $config: mat.m2-get-color-config($dark-theme);
             $foreground: map.get($config, foreground);
@@ -151,7 +154,6 @@ mat-toolbar {
             $foreground: map.get($config, foreground);
             color: mat.m2-get-color-from-palette($foreground, text);
         }
-        text-decoration: none;
     }
     .spacer {
         flex: 1 1 auto;
@@ -339,11 +341,11 @@ mat-toolbar {
     .timestamps li,
     .stopwatch-events .event-ts,
     .stopwatch-rounds div {
+        display: flex;
+        flex-wrap: nowrap;
         @media only screen and (max-width: 400px) {
             font-size: 12px;
         }
-        display: flex;
-        flex-wrap: nowrap;
         nav {
             display: inline-block;
             vertical-align: text-top;
@@ -385,7 +387,7 @@ app-last-time {
         padding: 16px;
 
         .mat-card-container {
-            width: 100%;
+            width: calc(100% - 40px);
         }
         .mat-mdc-card-actions.bottom {
             padding: 0;

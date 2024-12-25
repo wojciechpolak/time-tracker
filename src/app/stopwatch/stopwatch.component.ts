@@ -17,10 +17,10 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
-import { NgChartsModule } from 'ng2-charts';
+import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
 import { ChartConfiguration } from 'chart.js';
 import { Moment } from 'moment';
@@ -35,14 +35,13 @@ import { UtilsService } from '../services/utils.service';
 @Component({
     selector: 'app-stopwatch',
     templateUrl: './stopwatch.component.html',
-    standalone: true,
     imports: [
         ...AppMaterialModules,
         FormsModule,
-        NgChartsModule,
         NgClass,
         ReactiveFormsModule,
-    ],
+        BaseChartDirective,
+    ]
 })
 export class StopwatchComponent implements OnInit, OnDestroy {
 
@@ -85,8 +84,7 @@ export class StopwatchComponent implements OnInit, OnDestroy {
     private sub1!: Subscription;
     private sub2!: Subscription;
 
-    constructor(private cd: ChangeDetectorRef,
-                private loggerService: LoggerService,
+    constructor(private loggerService: LoggerService,
                 private timerService: TimerService,
                 private dataService: DataService) {
     }
@@ -430,7 +428,8 @@ export class StopwatchComponent implements OnInit, OnDestroy {
                 labels: Object.keys(this.statsAvgDay.combinedTimeByDay),
                 datasets: [
                     {
-                        data: tmpSecs.map((item: number) => Math.round(item / 60))
+                        data: tmpSecs.map((item: number) => Math.round(item / 60)),
+                        backgroundColor: 'rgb(255, 99, 132, 0.6)',
                     }
                 ]
             }

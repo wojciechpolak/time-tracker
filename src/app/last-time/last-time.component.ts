@@ -28,7 +28,7 @@ import {
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ChartConfiguration } from 'chart.js';
-import { NgChartsModule } from 'ng2-charts';
+import { BaseChartDirective } from 'ng2-charts';
 import { Moment } from 'moment';
 
 import { AppMaterialModules } from '../app-modules';
@@ -41,13 +41,12 @@ import { UtilsService } from '../services/utils.service';
     selector: 'app-last-time',
     templateUrl: './last-time.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: true,
     imports: [
         ...AppMaterialModules,
         FormsModule,
-        NgChartsModule,
         ReactiveFormsModule,
-    ],
+        BaseChartDirective,
+    ]
 })
 export class LastTimeComponent implements OnInit, OnChanges {
 

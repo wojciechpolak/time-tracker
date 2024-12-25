@@ -21,11 +21,11 @@ import { enableProdMode, importProvidersFrom } from '@angular/core';
 import { APP_BASE_HREF } from '@angular/common';
 import { AppRoutingModule } from './app/app-routing.module';
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
-import { NgChartsModule } from 'ng2-charts';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideMomentDatetimeAdapter } from '@ng-matero/extensions-moment-adapter';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+import { provideMomentDatetimeAdapter } from '@ng-matero/extensions-moment-adapter';
 
 import { AppComponent } from './app/app.component';
 import { CoreModule } from './app/core/core.module';
@@ -53,12 +53,12 @@ bootstrapApplication(AppComponent, {
             CoreModule,
             ReactiveFormsModule,
             FormsModule,
-            NgChartsModule
         ),
         DataService,
         SettingsService,
         TimerService,
         provideMomentDatetimeAdapter(DATE_FORMAT),
+        provideCharts(withDefaultRegisterables()),
         provideAnimations(),
         { provide: APP_BASE_HREF, useValue: environment.baseHref },
     ]

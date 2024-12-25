@@ -28,7 +28,6 @@ import { LoggerService } from '../services/logger.service';
 @Component({
     selector: 'app-debug',
     templateUrl: './debug.component.html',
-    standalone: true,
     imports: [
         ...AppMaterialModules,
     ]

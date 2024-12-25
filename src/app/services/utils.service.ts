@@ -174,7 +174,10 @@ export class UtilsService {
         return {
             labels: ret.map(item => item.key),
             datasets: [
-                {data: ret.map(item => item.value)}
+                {
+                    data: ret.map(item => item.value),
+                    backgroundColor: 'rgb(255, 99, 132, 0.6)',
+                }
             ]
         };
     }

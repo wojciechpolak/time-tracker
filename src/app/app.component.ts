@@ -35,12 +35,11 @@ import { SettingsService } from './settings/settings.service';
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
-    standalone: true,
     imports: [
         ...AppMaterialModules,
         NgClass,
         RouterOutlet,
-    ],
+    ]
 })
 export class AppComponent implements OnInit {
 

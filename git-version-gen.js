@@ -55,7 +55,6 @@ function getGitVersion() {
 
 let json = JSON.stringify(getGitVersion(), null, 4);
 const ts = `/* AUTO-GENERATED FILE */
-/* eslint-disable */
 
 export const gitVersion = ${json};
 `;

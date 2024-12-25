@@ -1,4 +1,4 @@
-ARG node=20.17-slim
+ARG node=22.11-slim
 ARG nginx=1.26
 
 FROM node:${node} AS tt-builder-node
