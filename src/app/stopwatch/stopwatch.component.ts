@@ -18,7 +18,7 @@
  */
 
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
@@ -28,8 +28,9 @@ import { Moment } from 'moment';
 import { AppMaterialModules } from '../app-modules';
 import { DataService } from '../services/data.service';
 import { LoggerService } from '../services/logger.service';
+import { RefreshType, Stopwatch, StopwatchEvent, StopwatchRoundTime } from '../models';
+import { StopwatchService } from './stopwatch.service';
 import { TimerService } from '../services/timer.service';
-import { Stopwatch, StopwatchEvent, StopwatchRoundTime, Types } from '../models';
 import { UtilsService } from '../services/utils.service';
 
 @Component({
@@ -86,17 +87,20 @@ export class StopwatchComponent implements OnInit, OnDestroy {
 
     constructor(private loggerService: LoggerService,
                 private timerService: TimerService,
-                private dataService: DataService) {
+                private dataService: DataService,
+                private stopwatchService: StopwatchService) {
     }
 
     ngOnInit() {
         this.init();
         this.calcTimeSpan();
-        this.sub1 = this.dataService.onRefresh.subscribe(() => {
-            this.refreshLocked = true;
-            this.init();
-            this.calcTimeSpan();
-            this.refreshLocked = false;
+        this.sub1 = this.dataService.onRefresh.subscribe((refreshType: RefreshType) => {
+            if (refreshType === RefreshType.SW || refreshType === RefreshType.ALL) {
+                this.refreshLocked = true;
+                this.init();
+                this.calcTimeSpan();
+                this.refreshLocked = false;
+            }
         });
         this.sub2 = this.timerService.timer.subscribe(() => {
             if (this.refreshLocked) {
@@ -117,8 +121,8 @@ export class StopwatchComponent implements OnInit, OnDestroy {
     init() {
         let lastEventItem = this.item.events[this.item.events.length - 1] ?? {};
         this.item.finished = !lastEventItem.ss;
-        this.markNonStarters(this.item.events);
-        this.removeDupes(this.item.events);
+        this.stopwatchService.markNonStarters(this.item.events);
+        this.stopwatchService.removeDupes(this.item.events);
         this.revertedEvents = this.item.events.slice().reverse();
         this.revertedEvents.forEach(item => {
             item.tsFormControl = new FormControl(new Date(item.ts)) as any;
@@ -164,9 +168,9 @@ export class StopwatchComponent implements OnInit, OnDestroy {
             return '';
         }
 
-        let events = this.markNonStarters(this.item.events);
-        events = this.removeDupes(events);
-        events = this.createStartEndPairs(events);
+        let events = this.stopwatchService.markNonStarters(this.item.events);
+        events = this.stopwatchService.removeDupes(events);
+        events = this.stopwatchService.createStartEndPairs(events);
 
         this.roundsTime = [];
         this.cacheLastItemTs = 0;
@@ -206,43 +210,6 @@ export class StopwatchComponent implements OnInit, OnDestroy {
         return UtilsService.getTimeDiff(this.cacheTimeSum);
     }
 
-    private markNonStarters(events: StopwatchEvent[]): any[] {
-        let idx = events.findIndex(item => item.ss);
-        for (let i = 0; i < idx; i++) {
-            events[i].inUse = false;
-        }
-        return events.slice(idx, events.length);
-    }
-
-    private removeDupes(events: StopwatchEvent[]) {
-        let ret: any[] = [];
-        for (let i = 0; i < events.length; i++) {
-            let ev: StopwatchEvent = events[i];
-            if (i > 0 && ev.ss && ev.ss === events[i - 1].ss) {
-                // do not push
-            }
-            else if (i > 0 && !ev.ss && ev.ss === events[i + 1]?.ss) {
-                // do not push
-            }
-            else {
-                if (ev.inUse === undefined) {
-                    ev.inUse = true;
-                }
-                ret.push(ev);
-            }
-        }
-        return ret;
-    }
-
-    private createStartEndPairs(arr: any[]) {
-        return arr.reduce((result, value, index: number, array: any[]) => {
-            if (index % 2 === 0) {
-                result.push(array.slice(index, index + 2));
-            }
-            return result;
-        }, []);
-    }
-
     private prepareRoundsTimeStr() {
         this.roundsTimeStr = {};
         for (let r of this.roundsTime) {
@@ -259,52 +226,13 @@ export class StopwatchComponent implements OnInit, OnDestroy {
 
     addEvent(newRound: boolean = false) {
         this.addEventLocked = true;
-        let ts = UtilsService.getTimestamp();
-        let lastEventItem = this.item.events[this.item.events.length - 1];
-        if (newRound && lastEventItem.ss) { // let's stop the previous round first
-            let event: StopwatchEvent = {
-                _id: Types.STOPWATCH_TS + '-' + ts.toString(),
-                ref: this.item._id,
-                type: Types.STOPWATCH_TS,
-                ts: ts,
-                ss: false, // stop
-            };
-            this.dataService.putItem(event, () => {
-                let ts = UtilsService.getTimestamp();
-                let event: StopwatchEvent = {
-                    _id: Types.STOPWATCH_TS + '-' + ts.toString(),
-                    ref: this.item._id,
-                    type: Types.STOPWATCH_TS,
-                    ts: ts,
-                    ss: true, // start
-                    round: true,
-                };
-                this.dataService.putItem(event, () => {
-                    this.addEventLocked = false;
-                    this.loggerService.log('Successfully posted a new Stopwatch Event!');
-                }, () => {
-                    this.addEventLocked = false;
-                });
-            }, () => {
+        let lastEventItem: StopwatchEvent = this.item.events[this.item.events.length - 1];
+        let isStart: boolean = lastEventItem.ss;
+        this.stopwatchService
+            .addEvent(this.item._id, newRound, isStart)
+            .finally(() => {
                 this.addEventLocked = false;
             });
-        }
-        else {
-            let event: StopwatchEvent = {
-                _id: Types.STOPWATCH_TS + '-' + ts.toString(),
-                ref: this.item._id,
-                type: Types.STOPWATCH_TS,
-                ts: ts,
-                ss: !lastEventItem.ss,
-                round: newRound,
-            };
-            this.dataService.putItem(event, () => {
-                this.addEventLocked = false;
-                this.loggerService.log('Successfully posted a new Stopwatch Event!');
-            }, () => {
-                this.addEventLocked = false;
-            });
-        }
     }
 
     removeEvent(event: StopwatchEvent, idx: number): void {
@@ -312,19 +240,18 @@ export class StopwatchComponent implements OnInit, OnDestroy {
             return;
         }
         this.loggerService.log('Removing stopwatch event', idx);
-        this.dataService.deleteItem(event);
+        this.stopwatchService.removeEvent(event);
     }
 
     editEvent(event: StopwatchEvent, idx: number): void {
         let label = prompt('Label #' + (idx + 1), event.name);
-        if (label === null) {
-            return;
+        if (label !== null) {
+            this.stopwatchService
+                .editEvent(event, label)
+                .then(() => {
+                    this.cacheLastNumberOfItems = 0;
+                });
         }
-        this.dataService.updateItem(event, (doc: StopwatchEvent) => {
-            doc.name = label ?? '';
-        }).then(() => {
-            this.cacheLastNumberOfItems = 0;
-        });
     }
 
     modifyEvent(datePickerEvent: any,
@@ -334,35 +261,21 @@ export class StopwatchComponent implements OnInit, OnDestroy {
             ' to ' + UtilsService.toDate(ts) + '?')) {
             return;
         }
-        this.dataService.updateItem(event, (doc: StopwatchEvent) => {
-            doc.ts = ts;
-        }).then(() => {
-            this.cacheLastNumberOfItems = 0;
-        });
+        this.stopwatchService
+            .modifyEvent(event, ts)
+            .then(() => {
+                this.cacheLastNumberOfItems = 0;
+            });
     }
 
-    async deleteItem() {
+    async deleteItem(): Promise<void> {
         if (!confirm('Do you confirm removing stopwatch')) {
             return;
         }
         this.isWaiting = true;
-        let items = this.item.events.map((r: any) => {
-            return {
-                _id: r._id,
-                _rev: r._rev,
-                _deleted: true,
-            };
-        });
-        this.dataService.disableChangesListener();
-        try {
-            await this.dataService.deleteItem(this.item);
-            await this.dataService.bulkDocs(items);
-        }
-        finally {
-            this.dataService.enableChangesListener();
-            await this.dataService.fetch();
-            this.isWaiting = false;
-        }
+        await this.stopwatchService.deleteStopwatch(this.item);
+        await this.dataService.fetchStopwatchList();
+        this.isWaiting = false;
     }
 
     editTitle($event: Event) {
@@ -376,46 +289,39 @@ export class StopwatchComponent implements OnInit, OnDestroy {
     }
 
     finishEditTitle() {
-        this.dataService.updateItem(this.item, (doc: Stopwatch) => {
-            doc.name = this.editedTitle;
-        });
-        this.isEditTitle = false;
+        this.stopwatchService
+            .updateTitle(this.item, this.editedTitle)
+            .finally(() => {
+                this.isEditTitle = false;
+            });
     }
 
-    async toggleArchiveItem() {
-        await this.dataService.updateItem(this.item, (doc: Stopwatch) => {
-            if (doc.tsArch) {
-                doc.tsArch = 0;
-            }
-            else {
-                doc.tsArch = this.tsArch;
-            }
-            this.item.tsArch = doc.tsArch;
-            this.dataService.fetch();
-        });
+    async toggleArchiveItem(): Promise<void> {
+        await this.stopwatchService.toggleArchiveItem(this.item, this.tsArch);
+        await this.dataService.fetchStopwatchList();
     }
 
-    async switchDisplayRoundsEvents() {
+    async switchDisplayRoundsEvents(): Promise<void> {
         if (!this.item.events.length) {
-            await this.dataService.fetchStopwatchEvents(this.item);
+            await this.stopwatchService.fetchStopwatchEvents(this.item);
             this.init();
             this.calcTimeSpan(true);
         }
         this.displayEvents = !this.displayEvents;
     }
 
-    async toggleStats() {
+    async toggleStats(): Promise<void> {
         if (this.statsContent) {
             this.statsContent = null;
             return;
         }
         if (!this.item.events.length) {
-            await this.dataService.fetchStopwatchEvents(this.item);
+            await this.stopwatchService.fetchStopwatchEvents(this.item);
             this.init();
             this.calcTimeSpan(true);
         }
-        let events = this.markNonStarters(this.item.events);
-        events = this.removeDupes(events);
+        let events = this.stopwatchService.markNonStarters(this.item.events);
+        events = this.stopwatchService.removeDupes(events);
 
         this.statsFreq = UtilsService.getStatsFreq(events.map(item => item.ts));
         this.statsContent = [];

@@ -24,9 +24,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AppMaterialModules } from '../app-modules';
 import { DataService } from '../services/data.service';
-import { environment } from '../../environments/environment';
+import { DbService } from '../services/db.service';
 import { LoggerService } from '../services/logger.service';
 import { SettingsService } from './settings.service';
+import { environment } from '../../environments/environment';
 
 
 @Component({
@@ -47,6 +48,7 @@ export class SettingsComponent implements OnInit {
                 private snackBar: MatSnackBar,
                 private loggerService: LoggerService,
                 private settingsService: SettingsService,
+                private dbService: DbService,
                 private dataService: DataService) {
         this.form = new UntypedFormGroup({
             user: new UntypedFormControl(),
@@ -63,7 +65,7 @@ export class SettingsComponent implements OnInit {
         this.form.patchValue(this.settingsService.get());
         this.form.controls['dbName'].patchValue(
             this.settingsService.getDbName);
-        this.dataService.estimateStorage();
+        this.dbService.estimateStorage();
     }
 
     fillDefaultEndpoint($event: Event) {
@@ -92,15 +94,15 @@ export class SettingsComponent implements OnInit {
         let remoteSyncChanged = this.settingsService.hasEnabledRemoteSync() !== prevRemoteSync;
 
         if (endpointChanged || remoteSyncChanged) {
-            this.dataService.remoteSyncDisable();
+            this.dbService.remoteSyncDisable();
         }
         if (dbNameChanged) {
-            await this.dataService.closeDb();
-            this.dataService.openDb();
-            this.dataService.fetch();
+            await this.dbService.closeDb();
+            this.dbService.openDb();
+            this.dataService.fetchAll();
         }
         if (endpointChanged || remoteSyncChanged) {
-            this.dataService.remoteSyncEnable();
+            this.dbService.remoteSyncEnable();
         }
         window.history.back();
     }
@@ -121,13 +123,13 @@ export class SettingsComponent implements OnInit {
 
     dbExport($event: Event) {
         $event.preventDefault();
-        this.dataService.exportDb();
+        this.dbService.exportDb();
     }
 
     async dbImport($event: Event) {
         $event.preventDefault();
         if (confirm('Confirm?')) {
-            await this.dataService.importDb(this.importFile);
+            await this.dbService.importDb(this.importFile);
             this.importFileReady = false;
             this.snackBar.open('Database imported', 'OK');
         }
@@ -146,7 +148,7 @@ export class SettingsComponent implements OnInit {
     }
 
     get storageEstimated() {
-        return this.dataService.storageEstimated;
+        return this.dbService.storageEstimated;
     }
 
     get version() {

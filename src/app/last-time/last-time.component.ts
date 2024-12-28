@@ -32,9 +32,8 @@ import { BaseChartDirective } from 'ng2-charts';
 import { Moment } from 'moment';
 
 import { AppMaterialModules } from '../app-modules';
-import { DataService } from '../services/data.service';
-import { LastTime, TimeStamp, Types } from '../models';
-import { LoggerService } from '../services/logger.service';
+import { LastTime, TimeStamp } from '../models';
+import { LastTimeService } from './last-time.service';
 import { UtilsService } from '../services/utils.service';
 
 @Component({
@@ -74,8 +73,7 @@ export class LastTimeComponent implements OnInit, OnChanges {
     };
 
     constructor(private cd: ChangeDetectorRef,
-                private loggerService: LoggerService,
-                private dataService: DataService) {
+                private lastTimeService: LastTimeService) {
     }
 
     ngOnInit() {
@@ -89,7 +87,7 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     updateTimestamps() {
-      this.item.timestamps.forEach(item => {
+      this.item.timestamps.forEach((item: TimeStamp) => {
             item.tsFormControl = new FormControl(new Date(item.ts)) as any;
         })
     }
@@ -99,37 +97,14 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     touch() {
-        let ts = UtilsService.getTimestamp();
-        let timestamp: TimeStamp = {
-            _id: Types.LAST_TIME_TS + '-' + ts.toString(),
-            ref: this.item._id,
-            type: Types.LAST_TIME_TS,
-            ts: ts,
-        };
-        this.dataService.putItem(timestamp, () => {
-            this.loggerService.log('Successfully posted a new LastTime-TS!');
-        });
+        this.lastTimeService.touch(this.item);
     }
 
-    async deleteItem() {
+    async deleteItem(): Promise<void> {
         this.isWaiting = true;
-        let items = this.item.timestamps.map((r: any) => {
-            return {
-                _id: r._id,
-                _rev: r._rev,
-                _deleted: true,
-            };
-        });
-        this.dataService.disableChangesListener();
-        try {
-            await this.dataService.deleteItem(this.item);
-            await this.dataService.bulkDocs(items);
-        }
-        finally {
-            this.dataService.enableChangesListener();
-            await this.dataService.fetch();
-            this.isWaiting = false;
-        }
+        await this.lastTimeService.deleteLastTime(this.item);
+        await this.lastTimeService.fetchLastTime();
+        this.isWaiting = false;
     }
 
     editTitle($event: Event) {
@@ -143,20 +118,18 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     finishEditTitle() {
-        this.dataService.updateItem(this.item, (doc: LastTime) => {
-            doc.name = this.editedTitle;
-        });
-        this.isEditTitle = false;
+        this.lastTimeService
+            .updateTitle(this.item, this.editedTitle)
+            .finally(() => {
+                this.isEditTitle = false;
+            });
     }
 
     editTimestampLabel(ts: TimeStamp, idx: number) {
         let label = prompt('Label #' + (idx + 1));
-        if (label === null) {
-            return;
+        if (label !== null) {
+            this.lastTimeService.updateTimestampLabel(ts, label);
         }
-        this.dataService.updateItem(ts, (doc: TimeStamp) => {
-            doc.label = label ?? '';
-        });
     }
 
     modifyTimestamp(datePickerEvent: any, ts: TimeStamp, idx: number): void {
@@ -165,20 +138,18 @@ export class LastTimeComponent implements OnInit, OnChanges {
             ' to ' + UtilsService.toDate(newTs) + '?')) {
             return;
         }
-        this.dataService.updateItem(ts, (doc: TimeStamp) => {
-            doc.ts = newTs;
-        });
+        this.lastTimeService.updateTimestamp(ts, newTs);
     }
 
     removeTimestamp(ts: TimeStamp, idx: number) {
         if (!confirm('Do you confirm removing timestamp #' + (idx + 1))) {
             return;
         }
-        this.dataService.deleteItem(ts);
+        this.lastTimeService.removeTimestamp(ts);
     }
 
-    async showOlderTimestamps(item: LastTime) {
-        await this.dataService.fetchTimestamps(item, 0);
+    async showOlderTimestamps(item: LastTime): Promise<void> {
+        await this.lastTimeService.fetchTimestamps(item, 0);
         this.updateTimestamps();
         this.cd.detectChanges();
     }

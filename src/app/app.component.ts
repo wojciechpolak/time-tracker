@@ -27,6 +27,7 @@ import { first } from 'rxjs/operators';
 
 import { AppMaterialModules } from './app-modules';
 import { DataService } from './services/data.service';
+import { DbService } from './services/db.service';
 import { LoggerService } from './services/logger.service';
 import { PATHS } from './app-routing.module';
 import { SettingsService } from './settings/settings.service';
@@ -49,6 +50,7 @@ export class AppComponent implements OnInit {
                 private snackBar: MatSnackBar,
                 private loggerService: LoggerService,
                 private settingsService: SettingsService,
+                private dbService: DbService,
                 private dataService: DataService) {
     }
 
@@ -108,11 +110,11 @@ export class AppComponent implements OnInit {
     }
 
     get isSyncActive() {
-        return this.dataService.isSyncActive;
+        return this.dbService.isSyncActive;
     }
 
     get isSyncError() {
-        return this.dataService.isSyncError;
+        return this.dbService.isSyncError;
     }
 
     onClickSettings() {

@@ -21,7 +21,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 
 import { AppMaterialModules } from '../app-modules';
-import { DataService } from '../services/data.service';
+import { DbService } from '../services/db.service';
 import { LoggerService } from '../services/logger.service';
 
 
@@ -37,11 +37,11 @@ export class DebugComponent implements OnInit, OnDestroy {
     private sub!: Subscription;
 
     constructor(private loggerService: LoggerService,
-                private dataService: DataService) {
+                private dbService: DbService) {
     }
 
     ngOnInit() {
-        this.dataService.estimateStorage();
+        this.dbService.estimateStorage();
         this.log('Welcome!');
         for (let msg of this.loggerService.buf) {
             this.log(msg);
@@ -56,18 +56,18 @@ export class DebugComponent implements OnInit, OnDestroy {
     }
 
     get storageEstimated() {
-        return this.dataService.storageEstimated;
+        return this.dbService.storageEstimated;
     }
 
     deleteAll() {
         if (confirm('Confirm?')) {
-            this.dataService.deleteAll();
+            this.dbService.deleteAll();
         }
     }
 
     clearLocalDB() {
         if (confirm('Confirm?')) {
-            this.dataService.clearLocalDB();
+            this.dbService.clearLocalDB();
         }
     }
 

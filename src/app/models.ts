@@ -29,6 +29,12 @@ export enum Types {
     STOPWATCH_TS = 'SW-TS',
 }
 
+export enum RefreshType {
+    ALL = 'ALL',
+    LT = 'LT',
+    SW = 'SW',
+}
+
 export interface Stopwatch {
     _id: string;
     type: Types.STOPWATCH;

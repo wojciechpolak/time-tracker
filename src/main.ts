@@ -29,11 +29,14 @@ import { provideMomentDatetimeAdapter } from '@ng-matero/extensions-moment-adapt
 
 import { AppComponent } from './app/app.component';
 import { CoreModule } from './app/core/core.module';
-import { DataService } from './app/services/data.service';
 import { DATE_FORMAT } from './app/models';
-import { environment } from './environments/environment';
+import { DataService } from './app/services/data.service';
+import { DbService } from './app/services/db.service';
+import { LastTimeService } from './app/last-time/last-time.service';
 import { SettingsService } from './app/settings/settings.service';
+import { StopwatchService } from './app/stopwatch/stopwatch.service';
 import { TimerService } from './app/services/timer.service';
+import { environment } from './environments/environment';
 
 if (environment.production) {
     enableProdMode();
@@ -55,7 +58,10 @@ bootstrapApplication(AppComponent, {
             FormsModule,
         ),
         DataService,
+        DbService,
+        LastTimeService,
         SettingsService,
+        StopwatchService,
         TimerService,
         provideMomentDatetimeAdapter(DATE_FORMAT),
         provideCharts(withDefaultRegisterables()),

@@ -1,6 +1,6 @@
 <section>
   <button class="add-sticky" mat-fab color="primary" aria-label="Add Stopwatch"
-          (click)="addStopwatch()">
+          (click)="stopwatchService.addStopwatch()">
     <mat-icon>add</mat-icon>
   </button>
   @for (item of stopwatches; track item._id) {

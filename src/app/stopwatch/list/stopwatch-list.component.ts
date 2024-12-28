@@ -17,16 +17,14 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { AppMaterialModules } from '../../app-modules';
-import { DataService } from '../../services/data.service';
-import { LoggerService } from '../../services/logger.service';
 import { PATHS } from '../../app-routing.module';
 import { SettingsService } from '../../settings/settings.service';
-import { Stopwatch, StopwatchEvent, Types } from '../../models';
-import { UtilsService } from '../../services/utils.service';
+import { Stopwatch } from '../../models';
 import { StopwatchComponent } from '../stopwatch.component';
+import { StopwatchService } from '../stopwatch.service';
 
 @Component({
     selector: 'app-stopwatch-list',
@@ -38,10 +36,8 @@ import { StopwatchComponent } from '../stopwatch.component';
 })
 export class StopwatchListComponent implements OnInit {
 
-    constructor(private cd: ChangeDetectorRef,
-                private loggerService: LoggerService,
-                private settingsService: SettingsService,
-                private dataService: DataService) {
+    constructor(private settingsService: SettingsService,
+                protected stopwatchService: StopwatchService) {
     }
 
     ngOnInit() {
@@ -49,32 +45,10 @@ export class StopwatchListComponent implements OnInit {
     }
 
     get stopwatches(): Stopwatch[] {
-        return this.dataService.stopwatches;
+        return this.stopwatchService.stopwatches;
     }
 
     get stopwatchesLoading(): boolean {
-        return this.dataService.stopwatchesLoading;
-    }
-
-    addStopwatch() {
-        let ts = UtilsService.getTimestamp();
-        let stopwatch = {
-            _id: Types.STOPWATCH + '-' + ts.toString(),
-            type: Types.STOPWATCH,
-            name: 'Stopwatch #' + (UtilsService.toISOLocalString(new Date(ts))),
-        } as Stopwatch;
-        this.dataService.putItem(stopwatch, (doc: any) => {
-            let timestamp: StopwatchEvent = {
-                _id: Types.STOPWATCH_TS + '-' + ts.toString(),
-                ref: doc.id,
-                type: Types.STOPWATCH_TS,
-                ts: ts,
-                ss: true,
-                round: true,
-            };
-            this.dataService.putItem(timestamp, () => {
-                this.loggerService.log('Successfully posted a new Stopwatch!');
-            });
-        });
+        return this.stopwatchService.stopwatchesLoading;
     }
 }

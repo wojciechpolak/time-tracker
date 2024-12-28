@@ -20,13 +20,11 @@
 import { Component, OnInit } from '@angular/core';
 
 import { AppMaterialModules } from '../../app-modules';
-import { DataService } from '../../services/data.service';
-import { LastTime, TimeStamp, Types } from '../../models';
+import { LastTime } from '../../models';
 import { LastTimeComponent } from '../last-time.component';
-import { LoggerService } from '../../services/logger.service';
+import { LastTimeService } from '../last-time.service';
 import { PATHS } from '../../app-routing.module';
 import { SettingsService } from '../../settings/settings.service';
-import { UtilsService } from '../../services/utils.service';
 
 @Component({
     selector: 'app-last-time-list',
@@ -38,9 +36,8 @@ import { UtilsService } from '../../services/utils.service';
 })
 export class LastTimeListComponent implements OnInit {
 
-    constructor(private loggerService: LoggerService,
-                private settingsService: SettingsService,
-                private dataService: DataService) {
+    constructor(private settingsService: SettingsService,
+                protected lastTimeService: LastTimeService) {
     }
 
     ngOnInit() {
@@ -48,30 +45,10 @@ export class LastTimeListComponent implements OnInit {
     }
 
     get lastTime(): LastTime[] {
-        return this.dataService.lastTime;
+        return this.lastTimeService.lastTime;
     }
 
     get lastTimeLoading(): boolean {
-        return this.dataService.lastTimeLoading;
-    }
-
-    addLastTime() {
-        let ts = UtilsService.getTimestamp();
-        let lastTime = {
-            _id: Types.LAST_TIME + '-' + ts.toString(),
-            type: Types.LAST_TIME,
-            name: 'Last #' + (UtilsService.toISOLocalString(new Date(ts))),
-        } as LastTime;
-        this.dataService.putItem(lastTime, (doc: any) => {
-            let timestamp: TimeStamp = {
-                _id: Types.LAST_TIME_TS + '-' + ts.toString(),
-                ref: doc.id,
-                type: Types.LAST_TIME_TS,
-                ts: ts,
-            };
-            this.dataService.putItem(timestamp, () => {
-                this.loggerService.log('Successfully posted a new LastTime!');
-            });
-        });
+        return this.lastTimeService.lastTimeLoading;
     }
 }
