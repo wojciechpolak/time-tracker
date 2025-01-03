@@ -1,7 +1,7 @@
 /**
  * db.service
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,6 +23,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import PouchDB from 'pouchdb-browser';
 import PouchDbFind from 'pouchdb-find';
 
+import { DbResponse } from '../models';
 import { LoggerService } from './logger.service';
 import { SettingsService } from '../settings/settings.service';
 import { UtilsService } from './utils.service';
@@ -35,11 +36,11 @@ PouchDB.plugin(PouchDbFind);
 })
 export class DbService {
 
-    changesListener!: any;
     db: any;
     est!: StorageEstimate;
     remoteDb: any;
     isSyncActive: boolean = false;
+    isSyncPullActive: boolean = false;
     isSyncError: boolean = false;
     isOnline: boolean = window.navigator.onLine;
     isOnline$ = new BehaviorSubject<boolean>(window.navigator.onLine);
@@ -67,27 +68,9 @@ export class DbService {
     openDb() {
         this.db = new PouchDB(this.settingsService.getDbName,
             {auto_compaction: true});
-        this.enableChangesListener();
-    }
-
-    enableChangesListener() {
-        this.changesListener = this.db
-            .changes({
-                since: 'now',
-                live: true,
-                retry: true,
-            })
-            .on('change', (info: any) => this.onDbChange.next(info))
-            .on('error', (err: any) => {
-                this.loggerService.log('changes error', err);
-            });
-    }
-
-    disableChangesListener() {
-        if (this.changesListener) {
-            this.changesListener.cancel();
-            this.changesListener = null;
-        }
+        this.db.on('error', (err: any) => {
+            this.loggerService.log('DB error', err);
+        });
     }
 
     async closeDb(): Promise<void> {
@@ -123,6 +106,7 @@ export class DbService {
     remoteSyncEnable() {
         this.isSyncError = false;
         this.isSyncActive = false;
+        this.isSyncPullActive = false;
 
         let remoteCouch = this.settingsService.hasEndpoint() &&
             this.settingsService.getEndpoint();
@@ -138,20 +122,31 @@ export class DbService {
             })
             .on('paused', () => {
                 this.isSyncActive = false;
-                this.onDbChange.next();
+                if (this.isSyncPullActive) {
+                    this.isSyncPullActive = false;
+                    this.loggerService.log('Remote pull sync paused');
+                    this.onDbChange.next();
+                }
             })
             .on('active', (info: any) => {
                 this.isSyncActive = true;
+                if (info?.direction === 'pull') {
+                    this.isSyncPullActive = true;
+                    this.loggerService.log('Remote pull sync active');
+                }
             })
             .on('denied', (err: any) => {
                 this.isSyncActive = false;
+                this.isSyncPullActive = false;
                 this.loggerService.log('sync denied', err);
             })
             .on('complete', (info: any) => {
                 this.isSyncActive = false;
+                this.isSyncPullActive = false;
             })
             .on('error', (err: any) => {
                 this.isSyncActive = false;
+                this.isSyncPullActive = false;
                 this.onRemoteDbError.next(err);
                 if (err.status === 401) {
                     this.isSyncError = true;
@@ -191,13 +186,14 @@ export class DbService {
         }
     }
 
-    async getItem<T extends {_id: string}>(item: T): Promise<T> {
-        return await this.db.get(item._id);
+    async getItem<T>(id: string): Promise<T> {
+        return await this.db.get(id);
     }
 
-    async putItem<T extends {_id: string}>(doc: T): Promise<any> {
+    async putItem<T extends {_id: string}>(doc: T): Promise<T> {
         try {
-            return await this.db.put(doc);
+            let dbResp: DbResponse = await this.db.put(doc);
+            return await this.getItem<T>(dbResp.id);
         }
         catch (err: any) {
             this.loggerService.log('putItem error', err);
@@ -210,22 +206,21 @@ export class DbService {
     async updateItem<T extends {_id: string}>(
         item: T,
         updateFn: (doc: T) => void
-    ): Promise<any> {
+    ): Promise<DbResponse> {
         const doc = await this.db.get(item._id);
         updateFn && updateFn(doc);
-        this.loggerService.log('Updating item', doc);
+        this.loggerService.log('Updating item', doc._id);
         return this.db.put(doc);
     }
 
-    bulkDocs(items: any[]): Promise<any> {
+    bulkDocs(items: any[]): Promise<DbResponse[]> {
         return this.db.bulkDocs(items);
     }
 
-    deleteItem(item: any): Promise<any> {
-        return this.db.get(item._id).then((doc: any) => {
-            this.loggerService.log('Removing item', doc);
-            return this.db.remove(doc);
-        });
+    async deleteItem<T extends {_id: string}>(item: T): Promise<DbResponse> {
+        const doc = await this.db.get(item._id);
+        this.loggerService.log('Removing item', doc._id);
+        return this.db.remove(doc);
     }
 
     deleteAll() {

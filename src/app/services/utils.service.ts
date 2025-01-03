@@ -1,7 +1,7 @@
 /**
  * utils.service
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -116,21 +116,24 @@ export class UtilsService {
         const timeDifference = ts - currentTime;
         const secondsDifference = Math.round(timeDifference / 1000);
         const rtf = new Intl.RelativeTimeFormat(lang, {numeric: 'auto'});
-        const thresholds = {
-            minute: 60,
-            hour: 60,
-            day: 24
-        };
+        const thresholds = [
+            {unit: 'second', threshold: 60},
+            {unit: 'minute', threshold: 60},
+            {unit: 'hour', threshold: 24},
+            {unit: 'day', threshold: 30},
+            {unit: 'month', threshold: 12},
+            {unit: 'year', threshold: Number.POSITIVE_INFINITY}
+        ];
         function _formatTimestamp(timestamp: number) {
             let remainingTime = timestamp;
-            for (const [unit, threshold] of Object.entries(thresholds)) {
+            for (const {unit, threshold} of thresholds) {
                 if (Math.abs(remainingTime) < threshold) {
                     const value = Math.round(remainingTime);
                     return rtf.format(Math.round(value), unit as Intl.RelativeTimeFormatUnit);
                 }
                 remainingTime /= threshold;
             }
-            return rtf.format(Math.round(remainingTime), 'day');
+            return rtf.format(Math.round(remainingTime), 'year');
         }
         return _formatTimestamp(secondsDifference);
     }

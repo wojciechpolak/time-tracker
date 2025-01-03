@@ -1,7 +1,7 @@
 /**
  * last-time.component
  *
- * Time Tracker Copyright (C) 2023-2024 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,22 +19,27 @@
 
 import {
     ChangeDetectionStrategy,
-    ChangeDetectorRef,
     Component,
     Input,
     OnChanges,
     OnInit,
     SimpleChanges
 } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { Store } from '@ngrx/store';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Moment } from 'moment';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { AppMaterialModules } from '../app-modules';
 import { LastTime, TimeStamp } from '../models';
-import { LastTimeService } from './last-time.service';
+import { LastTimeActions } from '../store/last-time';
+import { TimerService } from '../services/timer.service';
 import { UtilsService } from '../services/utils.service';
+
 
 @Component({
     selector: 'app-last-time',
@@ -42,22 +47,25 @@ import { UtilsService } from '../services/utils.service';
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         ...AppMaterialModules,
+        AsyncPipe,
+        BaseChartDirective,
         FormsModule,
         ReactiveFormsModule,
-        BaseChartDirective,
     ]
 })
 export class LastTimeComponent implements OnInit, OnChanges {
 
     @Input() item!: LastTime;
 
+    protected UtilsService: typeof UtilsService = UtilsService;
     protected editedTitle!: string;
+    protected expandTimestamps: boolean = false;
     protected isEditTitle: boolean = false;
     protected isWaiting: boolean = false;
-    protected expandTimestamps: boolean = false;
     protected statsContent: any = null;
     protected statsFreq: any = {};
-    protected UtilsService: typeof UtilsService = UtilsService;
+    protected tsDate$!: Observable<string>;
+    protected tsFormControls = {} as any;
 
     protected barChartOptions: ChartConfiguration['options'] = {
         responsive: true,
@@ -72,23 +80,26 @@ export class LastTimeComponent implements OnInit, OnChanges {
         }
     };
 
-    constructor(private cd: ChangeDetectorRef,
-                private lastTimeService: LastTimeService) {
+    constructor(private store: Store,
+                private timerService: TimerService) {
     }
 
     ngOnInit() {
         this.updateTimestamps();
+        this.tsDate$ = this.timerService.timer$.pipe(
+            map(() => UtilsService.formatFromNow(this.lastTimestamp)),
+        );
     }
 
     ngOnChanges(changes: SimpleChanges) {
         changes['item'].currentValue.timestamps.forEach((item: TimeStamp) => {
-            item.tsFormControl = new FormControl(new Date(item.ts)) as any;
+            this.tsFormControls[item._id] = new FormControl(new Date(item.ts));
         })
     }
 
     updateTimestamps() {
-      this.item.timestamps.forEach((item: TimeStamp) => {
-            item.tsFormControl = new FormControl(new Date(item.ts)) as any;
+        this.item.timestamps.forEach((item: TimeStamp) => {
+            this.tsFormControls[item._id] = new FormControl(new Date(item.ts));
         })
     }
 
@@ -97,13 +108,12 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     touch() {
-        this.lastTimeService.touch(this.item);
+        this.store.dispatch(LastTimeActions.touchLastTime({lastTime: this.item}));
     }
 
-    async deleteItem(): Promise<void> {
+    deleteItem() {
         this.isWaiting = true;
-        await this.lastTimeService.deleteLastTime(this.item);
-        await this.lastTimeService.fetchLastTime();
+        this.store.dispatch(LastTimeActions.deleteLastTime({lastTime: this.item}));
         this.isWaiting = false;
     }
 
@@ -118,40 +128,36 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     finishEditTitle() {
-        this.lastTimeService
-            .updateTitle(this.item, this.editedTitle)
-            .finally(() => {
-                this.isEditTitle = false;
-            });
+        this.store.dispatch(LastTimeActions.updateLastTimeTitle(
+            {lastTime: this.item, title: this.editedTitle}));
+        this.isEditTitle = false;
     }
 
     editTimestampLabel(ts: TimeStamp, idx: number) {
         let label = prompt('Label #' + (idx + 1));
         if (label !== null) {
-            this.lastTimeService.updateTimestampLabel(ts, label);
+            this.store.dispatch(LastTimeActions.updateTimeStampLabel(
+                {timestamp: ts, label}));
         }
     }
 
     modifyTimestamp(datePickerEvent: any, ts: TimeStamp, idx: number): void {
         let newTs = (<Moment>datePickerEvent.value).valueOf();
-        if (!confirm('Do you want to change timestamp #' + (idx + 1) +
+        if (confirm('Do you want to change timestamp #' + (idx + 1) +
             ' to ' + UtilsService.toDate(newTs) + '?')) {
-            return;
+            this.store.dispatch(LastTimeActions.updateTimeStamp(
+                {timestamp: ts, newTs}));
         }
-        this.lastTimeService.updateTimestamp(ts, newTs);
     }
 
     removeTimestamp(ts: TimeStamp, idx: number) {
-        if (!confirm('Do you confirm removing timestamp #' + (idx + 1))) {
-            return;
+        if (confirm('Do you confirm removing timestamp #' + (idx + 1))) {
+            this.store.dispatch(LastTimeActions.deleteTimeStamp({timestamp: ts}));
         }
-        this.lastTimeService.removeTimestamp(ts);
     }
 
-    async showOlderTimestamps(item: LastTime): Promise<void> {
-        await this.lastTimeService.fetchTimestamps(item, 0);
-        this.updateTimestamps();
-        this.cd.detectChanges();
+    showOlderTimestamps(item: LastTime) {
+        this.store.dispatch(LastTimeActions.loadLastTime({id: item._id, limit: 0}));
     }
 
     toggleStats() {
@@ -198,7 +204,7 @@ export class LastTimeComponent implements OnInit, OnChanges {
         let ts = this.item.timestamps;
         if (ts.length > 1) {
             let p = (ts[0].ts - ts[ts.length - 1].ts) / (ts.length - 1);
-            let tsp = ts[0].ts + Math.round(p)
+            let tsp = ts[0].ts + Math.round(p);
             return `${UtilsService.formatRelativeTime(tsp)} (${UtilsService.toDate(tsp)})`;
         }
         return '--';

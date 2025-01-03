@@ -1,21 +1,19 @@
 <section>
   <button class="add-sticky" mat-fab color="primary" aria-label="Add Stopwatch"
-          (click)="stopwatchService.addStopwatch()">
+          (click)="addStopwatch()">
     <mat-icon>add</mat-icon>
   </button>
-  @for (item of stopwatches; track item._id) {
-    <div>
-      <app-stopwatch [item]="item"></app-stopwatch>
-    </div>
-  }
-  @empty {
-    <div class="empty-list">
-      @if (stopwatchesLoading) {
-        Loading...
+  @if (dataService.stopwatches$ | async; as stopwatches) {
+    @if (stopwatches.length) {
+      @for (item of stopwatches; track item._id) {
+        <app-stopwatch [item]="item"></app-stopwatch>
       }
-      @else {
-        Empty list
+      @empty {
+        <div class="empty-list">Empty list</div>
       }
-    </div>
+    }
+    @else {
+      <div class="empty-list">Loading...</div>
+    }
   }
 </section>

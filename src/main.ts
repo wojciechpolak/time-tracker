@@ -1,7 +1,7 @@
 /**
  * main
  *
- * Time Tracker Copyright (C) 2023-2024 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -26,6 +26,9 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { provideMomentDatetimeAdapter } from '@ng-matero/extensions-moment-adapter';
+import { provideStore } from '@ngrx/store';
+import { provideEffects } from '@ngrx/effects';
+import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 import { AppComponent } from './app/app.component';
 import { CoreModule } from './app/core/core.module';
@@ -36,6 +39,8 @@ import { LastTimeService } from './app/last-time/last-time.service';
 import { SettingsService } from './app/settings/settings.service';
 import { StopwatchService } from './app/stopwatch/stopwatch.service';
 import { TimerService } from './app/services/timer.service';
+import { appEffects } from './app/store/app.effects';
+import { appReducer } from './app/store/app.reducer';
 import { environment } from './environments/environment';
 
 if (environment.production) {
@@ -66,6 +71,9 @@ bootstrapApplication(AppComponent, {
         provideMomentDatetimeAdapter(DATE_FORMAT),
         provideCharts(withDefaultRegisterables()),
         provideAnimations(),
+        provideEffects(appEffects),
+        provideStore(appReducer),
+        !environment.production && {...provideStoreDevtools()} || [],
         { provide: APP_BASE_HREF, useValue: environment.baseHref },
     ]
 }).catch(err => console.error(err));

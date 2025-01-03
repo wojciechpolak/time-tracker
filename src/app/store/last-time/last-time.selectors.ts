@@ -1,7 +1,7 @@
 /**
- * timer.service
+ * store/last-time/last-time.selectors
  *
- * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
+ * Time Tracker Copyright (C) 2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,18 +17,22 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
-import { timer, Observable } from 'rxjs';
+import { createFeatureSelector, createSelector } from '@ngrx/store';
+import { LastTimeState } from './last-time.reducer';
 
-@Injectable({
-    providedIn: 'root'
-})
-export class TimerService {
+export const selectLastTimeState = createFeatureSelector<LastTimeState>('lastTime');
 
-    timer$: Observable<number>;
-    private timerInterval: number = 1000;
+export const selectAllLastTimeList = createSelector(
+    selectLastTimeState,
+    (state) => state.lastTimeList
+);
 
-    constructor() {
-        this.timer$ = timer(0, this.timerInterval);
-    }
-}
+export const selectLastTimeLoading = createSelector(
+    selectLastTimeState,
+    (state) => state.loading
+);
+
+export const selectLastTimeError = createSelector(
+    selectLastTimeState,
+    (state) => state.error
+);

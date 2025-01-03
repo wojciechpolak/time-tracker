@@ -29,7 +29,7 @@
     <mat-card-subtitle class="time">
       <span matTooltip="{{ UtilsService.toDate(lastTimestamp) }}"
             matTooltipPosition="right">
-        {{ UtilsService.formatFromNow(lastTimestamp) }}
+        {{ tsDate$ | async }}
       </span>
     </mat-card-subtitle>
     @if (item.timestamps && (item.timestamps.length > 1) || false) {
@@ -52,7 +52,7 @@
               <li class="lt-ts">
                 <mat-form-field class="lastTime-ts-input">
                   <input matInput
-                         [formControl]="$any(ts.tsFormControl)"
+                         [formControl]="tsFormControls[ts._id]"
                          [mtxDatetimepicker]="datePicker"
                          (dateChange)="modifyTimestamp($event, ts, item.timestamps.length - i - 1)"
                          matTooltip="{{ UtilsService.formatFromNow(ts.ts) }}"

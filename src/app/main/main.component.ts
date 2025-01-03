@@ -1,7 +1,7 @@
 /**
  * main.component
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,12 +17,10 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterLinkActive, RouterLink, RouterOutlet } from '@angular/router';
-import { Subscription } from 'rxjs';
 
 import { AppMaterialModules } from '../app-modules';
-import { DataService } from '../services/data.service';
 import { SettingsService } from '../settings/settings.service';
 
 @Component({
@@ -35,28 +33,17 @@ import { SettingsService } from '../settings/settings.service';
         RouterOutlet,
     ]
 })
-export class MainComponent implements OnInit, OnDestroy {
+export class MainComponent implements OnInit {
 
     protected redirectToHttps: boolean = false;
     protected showDebug: boolean = false;
 
-    private sub: Subscription = Subscription.EMPTY;
-
-    constructor(private cd: ChangeDetectorRef,
-                private settings: SettingsService,
-                private dataService: DataService) {
+    constructor(private settings: SettingsService) {
     }
 
     ngOnInit() {
         const settings = this.settings.get();
         this.showDebug = settings.showDebug;
         this.redirectToHttps = settings.redirectToHttps;
-        this.sub = this.dataService.onRefresh.subscribe(() => {
-            this.cd.detectChanges();
-        });
-    }
-
-    ngOnDestroy () {
-        this.sub && this.sub.unsubscribe();
     }
 }

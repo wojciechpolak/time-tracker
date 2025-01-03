@@ -1,7 +1,7 @@
 /**
  * last-time.service
  *
- * Time Tracker Copyright (C) 2024 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,9 +20,12 @@
 import { Injectable } from '@angular/core';
 
 import { DbService } from '../services/db.service';
-import { LastTime, TimeStamp, Types } from '../models';
+import { DbResponse, LastTime, TimeStamp, Types } from '../models';
 import { LoggerService } from '../services/logger.service';
 import { UtilsService } from '../services/utils.service';
+
+type LastTimeUpdate = Partial<Pick<LastTime, 'name'>>;
+type TimeStampUpdate = Partial<Pick<TimeStamp, 'label' | 'ts'>>;
 
 const LT_TS_MAX_ITEMS = 10;
 
@@ -31,20 +34,30 @@ const LT_TS_MAX_ITEMS = 10;
 })
 export class LastTimeService {
 
-    lastTime: LastTime[] = [];
-    lastTimeLoading: boolean = true;
-
     constructor(private dbService: DbService,
                 private loggerService: LoggerService) {
     }
 
-    async fetchLastTime(): Promise<void> {
-        this.lastTimeLoading = true;
+    async fetchLastTime(id: string, limit: number = 0): Promise<LastTime> {
+        try {
+            const lastTime = await this.dbService.getItem<LastTime>(id);
+            if (!lastTime) {
+                throw new Error(`LastTime with id ${id} not found`);
+            }
+            await this.fetchTimestamps(lastTime, limit);
+            return lastTime;
+        }
+        catch (err) {
+            this.loggerService.log('fetchLastTime error', err);
+            throw err;
+        }
+    }
+
+    async fetchLastTimeList(): Promise<LastTime[]> {
         let lastTime: LastTime[] = [];
-        let result;
         console.time('find-LT');
         try {
-            result = await this.dbService.db.find({
+            const result = await this.dbService.db.find({
                 selector: {
                     type: Types.LAST_TIME,
                     // _id: {$nin: [null]},
@@ -52,19 +65,39 @@ export class LastTimeService {
                 },
                 // sort: [{_id: 'desc'}]
             });
+            lastTime = result.docs;
+            for (let item of lastTime) {
+                await this.fetchTimestamps(item);
+            }
+            lastTime = this.sortLastTimeByTs(lastTime);
+            return lastTime;
         }
         catch (err) {
-            this.loggerService.log('fetchLastTime error', err);
-            return;
+            this.loggerService.log('fetchLastTimeList error', err);
+            return [];
         }
-        lastTime = result.docs;
-        for (let item of lastTime) {
-            await this.fetchTimestamps(item);
+        finally {
+            console.timeEnd('find-LT');
         }
-        console.timeEnd('find-LT');
-        this.lastTime = lastTime
-            .sort((a: LastTime, b: LastTime) => b.timestamps[0].ts - a.timestamps[0].ts);
-        this.lastTimeLoading = false;
+    }
+
+    sortLastTimeByTs(lastTime: LastTime[]): LastTime[] {
+        return lastTime.sort(
+            (a: LastTime, b: LastTime) => b.timestamps[0].ts - a.timestamps[0].ts);
+    }
+
+    async fetchTimeStamp(id: string): Promise<TimeStamp> {
+        try {
+            const timestamp = await this.dbService.getItem<TimeStamp>(id);
+            if (!timestamp) {
+                throw new Error(`TimeStamp with id ${id} not found`);
+            }
+            return timestamp;
+        }
+        catch (err) {
+            this.loggerService.log('fetchTimeStamp error', err);
+            throw err;
+        }
     }
 
     /**
@@ -94,31 +127,26 @@ export class LastTimeService {
         }
     }
 
-    addLastTime() {
+    async addLastTime(): Promise<LastTime> {
         let ts = UtilsService.getTimestamp();
         let lastTime = {
             _id: Types.LAST_TIME + '-' + ts.toString(),
             type: Types.LAST_TIME,
             name: 'Last #' + (UtilsService.toISOLocalString(new Date(ts))),
         } as LastTime;
-        this.dbService
-            .putItem(lastTime)
-            .then((doc: any) => {
-                let timestamp: TimeStamp = {
-                    _id: Types.LAST_TIME_TS + '-' + ts.toString(),
-                    ref: doc.id,
-                    type: Types.LAST_TIME_TS,
-                    ts: ts,
-                };
-                this.dbService
-                    .putItem(timestamp)
-                    .then(() => {
-                        this.loggerService.log('Successfully posted a new LastTime!');
-                    });
-            });
+        const doc = await this.dbService.putItem(lastTime);
+        let timestamp: TimeStamp = {
+            _id: Types.LAST_TIME_TS + '-' + ts.toString(),
+            ref: doc._id,
+            type: Types.LAST_TIME_TS,
+            ts: ts,
+        };
+        await this.dbService.putItem(timestamp);
+        this.loggerService.log('Successfully posted a new LastTime!');
+        return await this.fetchLastTime(doc._id);
     }
 
-    touch(item: LastTime): Promise<void> {
+    async touch(item: LastTime): Promise<TimeStamp> {
         let ts = UtilsService.getTimestamp();
         let timestamp: TimeStamp = {
             _id: Types.LAST_TIME_TS + '-' + ts.toString(),
@@ -126,36 +154,30 @@ export class LastTimeService {
             type: Types.LAST_TIME_TS,
             ts: ts,
         };
-        return this.dbService
-            .putItem(timestamp)
-            .then(() => {
-                this.loggerService.log('Successfully posted a new LastTime-TS!');
-            });
+        const ret = await this.dbService.putItem(timestamp);
+        this.loggerService.log('Successfully posted a new LastTime-TS!');
+        return ret;
     }
 
-    updateTitle(item: LastTime, title: string): Promise<void> {
-        return this.dbService.updateItem(item, (doc: LastTime) => {
-            doc.name = title;
+    async updateLastTime(item: LastTime, changes: LastTimeUpdate): Promise<LastTime> {
+        const updated = await this.dbService.updateItem(item, (doc: LastTime) => {
+            Object.assign(doc, changes);
         });
+        return await this.fetchLastTime(updated.id);
     }
 
-    updateTimestampLabel(ts: TimeStamp, label: string): Promise<void> {
-        return this.dbService.updateItem(ts, (doc: TimeStamp) => {
-            doc.label = label ?? '';
+    async updateTimestamp(ts: TimeStamp, changes: TimeStampUpdate): Promise<TimeStamp> {
+        const updated = await this.dbService.updateItem(ts, (doc: TimeStamp) => {
+            Object.assign(doc, changes);
         });
+        return await this.fetchTimeStamp(updated.id);
     }
 
-    updateTimestamp(ts: TimeStamp, newTs: number): Promise<void> {
-        return this.dbService.updateItem(ts, (doc: TimeStamp) => {
-            doc.ts = newTs;
-        });
+    async removeTimestamp(ts: TimeStamp): Promise<DbResponse> {
+        return await this.dbService.deleteItem(ts);
     }
 
-    removeTimestamp(ts: TimeStamp): Promise<void> {
-        return this.dbService.deleteItem(ts);
-    }
-
-    async deleteLastTime(item: LastTime): Promise<void> {
+    async deleteLastTime(item: LastTime): Promise<DbResponse> {
         let items = item.timestamps.map((r: any) => {
             return {
                 _id: r._id,
@@ -163,13 +185,8 @@ export class LastTimeService {
                 _deleted: true,
             };
         });
-        this.dbService.disableChangesListener();
-        try {
-            await this.dbService.deleteItem(item);
-            await this.dbService.bulkDocs(items);
-        }
-        finally {
-            this.dbService.enableChangesListener();
-        }
+        const ret = await this.dbService.deleteItem(item);
+        await this.dbService.bulkDocs(items);
+        return ret;
     }
 }

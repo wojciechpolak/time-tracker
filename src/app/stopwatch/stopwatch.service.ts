@@ -1,7 +1,7 @@
 /**
  * stopwatch.service
  *
- * Time Tracker Copyright (C) 2024 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,30 +19,48 @@
 
 import { Injectable } from '@angular/core';
 
-import { AppTitle, Stopwatch, StopwatchEvent, Types } from '../models';
+import { AppTitle, DbResponse, Stopwatch, StopwatchEvent, Types } from '../models';
 import { DbService } from '../services/db.service';
 import { LoggerService } from '../services/logger.service';
 import { UtilsService } from '../services/utils.service';
+
+type StopwatchUpdate = Partial<Pick<Stopwatch, 'name' | 'tsArch'>>;
+type StopwatchEventUpdate = Partial<Pick<StopwatchEvent, 'name' | 'ts'>>;
 
 @Injectable({
     providedIn: 'root'
 })
 export class StopwatchService {
 
-    stopwatches: Stopwatch[] = [];
-    stopwatchesLoading: boolean = true;
-
     constructor(private dbService: DbService,
                 private loggerService: LoggerService) {
     }
 
-    async fetchStopwatchList(): Promise<void> {
-        this.stopwatchesLoading = true;
+    async fetchStopwatch(id: string, ignoreTsArch: boolean = false): Promise<Stopwatch> {
+        try {
+            const stopwatch = await this.dbService.getItem<Stopwatch>(id);
+            if (!stopwatch) {
+                throw new Error(`Stopwatch with id ${id} not found`);
+            }
+            if (stopwatch.tsArch && !ignoreTsArch) {
+                stopwatch.events = [];
+            }
+            else {
+                await this.fetchStopwatchEvents(stopwatch);
+            }
+            return stopwatch;
+        }
+        catch (err) {
+            this.loggerService.log('fetchStopwatch error', err);
+            throw err;
+        }
+    }
+
+    async fetchStopwatchList(): Promise<Stopwatch[]> {
         let stopwatches: Stopwatch[] = [];
-        let res;
         console.time('find-SW');
         try {
-            res = await this.dbService.db.find({
+            const res = await this.dbService.db.find({
                 selector: {
                     type: Types.STOPWATCH,
                     // _id: {$nin: [null]},
@@ -50,22 +68,40 @@ export class StopwatchService {
                 },
                 sort: [{_id: 'desc'}]
             });
+            stopwatches = res.docs;
+            for (let item of stopwatches) {
+                if (item.tsArch) {
+                    item.events = [];
+                    continue;
+                }
+                await this.fetchStopwatchEvents(item);
+            }
+            stopwatches = this.sortStopwatchesByEvents(stopwatches);
         }
         catch (err) {
             this.loggerService.log('fetchStopwatchList error', err);
-            return;
+            return [];
         }
-        stopwatches = res.docs;
-        for (let item of stopwatches) {
-            if (item.tsArch) {
-                item.events = [];
-                continue;
-            }
-            await this.fetchStopwatchEvents(item);
+        finally {
+            console.timeEnd('find-SW');
         }
-        console.timeEnd('find-SW');
 
-        this.stopwatches = stopwatches
+        // signal if at least one stopwatch is running...
+        let swIsRunning = stopwatches.find(item => {
+            let lastEventItem = item.events[item.events.length - 1] ?? {};
+            return lastEventItem.ss;
+        });
+        if (swIsRunning) {
+            document.title = '🟢 ' + AppTitle;
+        }
+        else {
+            document.title = AppTitle;
+        }
+        return stopwatches;
+    }
+
+    sortStopwatchesByEvents(stopwatches: Stopwatch[]): Stopwatch[] {
+        return stopwatches
             .sort((a: Stopwatch, b: Stopwatch) => {
                 let tsA, tsB;
                 if (a.events.length) {
@@ -82,18 +118,19 @@ export class StopwatchService {
                 }
                 return tsB - tsA;
             });
-        this.stopwatchesLoading = false;
+    }
 
-        // signal if at least one stopwatch is running...
-        let swIsRunning = stopwatches.find(item => {
-            let lastEventItem = item.events[item.events.length - 1] ?? {};
-            return lastEventItem.ss;
-        });
-        if (swIsRunning) {
-            document.title = '🟢 ' + AppTitle;
+    async fetchStopwatchEvent(id: string): Promise<StopwatchEvent> {
+        try {
+            const ev = await this.dbService.getItem<StopwatchEvent>(id);
+            if (!ev) {
+                throw new Error(`Stopwatch Event with id ${id} not found`);
+            }
+            return ev;
         }
-        else {
-            document.title = AppTitle;
+        catch (err) {
+            this.loggerService.log('fetchStopwatchEvent error', err);
+            throw err;
         }
     }
 
@@ -108,42 +145,38 @@ export class StopwatchService {
         });
         // console.timeEnd('find-SWE');
         item.events = rounds.docs;
+        this.preprocessEvents(item);
     }
 
-    addStopwatch() {
+    async addStopwatch(): Promise<Stopwatch> {
         let ts = UtilsService.getTimestamp();
         let stopwatch = {
             _id: Types.STOPWATCH + '-' + ts.toString(),
             type: Types.STOPWATCH,
             name: 'Stopwatch #' + (UtilsService.toISOLocalString(new Date(ts))),
         } as Stopwatch;
-        this.dbService
-            .putItem(stopwatch)
-            .then((doc: any) => {
-                let timestamp: StopwatchEvent = {
-                    _id: Types.STOPWATCH_TS + '-' + ts.toString(),
-                    ref: doc.id,
-                    type: Types.STOPWATCH_TS,
-                    ts: ts,
-                    ss: true,
-                    round: true,
-                };
-                this.dbService
-                    .putItem(timestamp)
-                    .then(() => {
-                        this.loggerService.log('Successfully posted a new Stopwatch!');
-                    });
-            });
+        let doc = await this.dbService.putItem(stopwatch);
+        let timestamp: StopwatchEvent = {
+            _id: Types.STOPWATCH_TS + '-' + ts.toString(),
+            ref: doc._id,
+            type: Types.STOPWATCH_TS,
+            ts: ts,
+            ss: true,
+            round: true,
+        };
+        await this.dbService.putItem(timestamp);
+        this.loggerService.log('Successfully posted a new Stopwatch!');
+        return await this.fetchStopwatch(doc._id);
     }
 
-    updateTitle(item: Stopwatch, title: string): Promise<void> {
-        return this.dbService.updateItem(item, (doc: Stopwatch) => {
-            doc.name = title;
+    async updateStopwatch(item: Stopwatch, changes: StopwatchUpdate): Promise<Stopwatch> {
+        const updated = await this.dbService.updateItem(item, (doc: Stopwatch) => {
+            Object.assign(doc, changes);
         });
+        return this.fetchStopwatch(updated.id);
     }
 
-    addEvent(id: string, newRound: boolean = false,
-             isStart: boolean): Promise<void> {
+    async addEvent(id: string, newRound: boolean = false, isStart: boolean): Promise<StopwatchEvent[]> {
         let ts = UtilsService.getTimestamp();
         if (newRound && isStart) { // let's stop the previous round first
             let event: StopwatchEvent = {
@@ -153,24 +186,22 @@ export class StopwatchService {
                 ts: ts,
                 ss: false, // stop
             };
-            return this.dbService
-                .putItem(event)
-                .then(() : Promise<void> => {
-                    let ts = UtilsService.getTimestamp();
-                    let event: StopwatchEvent = {
-                        _id: Types.STOPWATCH_TS + '-' + ts.toString(),
-                        ref: id,
-                        type: Types.STOPWATCH_TS,
-                        ts: ts,
-                        ss: true, // start
-                        round: true,
-                    };
-                    return this.dbService
-                        .putItem(event)
-                        .then(() => {
-                            this.loggerService.log('Successfully posted a new Stopwatch Event!');
-                        });
-                });
+            const eventObj1 = await this.dbService.putItem(event);
+            eventObj1.inUse = true;
+
+            ts = UtilsService.getTimestamp();
+            let event2: StopwatchEvent = {
+                _id: Types.STOPWATCH_TS + '-' + ts.toString(),
+                ref: id,
+                type: Types.STOPWATCH_TS,
+                ts: ts,
+                ss: true, // start
+                round: true,
+            };
+            let eventObj2 = await this.dbService.putItem(event2);
+            eventObj2.inUse = true;
+            this.loggerService.log('Successfully posted a new Stopwatch Event!');
+            return [eventObj1, eventObj2];
         }
         else {
             let event: StopwatchEvent = {
@@ -181,43 +212,37 @@ export class StopwatchService {
                 ss: !isStart,
                 round: newRound,
             };
-            return this.dbService
-                .putItem(event)
-                .then(() => {
-                    this.loggerService.log('Successfully posted a new Stopwatch Event!');
-                });
+            let eventObj = await this.dbService.putItem(event);
+            eventObj.inUse = true;
+            this.loggerService.log('Successfully posted a new Stopwatch Event!');
+            return [eventObj];
         }
     }
 
-    editEvent(event: StopwatchEvent, label: string): Promise<void> {
-        return this.dbService.updateItem(event, (doc: StopwatchEvent) => {
-            doc.name = label ?? '';
+    async updateEvent(event: StopwatchEvent, changes: StopwatchEventUpdate): Promise<StopwatchEvent> {
+        const updated = await this.dbService.updateItem(event, (doc: StopwatchEvent) => {
+            Object.assign(doc, changes);
         });
+        return this.fetchStopwatchEvent(updated.id);
     }
 
-    modifyEvent(event: StopwatchEvent, ts: number): Promise<void> {
-        return this.dbService.updateItem(event, (doc: StopwatchEvent) => {
-            doc.ts = ts;
-        });
+    async removeEvent(event: StopwatchEvent): Promise<DbResponse> {
+        return await this.dbService.deleteItem(event);
     }
 
-    removeEvent(event: StopwatchEvent): Promise<void> {
-        return this.dbService.deleteItem(event);
-    }
-
-    async toggleArchiveItem(item: Stopwatch, tsArch: number): Promise<void> {
-        return this.dbService.updateItem(item, (doc: Stopwatch) => {
+    async toggleArchiveItem(item: Stopwatch, tsArch: number): Promise<Stopwatch> {
+        const resp = await this.dbService.updateItem(item, (doc: Stopwatch) => {
             if (doc.tsArch) {
                 doc.tsArch = 0;
             }
             else {
                 doc.tsArch = tsArch;
             }
-            item.tsArch = doc.tsArch;
         });
+        return await this.fetchStopwatch(resp.id);
     }
 
-    async deleteStopwatch(item: Stopwatch): Promise<void> {
+    async deleteStopwatch(item: Stopwatch): Promise<DbResponse> {
         let items = item.events.map((r: any) => {
             return {
                 _id: r._id,
@@ -225,14 +250,9 @@ export class StopwatchService {
                 _deleted: true,
             };
         });
-        this.dbService.disableChangesListener();
-        try {
-            await this.dbService.deleteItem(item);
-            await this.dbService.bulkDocs(items);
-        }
-        finally {
-            this.dbService.enableChangesListener();
-        }
+        let ret = await this.dbService.deleteItem(item);
+        await this.dbService.bulkDocs(items);
+        return ret;
     }
 
     /*
@@ -248,7 +268,7 @@ export class StopwatchService {
     }
 
     removeDupes(events: StopwatchEvent[]): StopwatchEvent[] {
-        let ret: any[] = [];
+        let ret: StopwatchEvent[] = [];
         for (let i = 0; i < events.length; i++) {
             let ev: StopwatchEvent = events[i];
             if (i > 0 && ev.ss && ev.ss === events[i - 1].ss) {
@@ -274,5 +294,12 @@ export class StopwatchService {
             }
             return result;
         }, []);
+    }
+
+    preprocessEvents(item: Stopwatch) {
+        let lastEventItem = item.events[item.events.length - 1] ?? {};
+        item.finished = !lastEventItem.ss;
+        this.markNonStarters(item.events);
+        this.removeDupes(item.events);
     }
 }

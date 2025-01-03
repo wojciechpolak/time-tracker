@@ -1,7 +1,7 @@
 /**
- * timer.service
+ * store/stopwatch/stopwatch.selectors
  *
- * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
+ * Time Tracker Copyright (C) 2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,18 +17,22 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
-import { timer, Observable } from 'rxjs';
+import { createFeatureSelector, createSelector } from '@ngrx/store';
+import { StopwatchState } from './stopwatch.reducer';
 
-@Injectable({
-    providedIn: 'root'
-})
-export class TimerService {
+export const selectStopwatchState = createFeatureSelector<StopwatchState>('stopwatch');
 
-    timer$: Observable<number>;
-    private timerInterval: number = 1000;
+export const selectAllStopwatches = createSelector(
+    selectStopwatchState,
+    (state) => state.stopwatches
+);
 
-    constructor() {
-        this.timer$ = timer(0, this.timerInterval);
-    }
-}
+export const selectStopwatchesLoading = createSelector(
+    selectStopwatchState,
+    (state) => state.loading
+);
+
+export const selectStopwatchError = createSelector(
+    selectStopwatchState,
+    (state) => state.error
+);

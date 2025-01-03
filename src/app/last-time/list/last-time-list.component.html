@@ -1,21 +1,19 @@
 <section>
   <button class="add-sticky" mat-fab color="primary" aria-label="Add Last Time"
-          (click)="lastTimeService.addLastTime()">
+          (click)="addLastTime()">
     <mat-icon>add</mat-icon>
   </button>
-  @for (item of lastTime; track item._id) {
-    <div>
-      <app-last-time [item]="item"></app-last-time>
-    </div>
-  }
-  @empty {
-    <div class="empty-list">
-      @if (lastTimeLoading) {
-        Loading...
+  @if (dataService.lastTimeList$ | async; as lastTimeList) {
+    @if (lastTimeList.length) {
+      @for (item of dataService.lastTimeList$ | async; track item._id) {
+        <app-last-time [item]="item"></app-last-time>
       }
-      @else {
-        Empty list
+      @empty {
+        <div class="empty-list">Empty list</div>
       }
-    </div>
+    }
+    @else {
+      <div class="empty-list">Loading...</div>
+    }
   }
 </section>

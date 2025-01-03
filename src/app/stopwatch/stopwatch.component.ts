@@ -1,7 +1,7 @@
 /**
  * stopwatch.component
  *
- * Time Tracker Copyright (C) 2023-2024 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,18 +17,20 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgClass } from '@angular/common';
+import { AsyncPipe, NgClass } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
-import { Subscription } from 'rxjs';
+import { Observable, tap } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
 import { ChartConfiguration } from 'chart.js';
 import { Moment } from 'moment';
 
 import { AppMaterialModules } from '../app-modules';
-import { DataService } from '../services/data.service';
 import { LoggerService } from '../services/logger.service';
-import { RefreshType, Stopwatch, StopwatchEvent, StopwatchRoundTime } from '../models';
+import { Stopwatch, StopwatchEvent, StopwatchRoundTime } from '../models';
+import { selectStopwatchesLoading, StopwatchActions } from '../store/stopwatch';
 import { StopwatchService } from './stopwatch.service';
 import { TimerService } from '../services/timer.service';
 import { UtilsService } from '../services/utils.service';
@@ -36,38 +38,41 @@ import { UtilsService } from '../services/utils.service';
 @Component({
     selector: 'app-stopwatch',
     templateUrl: './stopwatch.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         ...AppMaterialModules,
+        AsyncPipe,
+        BaseChartDirective,
         FormsModule,
         NgClass,
         ReactiveFormsModule,
-        BaseChartDirective,
     ]
 })
-export class StopwatchComponent implements OnInit, OnDestroy {
+export class StopwatchComponent implements OnChanges, OnInit {
 
     @Input() item!: Stopwatch;
 
-    protected addEventLocked: boolean = false;
-    protected titleTime: string = '';
+    protected UtilsService: typeof UtilsService = UtilsService;
+    protected addEventLocked$: Observable<boolean>;
     protected cacheLastItemTs: number = 0;
     protected cacheLastNumberOfItems: number = 0;
     protected cacheLastRoundItem: StopwatchRoundTime | null = null;
     protected cacheTimeSum: number = 0;
     protected displayEvents: boolean = false;
-    protected refreshLocked: boolean = false;
-    protected revertedEvents: StopwatchEvent[] = [];
-    protected roundsTime: StopwatchRoundTime[] = [];
-    protected roundsTimeStr: Record<string, string> = {};
-    protected roundsOnly: StopwatchEvent[] = [];
-    protected statsContent: any = null;
-    protected statsFreq: any = {};
-    protected statsAvgDay: any = {};
-    protected tsArch: number = 0;
     protected editedTitle!: string;
     protected isEditTitle: boolean = false;
+    protected isRunning: boolean = false;
     protected isWaiting: boolean = false;
-    protected UtilsService: typeof UtilsService = UtilsService;
+    protected revertedEvents: StopwatchEvent[] = [];
+    protected roundsOnly: StopwatchEvent[] = [];
+    protected roundsTime: StopwatchRoundTime[] = [];
+    protected roundsTimeStr: Record<string, string> = {};
+    protected statsAvgDay: any = {};
+    protected statsContent: any = null;
+    protected statsFreq: any = {};
+    protected titleTime$!: Observable<string>;
+    protected titleTime: string = '';
+    protected tsArch: number = 0;
 
     protected barChartOptions: ChartConfiguration['options'] = {
         responsive: true,
@@ -82,48 +87,36 @@ export class StopwatchComponent implements OnInit, OnDestroy {
         }
     };
 
-    private sub1!: Subscription;
-    private sub2!: Subscription;
-
-    constructor(private loggerService: LoggerService,
+    constructor(private store: Store,
+                private loggerService: LoggerService,
                 private timerService: TimerService,
-                private dataService: DataService,
                 private stopwatchService: StopwatchService) {
+        this.addEventLocked$ = this.store.select(selectStopwatchesLoading);
     }
 
     ngOnInit() {
-        this.init();
-        this.calcTimeSpan();
-        this.sub1 = this.dataService.onRefresh.subscribe((refreshType: RefreshType) => {
-            if (refreshType === RefreshType.SW || refreshType === RefreshType.ALL) {
-                this.refreshLocked = true;
-                this.init();
-                this.calcTimeSpan();
-                this.refreshLocked = false;
-            }
-        });
-        this.sub2 = this.timerService.timer.subscribe(() => {
-            if (this.refreshLocked) {
-                return;
-            }
-            let lastEventItem = this.item.events[this.item.events.length - 1] ?? {};
-            if (lastEventItem.ss || this.item.tsArch) {
-                this.calcTimeSpan();
-            }
-        });
+        this.titleTime$ = this.timerService.timer$.pipe(
+            tap(() => {
+                let lastEventItem = this.item.events[this.item.events.length - 1] ?? {};
+                if (lastEventItem.ss || this.item.tsArch) {
+                    this.calcTimeSpan();
+                }
+            }),
+            map(() => this.titleTime),
+        );
     }
 
-    ngOnDestroy() {
-        this.sub1 && this.sub1.unsubscribe();
-        this.sub2 && this.sub2.unsubscribe();
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['item'] && this.item) {
+            this.init();
+            this.calcTimeSpan();
+        }
     }
 
     init() {
         let lastEventItem = this.item.events[this.item.events.length - 1] ?? {};
-        this.item.finished = !lastEventItem.ss;
-        this.stopwatchService.markNonStarters(this.item.events);
-        this.stopwatchService.removeDupes(this.item.events);
-        this.revertedEvents = this.item.events.slice().reverse();
+        this.isRunning = lastEventItem.ss;
+        this.revertedEvents = structuredClone(this.item.events).slice().reverse();
         this.revertedEvents.forEach(item => {
             item.tsFormControl = new FormControl(new Date(item.ts)) as any;
         })
@@ -225,14 +218,10 @@ export class StopwatchComponent implements OnInit, OnDestroy {
     }
 
     addEvent(newRound: boolean = false) {
-        this.addEventLocked = true;
         let lastEventItem: StopwatchEvent = this.item.events[this.item.events.length - 1];
         let isStart: boolean = lastEventItem.ss;
-        this.stopwatchService
-            .addEvent(this.item._id, newRound, isStart)
-            .finally(() => {
-                this.addEventLocked = false;
-            });
+        this.store.dispatch(StopwatchActions.addStopwatchEvent(
+            {stopwatchId: this.item._id, newRound, isStart}));
     }
 
     removeEvent(event: StopwatchEvent, idx: number): void {
@@ -240,41 +229,33 @@ export class StopwatchComponent implements OnInit, OnDestroy {
             return;
         }
         this.loggerService.log('Removing stopwatch event', idx);
-        this.stopwatchService.removeEvent(event);
+        this.store.dispatch(StopwatchActions.deleteStopwatchEvent({event}));
     }
 
     editEvent(event: StopwatchEvent, idx: number): void {
         let label = prompt('Label #' + (idx + 1), event.name);
         if (label !== null) {
-            this.stopwatchService
-                .editEvent(event, label)
-                .then(() => {
-                    this.cacheLastNumberOfItems = 0;
-                });
+            this.store.dispatch(StopwatchActions.updateStopwatchEventLabel({event, label}));
+            this.cacheLastNumberOfItems = 0;
         }
     }
 
     modifyEvent(datePickerEvent: any,
                 event: StopwatchEvent, idx: number): void {
         let ts = (<Moment>datePickerEvent.value).valueOf();
-        if (!confirm('Do you want to change event #' + (idx + 1) +
+        if (confirm('Do you want to change event #' + (idx + 1) +
             ' to ' + UtilsService.toDate(ts) + '?')) {
-            return;
+            this.store.dispatch(StopwatchActions.updateStopwatchEvent({event, ts}));
+            this.cacheLastNumberOfItems = 0;
         }
-        this.stopwatchService
-            .modifyEvent(event, ts)
-            .then(() => {
-                this.cacheLastNumberOfItems = 0;
-            });
     }
 
-    async deleteItem(): Promise<void> {
+    deleteItem() {
         if (!confirm('Do you confirm removing stopwatch')) {
             return;
         }
         this.isWaiting = true;
-        await this.stopwatchService.deleteStopwatch(this.item);
-        await this.dataService.fetchStopwatchList();
+        this.store.dispatch(StopwatchActions.deleteStopwatch({stopwatch: this.item}));
         this.isWaiting = false;
     }
 
@@ -289,25 +270,30 @@ export class StopwatchComponent implements OnInit, OnDestroy {
     }
 
     finishEditTitle() {
-        this.stopwatchService
-            .updateTitle(this.item, this.editedTitle)
-            .finally(() => {
-                this.isEditTitle = false;
-            });
+        this.store.dispatch(StopwatchActions.updateStopwatchTitle(
+            {stopwatch: this.item, title: this.editedTitle}));
+        this.isEditTitle = false;
     }
 
-    async toggleArchiveItem(): Promise<void> {
-        await this.stopwatchService.toggleArchiveItem(this.item, this.tsArch);
-        await this.dataService.fetchStopwatchList();
+    toggleArchiveItem() {
+        this.store.dispatch(StopwatchActions.toggleArchiveStopwatch(
+            {stopwatch: this.item, tsArch: this.tsArch}));
     }
 
-    async switchDisplayRoundsEvents(): Promise<void> {
+    switchDisplayRoundsEvents() {
         if (!this.item.events.length) {
-            await this.stopwatchService.fetchStopwatchEvents(this.item);
-            this.init();
-            this.calcTimeSpan(true);
+            this.store.dispatch(StopwatchActions.loadStopwatch(
+                {id: this.item._id, ignoreTsArch: true}));
         }
         this.displayEvents = !this.displayEvents;
+    }
+
+    private async sleep(duration: number) {
+        return new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, duration);
+        });
     }
 
     async toggleStats(): Promise<void> {
@@ -316,9 +302,9 @@ export class StopwatchComponent implements OnInit, OnDestroy {
             return;
         }
         if (!this.item.events.length) {
-            await this.stopwatchService.fetchStopwatchEvents(this.item);
-            this.init();
-            this.calcTimeSpan(true);
+            this.store.dispatch(StopwatchActions.loadStopwatch(
+                {id: this.item._id, ignoreTsArch: true}));
+            await this.sleep(200);
         }
         let events = this.stopwatchService.markNonStarters(this.item.events);
         events = this.stopwatchService.removeDupes(events);

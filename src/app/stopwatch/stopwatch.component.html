@@ -1,4 +1,4 @@
-<mat-card appearance="outlined" class="stopwatchItem" [ngClass]="{'active': !item.finished}">
+<mat-card appearance="outlined" class="stopwatchItem" [ngClass]="{'active': isRunning}">
   <div class="mat-card-container">
     @if (isEditTitle) {
       <div class="edit">
@@ -27,7 +27,7 @@
       }
     </mat-card-title>
     <mat-card-subtitle class="time">
-      {{ titleTime }}
+      {{ titleTime$ | async }}
     </mat-card-subtitle>
     @if (!displayEvents && roundsOnly.length > 1) {
       <mat-card-content class="stopwatch-rounds">
@@ -130,15 +130,15 @@
     @if (!item.tsArch) {
       <mat-card-actions class="bottom">
         <button mat-stroked-button color="accent"
-                [disabled]="addEventLocked"
+                [disabled]="addEventLocked$ | async"
                 (click)="addEvent(true)">
           NEW ROUND
         </button>
         <button mat-stroked-button color="accent"
-                [ngClass]="{'finished': item.finished}"
-                [disabled]="addEventLocked"
+                [ngClass]="{'finished': !isRunning}"
+                [disabled]="addEventLocked$ | async"
                 (click)="startStopStopwatch()">
-          {{ item.finished ? 'START' : 'STOP' }}
+          {{ isRunning ? 'STOP' : 'START' }}
         </button>
       </mat-card-actions>
     }

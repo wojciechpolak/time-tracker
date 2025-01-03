@@ -1,7 +1,7 @@
 /**
  * app-modules
  *
- * Time Tracker Copyright (C) 2024 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

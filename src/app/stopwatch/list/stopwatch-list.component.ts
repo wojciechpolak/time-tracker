@@ -1,7 +1,7 @@
 /**
  * stopwatch-list.component
  *
- * Time Tracker Copyright (C) 2023-2024 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,13 +18,15 @@
  */
 
 import { Component, OnInit } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
+import { Store } from '@ngrx/store';
 
 import { AppMaterialModules } from '../../app-modules';
+import { DataService } from '../../services/data.service';
 import { PATHS } from '../../app-routing.module';
 import { SettingsService } from '../../settings/settings.service';
-import { Stopwatch } from '../../models';
+import { StopwatchActions } from '../../store/stopwatch';
 import { StopwatchComponent } from '../stopwatch.component';
-import { StopwatchService } from '../stopwatch.service';
 
 @Component({
     selector: 'app-stopwatch-list',
@@ -32,23 +34,21 @@ import { StopwatchService } from '../stopwatch.service';
     imports: [
         ...AppMaterialModules,
         StopwatchComponent,
+        AsyncPipe,
     ]
 })
 export class StopwatchListComponent implements OnInit {
 
-    constructor(private settingsService: SettingsService,
-                protected stopwatchService: StopwatchService) {
+    constructor(private store: Store,
+                protected dataService: DataService,
+                private settingsService: SettingsService) {
     }
 
     ngOnInit() {
         this.settingsService.update({lastPage: `/${PATHS.Main}/${PATHS.Stopwatch}`});
     }
 
-    get stopwatches(): Stopwatch[] {
-        return this.stopwatchService.stopwatches;
-    }
-
-    get stopwatchesLoading(): boolean {
-        return this.stopwatchService.stopwatchesLoading;
+    addStopwatch() {
+        this.store.dispatch(StopwatchActions.addStopwatch());
     }
 }

@@ -1,7 +1,7 @@
 /**
- * timer.service
+ * store/app.reducer
  *
- * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
+ * Time Tracker Copyright (C) 2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,18 +17,17 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
-import { timer, Observable } from 'rxjs';
+import { ActionReducerMap } from '@ngrx/store';
+import { AppState } from './app.state';
 
-@Injectable({
-    providedIn: 'root'
-})
-export class TimerService {
+import { lastTimeReducer } from './last-time';
+import { stopwatchReducer } from './stopwatch';
 
-    timer$: Observable<number>;
-    private timerInterval: number = 1000;
-
-    constructor() {
-        this.timer$ = timer(0, this.timerInterval);
-    }
-}
+/**
+ * A map of action-reducer pairs.
+ * The keys must match the properties on AppState.
+ */
+export const appReducer: ActionReducerMap<AppState> = {
+    lastTime: lastTimeReducer,
+    stopwatch: stopwatchReducer,
+};

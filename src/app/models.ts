@@ -1,7 +1,7 @@
 /**
  * models
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -29,17 +29,16 @@ export enum Types {
     STOPWATCH_TS = 'SW-TS',
 }
 
-export enum RefreshType {
-    ALL = 'ALL',
-    LT = 'LT',
-    SW = 'SW',
+export interface DbResponse {
+    ok: string;
+    id: string;
+    rev: string;
 }
 
 export interface Stopwatch {
     _id: string;
     type: Types.STOPWATCH;
     name: string;
-    description?: string;
     events: StopwatchEvent[];
     tsArch?: number;
     finished?: boolean;
@@ -76,7 +75,6 @@ export interface TimeStamp {
     ref: string;
     label?: string;
     ts: number;
-    tsFormControl?: FormControl<Date>;
 }
 
 export const DATE_FORMAT: MtxDatetimeFormats = {

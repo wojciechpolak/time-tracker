@@ -1,7 +1,7 @@
 /**
  * settings.component.spec
  *
- * Time Tracker Copyright (C) 2023 Wojciech Polak
+ * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,8 +20,8 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { RouterTestingModule } from '@angular/router/testing';
 import { ServiceWorkerModule, SwUpdate } from '@angular/service-worker';
+import { provideMockStore } from '@ngrx/store/testing';
 
 import { CoreModule } from '../core/core.module';
 import { SettingsComponent } from './settings.component';
@@ -34,7 +34,6 @@ describe('SettingsComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [
-                RouterTestingModule,
                 ServiceWorkerModule.register('ngsw-worker.js', {enabled: false}),
                 CoreModule,
                 SettingsComponent,
@@ -43,6 +42,7 @@ describe('SettingsComponent', () => {
                 SwUpdate,
                 SettingsService,
                 provideAnimations(),
+                provideMockStore(),
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();
