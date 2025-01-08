@@ -17,10 +17,12 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
+import { Subscription } from 'rxjs';
 
+import { AppTitle, Stopwatch } from '../../models';
 import { AppMaterialModules } from '../../app-modules';
 import { DataService } from '../../services/data.service';
 import { PATHS } from '../../app-routing.module';
@@ -37,7 +39,9 @@ import { StopwatchComponent } from '../stopwatch.component';
         AsyncPipe,
     ]
 })
-export class StopwatchListComponent implements OnInit {
+export class StopwatchListComponent implements OnInit, OnDestroy {
+
+    private sub1!: Subscription;
 
     constructor(private store: Store,
                 protected dataService: DataService,
@@ -46,6 +50,24 @@ export class StopwatchListComponent implements OnInit {
 
     ngOnInit() {
         this.settingsService.update({lastPage: `/${PATHS.Main}/${PATHS.Stopwatch}`});
+
+        this.sub1 = this.dataService.stopwatches$.subscribe((stopwatches: Stopwatch[]) => {
+            // signal if at least one stopwatch is running...
+            let swIsRunning = stopwatches.find(item => {
+                let lastEventItem = item.events[item.events.length - 1] ?? {};
+                return lastEventItem.ss;
+            });
+            if (swIsRunning) {
+                document.title = '🟢 ' + AppTitle;
+            }
+            else {
+                document.title = AppTitle;
+            }
+        });
+    }
+
+    ngOnDestroy() {
+        this.sub1 && this.sub1.unsubscribe();
     }
 
     addStopwatch() {

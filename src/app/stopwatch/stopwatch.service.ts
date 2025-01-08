@@ -19,7 +19,7 @@
 
 import { Injectable } from '@angular/core';
 
-import { AppTitle, DbResponse, Stopwatch, StopwatchEvent, Types } from '../models';
+import { DbResponse, Stopwatch, StopwatchEvent, Types } from '../models';
 import { DbService } from '../services/db.service';
 import { LoggerService } from '../services/logger.service';
 import { UtilsService } from '../services/utils.service';
@@ -84,18 +84,6 @@ export class StopwatchService {
         }
         finally {
             console.timeEnd('find-SW');
-        }
-
-        // signal if at least one stopwatch is running...
-        let swIsRunning = stopwatches.find(item => {
-            let lastEventItem = item.events[item.events.length - 1] ?? {};
-            return lastEventItem.ss;
-        });
-        if (swIsRunning) {
-            document.title = '🟢 ' + AppTitle;
-        }
-        else {
-            document.title = AppTitle;
         }
         return stopwatches;
     }
