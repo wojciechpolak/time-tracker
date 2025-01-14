@@ -1,27 +1,32 @@
-<mat-toolbar>
-  <span class="title"><a (click)="navigateToMain()">Time Tracker</a></span>
+<mat-toolbar role="navigation">
+  <span class="title">
+    <button (click)="navigateToMain()" accesskey="0">Time Tracker</button>
+  </span>
   <span class="spacer"></span>
   @if (isSyncActive) {
     <div class="spinner"></div>
   }
   <div id="connection-status">
     @if (isConnected) {
-      <span class="connected" [ngClass]="{'no-auth': isSyncError}">
+      <span class="connected" aria-label="Connected"
+            [ngClass]="{'no-auth': isSyncError}">
         <span>●</span>
       </span>
     }
     @else {
-      <span class="disconnected">
+      <span class="disconnected" aria-label="Disconnected">
         <span>●</span>
       </span>
     }
   </div>
-  <button mat-icon-button class="settings-icon" aria-label="Settings"
+  <button mat-icon-button class="settings-icon"
+          accesskey=","
+          aria-label="Settings"
           (click)="onClickSettings()">
     <mat-icon>settings</mat-icon>
   </button>
 </mat-toolbar>
 
-<div id="main">
+<main id="main">
   <router-outlet></router-outlet>
-</div>
+</main>

@@ -7,10 +7,12 @@
           <input matInput [(ngModel)]="editedTitle">
         </mat-form-field>
         <div>
-          <button mat-raised-button color="basic" (click)="cancelEditTitle()">
+          <button mat-raised-button color="basic"
+                  aria-label="Cancel" (click)="cancelEditTitle()">
             <mat-icon>cancel</mat-icon>
           </button>
-          <button mat-raised-button color="primary" (click)="finishEditTitle()">
+          <button mat-raised-button color="primary"
+                  aria-label="Done" (click)="finishEditTitle()">
             <mat-icon>done</mat-icon>
           </button>
         </div>
@@ -34,13 +36,13 @@
     </mat-card-subtitle>
     @if (item.timestamps && (item.timestamps.length > 1) || false) {
       <mat-card-content>
-        <span (click)="expandTimestamps = !expandTimestamps"
+        <button (click)="expandTimestamps = !expandTimestamps"
               class="more-timestamps">
           Recent entries
           <mat-icon class="toggle">
             unfold_more
           </mat-icon>
-        </span>
+        </button>
         @if (expandTimestamps) {
           <ol reversed class="timestamps">
             <p class="intro">
@@ -71,7 +73,7 @@
                 <span class="ts-label">{{ ts.label }}</span>
                 <span class="ts-actions">
                   <mat-card-actions>
-                    <button mat-icon-button matTooltip="Actions" [matMenuTriggerFor]="menu">
+                    <button mat-icon-button matTooltip="Actions" aria-label="Actions" [matMenuTriggerFor]="menu">
                       <mat-icon>more_vert</mat-icon>
                       <mat-menu [overlapTrigger]="false" #menu="matMenu">
                         <button mat-menu-item
@@ -115,7 +117,7 @@
       </mat-card-content>
     }
     <mat-card-actions class="bottom">
-      <button mat-stroked-button color="accent" (click)="touch()">
+      <button mat-stroked-button color="accent" (click)="touch()" aria-label="Touch">
         <mat-icon>check</mat-icon>
       </button>
     </mat-card-actions>
@@ -125,7 +127,7 @@
       @if (isWaiting) {
         <mat-spinner [diameter]="20"></mat-spinner>
       }
-      <button mat-icon-button matTooltip="Actions" [matMenuTriggerFor]="menu">
+      <button mat-icon-button matTooltip="Actions" aria-label="Actions" [matMenuTriggerFor]="menu">
         <mat-icon>more_vert</mat-icon>
         <mat-menu [overlapTrigger]="false" #menu="matMenu">
           <button mat-menu-item (click)="deleteItem()">Delete</button>

@@ -2,12 +2,14 @@
      mat-stretch-tabs="true">
   <a mat-tab-link #rla1="routerLinkActive"
      routerLinkActive="active-link"
+     accesskey="1"
      [routerLink]="['/main/last-time']"
      [active]="rla1.isActive">
     Last Time
   </a>
   <a mat-tab-link #rla2="routerLinkActive"
      routerLinkActive="active-link"
+     accesskey="2"
      [routerLink]="['/main/stopwatch']"
      [active]="rla2.isActive">
     Stopwatch
@@ -15,6 +17,7 @@
   @if (showDebug) {
     <a mat-tab-link #rla3="routerLinkActive"
        routerLinkActive="active-link"
+       accesskey="3"
        [routerLink]="['/main/debug']"
        [active]="rla3.isActive">
       DEBUG

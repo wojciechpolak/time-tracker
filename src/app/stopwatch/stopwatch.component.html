@@ -7,10 +7,12 @@
           <input matInput [(ngModel)]="editedTitle">
         </mat-form-field>
         <div>
-          <button mat-raised-button color="basic" (click)="cancelEditTitle()">
+          <button mat-raised-button color="basic"
+                  aria-label="Cancel" (click)="cancelEditTitle()">
             <mat-icon>cancel</mat-icon>
           </button>
-          <button mat-raised-button color="primary" (click)="finishEditTitle()">
+          <button mat-raised-button color="primary"
+                  aria-label="Done" (click)="finishEditTitle()">
             <mat-icon>done</mat-icon>
           </button>
         </div>
@@ -41,7 +43,7 @@
             @if (!item.tsArch) {
               <span class="ts-actions">
                 <mat-card-actions>
-                  <button mat-icon-button matTooltip="Actions" [matMenuTriggerFor]="menu">
+                  <button mat-icon-button matTooltip="Actions" aria-label="Actions" [matMenuTriggerFor]="menu">
                     <mat-icon>more_vert</mat-icon>
                     <mat-menu [overlapTrigger]="false" #menu="matMenu">
                       <button mat-menu-item
@@ -90,7 +92,7 @@
             @if (!item.tsArch) {
               <span class="ts-actions">
                 <mat-card-actions>
-                  <button mat-icon-button matTooltip="Actions" [matMenuTriggerFor]="menu">
+                  <button mat-icon-button matTooltip="Actions" aria-label="Actions" [matMenuTriggerFor]="menu">
                     <mat-icon>more_vert</mat-icon>
                     <mat-menu [overlapTrigger]="false" #menu="matMenu">
                       <button mat-menu-item
@@ -148,7 +150,7 @@
       @if (isWaiting) {
         <mat-spinner [diameter]="20"></mat-spinner>
       }
-      <button mat-icon-button matTooltip="Actions" [matMenuTriggerFor]="menu">
+      <button mat-icon-button matTooltip="Actions" aria-label="Actions" [matMenuTriggerFor]="menu">
         <mat-icon>more_vert</mat-icon>
         <mat-menu [overlapTrigger]="false" #menu="matMenu">
           <button mat-menu-item (click)="toggleArchiveItem()">
