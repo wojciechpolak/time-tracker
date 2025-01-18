@@ -24,12 +24,14 @@ import { LastTimeActions } from './';
 export interface LastTimeState {
     lastTimeList: LastTime[];
     loading: boolean;
+    loadingAll: boolean;
     error?: any;
 }
 
 export const initialLastTimeState: LastTimeState = {
     lastTimeList: [],
     loading: false,
+    loadingAll: false,
 };
 
 export const lastTimeReducer = createReducer(
@@ -42,17 +44,20 @@ export const lastTimeReducer = createReducer(
     on(LastTimeActions.loadLastTimeList, (state) => ({
         ...state,
         loading: true,
+        loadingAll: true,
         error: null,
     })),
     on(LastTimeActions.loadLastTimeListSuccess, (state, {lastTimeList}) => ({
         ...state,
         loading: false,
+        loadingAll: false,
         lastTimeList: lastTimeList,
         error: null,
     })),
     on(LastTimeActions.loadLastTimeListFailure, (state, {error}) => ({
         ...state,
         loading: false,
+        loadingAll: false,
         error: error,
     })),
 

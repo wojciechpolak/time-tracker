@@ -24,12 +24,14 @@ import { Stopwatch } from '../../models';
 export interface StopwatchState {
     stopwatches: Stopwatch[];
     loading: boolean;
+    loadingAll: boolean;
     error?: any;
 }
 
 export const initialStopwatchState: StopwatchState = {
     stopwatches: [],
     loading: false,
+    loadingAll: false,
 };
 
 export const stopwatchReducer = createReducer(
@@ -42,17 +44,20 @@ export const stopwatchReducer = createReducer(
     on(StopwatchActions.loadStopwatches, (state) => ({
         ...state,
         loading: true,
+        loadingAll: true,
         error: null,
     })),
     on(StopwatchActions.loadStopwatchesSuccess, (state, {stopwatches}) => ({
         ...state,
         loading: false,
+        loadingAll: false,
         stopwatches: stopwatches,
         error: null,
     })),
     on(StopwatchActions.loadStopwatchesFailure, (state, {error}) => ({
         ...state,
         loading: false,
+        loadingAll: false,
         error: error,
     })),
 

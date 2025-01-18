@@ -32,6 +32,11 @@ export const selectLastTimeLoading = createSelector(
     (state) => state.loading
 );
 
+export const selectLastTimeLoadingAll = createSelector(
+    selectLastTimeState,
+    (state) => state.loadingAll
+);
+
 export const selectLastTimeError = createSelector(
     selectLastTimeState,
     (state) => state.error

@@ -30,6 +30,7 @@ describe('LastTime Selectors', () => {
                 {_id: '2', type: Types.LAST_TIME, name: 'Second', timestamps: [], hasMoreTs: false},
             ],
             loading: false,
+            loadingAll: false,
             error: null,
         };
         const result = selectAllLastTimeList.projector(state);
@@ -41,6 +42,7 @@ describe('LastTime Selectors', () => {
         const state: LastTimeState = {
             lastTimeList: [],
             loading: true,
+            loadingAll: true,
             error: null,
         };
         const result = selectLastTimeLoading.projector(state);

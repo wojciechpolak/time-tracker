@@ -32,6 +32,11 @@ export const selectStopwatchesLoading = createSelector(
     (state) => state.loading
 );
 
+export const selectStopwatchesLoadingAll = createSelector(
+    selectStopwatchState,
+    (state) => state.loadingAll
+);
+
 export const selectStopwatchError = createSelector(
     selectStopwatchState,
     (state) => state.error

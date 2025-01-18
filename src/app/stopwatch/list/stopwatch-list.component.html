@@ -3,17 +3,19 @@
           (click)="addStopwatch()">
     <mat-icon>add</mat-icon>
   </button>
-  @if (dataService.stopwatches$ | async; as stopwatches) {
-    @if (stopwatches.length) {
+  @if (dataService.stopwatchesLoadingAll$ | async) {
+    @if (dataService.stopwatchesLoadingAllDelayed$ | async) {
+      <div class="empty-list">Loading...</div>
+    }
+  }
+  @else {
+    @if (dataService.stopwatches$ | async; as stopwatches) {
       @for (item of stopwatches; track item._id) {
         <app-stopwatch [item]="item"></app-stopwatch>
       }
       @empty {
         <div class="empty-list">Empty list</div>
       }
-    }
-    @else {
-      <div class="empty-list">Loading...</div>
     }
   }
 </section>

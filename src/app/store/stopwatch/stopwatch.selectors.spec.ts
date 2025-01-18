@@ -30,6 +30,7 @@ describe('Stopwatch Selectors', () => {
                 {_id: '2', type: Types.STOPWATCH, name: 'Second', events: []},
             ],
             loading: false,
+            loadingAll: false,
             error: null,
         };
         const result = selectAllStopwatches.projector(state);
@@ -41,6 +42,7 @@ describe('Stopwatch Selectors', () => {
         const state: StopwatchState = {
             stopwatches: [],
             loading: true,
+            loadingAll: true,
             error: null,
         };
         const result = selectStopwatchesLoading.projector(state);
