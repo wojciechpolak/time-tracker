@@ -19,22 +19,22 @@
 
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ServiceWorkerModule } from '@angular/service-worker';
 import { provideMockStore } from '@ngrx/store/testing';
 
 import { AppComponent } from './app.component';
-import { CoreModule } from './core/core.module';
+import { provideCore } from './core/core';
+import { provideServiceWorker } from '@angular/service-worker';
 
 describe('AppComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [
-                ServiceWorkerModule.register('ngsw-worker.js', {enabled: false}),
-                CoreModule,
                 AppComponent,
             ],
             providers: [
+                provideCore(),
                 provideMockStore(),
+                provideServiceWorker('ngsw-worker.js', {enabled: false}),
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();

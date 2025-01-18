@@ -1,5 +1,5 @@
 /**
- * core.module
+ * core
  *
  * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
@@ -17,24 +17,17 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NgModule, Optional, SkipSelf } from '@angular/core';
+import { Provider } from '@angular/core';
 import { LocalStorageService, SessionStorageService } from '../services/storage.service';
 import { LoggerService } from '../services/logger.service';
 
-@NgModule({
-    providers: [
-        LoggerService,
-        LocalStorageService,
-        SessionStorageService,
-        {provide: '$window', useFactory: getWindow},
-    ]
-})
-export class CoreModule {
-    constructor(@Optional() @SkipSelf() parentModule: CoreModule) {
-        if (parentModule) {
-            throw new Error('CoreModule is already loaded.');
-        }
-    }
+export function provideCore(): Provider[] {
+  return [
+      LoggerService,
+      LocalStorageService,
+      SessionStorageService,
+      {provide: '$window', useFactory: getWindow},
+  ];
 }
 
 export function getWindow() {

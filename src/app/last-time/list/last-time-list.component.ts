@@ -25,7 +25,7 @@ import { AppMaterialModules } from '../../app-modules';
 import { DataService } from '../../services/data.service';
 import { LastTimeActions } from '../../store/last-time';
 import { LastTimeComponent } from '../last-time.component';
-import { PATHS } from '../../app-routing.module';
+import { PATHS } from '../../app.routes';
 import { SettingsService } from '../../settings/settings.service';
 
 @Component({

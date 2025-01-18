@@ -22,8 +22,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 
-import { CoreModule } from '../core/core.module';
 import { MainComponent } from './main.component';
+import { provideCore } from '../core/core';
 
 describe('MainComponent', () => {
     let component: MainComponent;
@@ -32,10 +32,10 @@ describe('MainComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [
-                CoreModule,
                 MainComponent,
             ],
             providers: [
+                provideCore(),
                 provideRouter([]),
                 provideMockStore(),
             ],

@@ -1,5 +1,5 @@
 /**
- * app-routing.module
+ * app.routes
  *
  * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
  *
@@ -17,8 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 import { AuthGuard } from './services/auth.guard';
 import { DebugComponent } from './debug/debug.component';
@@ -35,7 +34,7 @@ export const PATHS = {
     Debug: 'debug',
 }
 
-const routes: Routes = [
+export const routes: Routes = [
     {
         path: PATHS.Main,
         component: MainComponent,
@@ -70,12 +69,3 @@ const routes: Routes = [
         pathMatch: 'full'
     },
 ];
-
-@NgModule({
-    imports: [RouterModule.forRoot(routes, {
-        useHash: false
-    })],
-    exports: [RouterModule]
-})
-export class AppRoutingModule {
-}

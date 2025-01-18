@@ -29,7 +29,7 @@ import { AppMaterialModules } from './app-modules';
 import { DataService } from './services/data.service';
 import { DbService } from './services/db.service';
 import { LoggerService } from './services/logger.service';
-import { PATHS } from './app-routing.module';
+import { PATHS } from './app.routes';
 import { SettingsService } from './settings/settings.service';
 
 

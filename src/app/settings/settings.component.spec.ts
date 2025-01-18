@@ -20,12 +20,12 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { ServiceWorkerModule, SwUpdate } from '@angular/service-worker';
+import { provideServiceWorker, SwUpdate } from '@angular/service-worker';
 import { provideMockStore } from '@ngrx/store/testing';
 
-import { CoreModule } from '../core/core.module';
 import { SettingsComponent } from './settings.component';
 import { SettingsService } from './settings.service';
+import { provideCore } from '../core/core';
 
 describe('SettingsComponent', () => {
     let component: SettingsComponent;
@@ -34,15 +34,15 @@ describe('SettingsComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [
-                ServiceWorkerModule.register('ngsw-worker.js', {enabled: false}),
-                CoreModule,
                 SettingsComponent,
             ],
             providers: [
                 SwUpdate,
                 SettingsService,
+                provideCore(),
                 provideAnimations(),
                 provideMockStore(),
+                provideServiceWorker('ngsw-worker.js', {enabled: false}),
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();

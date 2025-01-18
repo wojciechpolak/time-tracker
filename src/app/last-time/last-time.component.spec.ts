@@ -21,9 +21,9 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 
-import { CoreModule } from '../core/core.module';
 import { LastTimeComponent } from './last-time.component';
 import { Types } from '../models';
+import { provideCore } from '../core/core';
 
 describe('LastTimeComponent', () => {
     let component: LastTimeComponent;
@@ -32,10 +32,10 @@ describe('LastTimeComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [
-                CoreModule,
                 LastTimeComponent,
             ],
             providers: [
+                provideCore(),
                 provideMockStore(),
             ],
             schemas: [NO_ERRORS_SCHEMA]

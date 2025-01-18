@@ -20,7 +20,7 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { SettingsService } from '../settings/settings.service';
-import { PATHS } from '../app-routing.module';
+import { PATHS } from '../app.routes';
 
 @Injectable({
     providedIn: 'root'
