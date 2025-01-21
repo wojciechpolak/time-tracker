@@ -76,7 +76,6 @@ export class DataService {
 
     init() {
         this.dbService.onDbChange
-            .pipe(debounceTime(500))
             .subscribe(() => {
                 this.syncChanges();
             });

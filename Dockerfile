@@ -3,7 +3,6 @@ ARG nginx=1.26
 
 FROM node:${node} AS tt-builder-node
 RUN apt update -y
-RUN apt install -y gcc g++ make python3
 RUN apt-get clean
 WORKDIR /app
 COPY *.json .
