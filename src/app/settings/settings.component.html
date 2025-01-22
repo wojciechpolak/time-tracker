@@ -9,9 +9,11 @@
         <form id="settingsForm" [formGroup]="form" (ngSubmit)="save()">
 
           <mat-form-field>
-            <mat-label>Database name</mat-label>
+            <mat-label>Database name (local)</mat-label>
             <input matInput formControlName="dbName">
           </mat-form-field>
+
+          <mat-divider></mat-divider>
 
           <div class="mat-form-field">
             <div class="mat-form-field-wrapper">
@@ -30,7 +32,7 @@
           </div>
 
           <mat-divider></mat-divider>
-          <h3>Remote Sync</h3>
+          <h3>Remote Sync with CouchDB</h3>
 
           <div class="mat-form-field">
             <div class="mat-form-field-wrapper">
@@ -63,6 +65,8 @@
               <mat-icon>add</mat-icon>
             </button>
           </mat-form-field>
+
+          <mat-divider></mat-divider>
 
           <div>
             <button mat-raised-button (click)="cancel($event)">Cancel</button>

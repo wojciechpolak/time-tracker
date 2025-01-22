@@ -4,11 +4,16 @@ Time Tracker is a Progressive Web App (PWA) for time tracking,
 specifically recording your last time events and running multiple
 stopwatches.
 
-It stores data in a local database (PouchDB), even while offline,
-and can do a live sync (bidirectional data replication) with a
-remote database (CouchDB). This app has been dockerized, so you
-can easily run it locally or on a server, and access it via your
-favorite web browser or as a PWA from your phone's main screen.
+It stores data locally in the browser using PouchDB, even while
+offline, and can do a live sync (bidirectional data replication)
+with a remote CouchDB database. This app has been dockerized,
+so you can easily run it locally or on a server, and access it
+via your favorite web browser or as a PWA from your phone's main
+screen.
+
+Learn more about the databases used:
+- [PouchDB](https://pouchdb.com/)
+- [CouchDB](https://couchdb.apache.org/)
 
 ## Screenshots
 
