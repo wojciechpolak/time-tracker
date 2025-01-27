@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ChangeDetectionStrategy, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnChanges, OnInit, SimpleChanges, input } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AsyncPipe, NgClass } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
@@ -50,7 +50,7 @@ import { UtilsService } from '../services/utils.service';
 })
 export class StopwatchComponent implements OnChanges, OnInit {
 
-    @Input() item!: Stopwatch;
+    readonly item = input.required<Stopwatch>();
 
     protected UtilsService: typeof UtilsService = UtilsService;
     protected addEventLocked$: Observable<boolean>;
@@ -97,8 +97,8 @@ export class StopwatchComponent implements OnChanges, OnInit {
     ngOnInit() {
         this.titleTime$ = this.timerService.timer$.pipe(
             tap(() => {
-                const lastEventItem = this.item.events[this.item.events.length - 1] ?? {};
-                if (lastEventItem.ss || this.item.tsArch) {
+                const lastEventItem = this.item().events[this.item().events.length - 1] ?? {};
+                if (lastEventItem.ss || this.item().tsArch) {
                     this.calcTimeSpan();
                 }
             }),
@@ -107,16 +107,16 @@ export class StopwatchComponent implements OnChanges, OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['item'] && this.item) {
+        if (changes['item'] && this.item()) {
             this.init();
             this.calcTimeSpan();
         }
     }
 
     init() {
-        const lastEventItem = this.item.events[this.item.events.length - 1] ?? {};
+        const lastEventItem = this.item().events[this.item().events.length - 1] ?? {};
         this.isRunning = lastEventItem.ss;
-        this.revertedEvents = structuredClone(this.item.events).slice().reverse();
+        this.revertedEvents = structuredClone(this.item().events).slice().reverse();
         this.revertedEvents.forEach(item => {
             item.tsFormControl = new FormControl(new Date(item.ts)) as FormControl<Date>;
         })
@@ -124,12 +124,13 @@ export class StopwatchComponent implements OnChanges, OnInit {
     }
 
     calcTimeSpan(skipArchive: boolean = false) {
-        if (!skipArchive && this.item.tsArch) {
-            this.tsArch = this.item.tsArch;
+        const item = this.item();
+        if (!skipArchive && item.tsArch) {
+            this.tsArch = item.tsArch;
             this.titleTime = UtilsService.getTimeDiff(this.tsArch);
             return;
         }
-        if (this.cacheLastNumberOfItems === this.item.events.length) {
+        if (this.cacheLastNumberOfItems === item.events.length) {
             let timeSum = this.cacheTimeSum;
             const end = UtilsService.getTimestamp();
             if (this.cacheLastItemTs) {
@@ -148,20 +149,21 @@ export class StopwatchComponent implements OnChanges, OnInit {
                 return;
             }
             else {
-                this.roundsTimeStr[this.item.events[0]._id] = `[${this.titleTime}]`;
+                this.roundsTimeStr[item.events[0]._id] = `[${this.titleTime}]`;
             }
             return;
         }
-        this.cacheLastNumberOfItems = this.item.events.length;
+        this.cacheLastNumberOfItems = item.events.length;
         this.titleTime = this.getAllSpan();
     }
 
     getAllSpan(): string {
-        if (!this.item.events.length) {
+        const item = this.item();
+        if (!item.events.length) {
             return '';
         }
 
-        let events = this.stopwatchService.markNonStarters(this.item.events);
+        let events = this.stopwatchService.markNonStarters(item.events);
         events = this.stopwatchService.removeDupes(events);
         const eventsPair = this.stopwatchService.createStartEndPairs(events);
 
@@ -209,7 +211,7 @@ export class StopwatchComponent implements OnChanges, OnInit {
             const ret = UtilsService.getTimeDiff(r.timeDiff);
             this.roundsTimeStr[r.id] = `[${ret}]`;
         }
-        this.cacheLastRoundItem = this.item.events.length > 1 ?
+        this.cacheLastRoundItem = this.item().events.length > 1 ?
             this.roundsTime[this.roundsTime.length - 1] : null;
     }
 
@@ -218,10 +220,10 @@ export class StopwatchComponent implements OnChanges, OnInit {
     }
 
     addEvent(newRound: boolean = false) {
-        const lastEventItem: StopwatchEvent = this.item.events[this.item.events.length - 1];
+        const lastEventItem: StopwatchEvent = this.item().events[this.item().events.length - 1];
         const isStart: boolean = lastEventItem.ss;
         this.store.dispatch(StopwatchActions.addStopwatchEvent(
-            {stopwatchId: this.item._id, newRound, isStart}));
+            {stopwatchId: this.item()._id, newRound, isStart}));
     }
 
     removeEvent(event: StopwatchEvent, idx: number): void {
@@ -255,13 +257,13 @@ export class StopwatchComponent implements OnChanges, OnInit {
             return;
         }
         this.isWaiting = true;
-        this.store.dispatch(StopwatchActions.deleteStopwatch({stopwatch: this.item}));
+        this.store.dispatch(StopwatchActions.deleteStopwatch({stopwatch: this.item()}));
         this.isWaiting = false;
     }
 
     editTitle($event: Event) {
         $event.preventDefault();
-        this.editedTitle = this.item.name;
+        this.editedTitle = this.item().name;
         this.isEditTitle = true;
     }
 
@@ -271,19 +273,20 @@ export class StopwatchComponent implements OnChanges, OnInit {
 
     finishEditTitle() {
         this.store.dispatch(StopwatchActions.updateStopwatchTitle(
-            {stopwatch: this.item, title: this.editedTitle}));
+            {stopwatch: this.item(), title: this.editedTitle}));
         this.isEditTitle = false;
     }
 
     toggleArchiveItem() {
         this.store.dispatch(StopwatchActions.toggleArchiveStopwatch(
-            {stopwatch: this.item, tsArch: this.tsArch}));
+            {stopwatch: this.item(), tsArch: this.tsArch}));
     }
 
     switchDisplayRoundsEvents() {
-        if (!this.item.events.length) {
+        const item = this.item();
+        if (!item.events.length) {
             this.store.dispatch(StopwatchActions.loadStopwatch(
-                {id: this.item._id, ignoreTsArch: true}));
+                {id: item._id, ignoreTsArch: true}));
         }
         this.displayEvents = !this.displayEvents;
     }
@@ -301,12 +304,13 @@ export class StopwatchComponent implements OnChanges, OnInit {
             this.statsContent = null;
             return;
         }
-        if (!this.item.events.length) {
+        const itemValue = this.item();
+        if (!itemValue.events.length) {
             this.store.dispatch(StopwatchActions.loadStopwatch(
-                {id: this.item._id, ignoreTsArch: true}));
+                {id: itemValue._id, ignoreTsArch: true}));
             await this.sleep(200);
         }
-        let events = this.stopwatchService.markNonStarters(this.item.events);
+        let events = this.stopwatchService.markNonStarters(itemValue.events);
         events = this.stopwatchService.removeDupes(events);
 
         this.statsFreq = UtilsService.getStatsFreq(events.map(item => item.ts));

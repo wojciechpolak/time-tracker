@@ -22,7 +22,7 @@
       @if (!isEditTitle) {
         <span class="title"
               title="Double click to edit">
-          {{ item.name }}
+          {{ item().name }}
         </span>
         <mat-icon class="edit-icon" aria-hidden="true"
                   (click)="editTitle($event)">edit</mat-icon>
@@ -40,7 +40,7 @@
               - {{ event.round ? roundsTimeStr[event._id] : '' }}
             </span>
             <span class="round-label">{{ event.name }}</span>
-            @if (!item.tsArch) {
+            @if (!item().tsArch) {
               <span class="ts-actions">
                 <mat-card-actions>
                   <button mat-icon-button matTooltip="Actions" aria-label="Actions" [matMenuTriggerFor]="menu">
@@ -89,7 +89,7 @@
             @if (event.name) {
               <span class="round-label">{{ event.name }}</span>
             }
-            @if (!item.tsArch) {
+            @if (!item().tsArch) {
               <span class="ts-actions">
                 <mat-card-actions>
                   <button mat-icon-button matTooltip="Actions" aria-label="Actions" [matMenuTriggerFor]="menu">
@@ -129,7 +129,7 @@
         }
       </mat-card-content>
     }
-    @if (!item.tsArch) {
+    @if (!item().tsArch) {
       <mat-card-actions class="bottom">
         <button mat-stroked-button color="accent"
                 [disabled]="addEventLocked$ | async"
@@ -154,7 +154,7 @@
         <mat-icon>more_vert</mat-icon>
         <mat-menu [overlapTrigger]="false" #menu="matMenu">
           <button mat-menu-item (click)="toggleArchiveItem()">
-            {{ item.tsArch ? 'Un-archive' : 'Archive' }}
+            {{ item().tsArch ? 'Un-archive' : 'Archive' }}
           </button>
           <button mat-menu-item (click)="deleteItem()">Delete</button>
           <button mat-menu-item (click)="switchDisplayRoundsEvents()">

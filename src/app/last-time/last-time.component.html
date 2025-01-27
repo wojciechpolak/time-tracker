@@ -22,7 +22,7 @@
       @if (!isEditTitle) {
         <span class="title"
               title="Double click to edit">
-          {{ item.name }}
+          {{ item().name }}
         </span>
         <mat-icon class="edit-icon" aria-hidden="true"
                   (click)="editTitle($event)">edit</mat-icon>
@@ -34,7 +34,7 @@
         {{ tsDate$ | async }}
       </span>
     </mat-card-subtitle>
-    @if (item.timestamps && (item.timestamps.length > 1) || false) {
+    @if (item().timestamps && (item().timestamps.length > 1) || false) {
       <mat-card-content>
         <button (click)="expandTimestamps = !expandTimestamps"
               class="more-timestamps">
@@ -46,17 +46,17 @@
         @if (expandTimestamps) {
           <ol reversed class="timestamps">
             <p class="intro">
-              First time: {{ UtilsService.formatFromNow(item.timestamps[(item.timestamps.length - 1)].ts) }}
-              <br>Last time: {{ UtilsService.formatFromNow(item.timestamps[0].ts) }}
+              First time: {{ UtilsService.formatFromNow(item().timestamps[(item().timestamps.length - 1)].ts) }}
+              <br>Last time: {{ UtilsService.formatFromNow(item().timestamps[0].ts) }}
               <br>Next prediction: {{ getNextPredictedTime() }}
             </p>
-            @for (ts of item.timestamps; track ts._id; let i = $index) {
+            @for (ts of item().timestamps; track ts._id; let i = $index) {
               <li class="lt-ts">
                 <mat-form-field class="lastTime-ts-input">
                   <input matInput
                          [formControl]="tsFormControls[ts._id]"
                          [mtxDatetimepicker]="datePicker"
-                         (dateChange)="modifyTimestamp($event, ts, item.timestamps.length - i - 1)"
+                         (dateChange)="modifyTimestamp($event, ts, item().timestamps.length - i - 1)"
                          matTooltip="{{ UtilsService.formatFromNow(ts.ts) }}"
                          matTooltipPosition="above">
                   <mtx-datetimepicker #datePicker
@@ -77,17 +77,17 @@
                       <mat-icon>more_vert</mat-icon>
                       <mat-menu [overlapTrigger]="false" #menu="matMenu">
                         <button mat-menu-item
-                                (click)="editTimestampLabel(ts, item.timestamps.length - i - 1)">Label Timestamp</button>
-                        <button mat-menu-item (click)="removeTimestamp(ts, item.timestamps.length - i - 1)">Remove Timestamp</button>
+                                (click)="editTimestampLabel(ts, item().timestamps.length - i - 1)">Label Timestamp</button>
+                        <button mat-menu-item (click)="removeTimestamp(ts, item().timestamps.length - i - 1)">Remove Timestamp</button>
                       </mat-menu>
                     </button>
                   </mat-card-actions>
                 </span>
               </li>
             }
-            @if (item.hasMoreTs) {
+            @if (item().hasMoreTs) {
               <nav>
-                <button mat-stroked-button (click)="showOlderTimestamps(item)">
+                <button mat-stroked-button (click)="showOlderTimestamps(item())">
                   show older
                 </button>
               </nav>

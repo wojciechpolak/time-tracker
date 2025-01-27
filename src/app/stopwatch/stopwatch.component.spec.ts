@@ -17,17 +17,43 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideMockStore } from '@ngrx/store/testing';
 
 import { StopwatchComponent } from './stopwatch.component';
-import { Types } from '../models';
+import { Stopwatch, Types } from '../models';
 import { provideCore } from '../core/core';
 
+@Component({
+    imports: [
+        StopwatchComponent
+    ],
+    template: `
+        <app-stopwatch [item]="testItem"></app-stopwatch>
+    `
+})
+class TestHostComponent {
+  testItem: Stopwatch = {
+      _id: 'EV-1',
+      name: 'EV-1',
+      type: Types.STOPWATCH,
+      finished: false,
+      events: [{
+          _id: 'EV-TS-1',
+          ref: 'EV-1',
+          type: Types.STOPWATCH_TS,
+          ts: new Date().getTime(),
+          round: false,
+          ss: true,
+      }]
+  };
+}
+
 describe('StopwatchComponent', () => {
+    let hostFixture: ComponentFixture<TestHostComponent>;
     let component: StopwatchComponent;
-    let fixture: ComponentFixture<StopwatchComponent>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -40,26 +66,15 @@ describe('StopwatchComponent', () => {
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();
-    });
 
-    beforeEach(() => {
-        fixture = TestBed.createComponent(StopwatchComponent);
-        component = fixture.componentInstance;
-        component.item = {
-            _id: 'EV-1',
-            name: 'EV-1',
-            type: Types.STOPWATCH,
-            finished: false,
-            events: [{
-                _id: 'EV-TS-1',
-                ref: 'EV-1',
-                type: Types.STOPWATCH_TS,
-                ts: new Date().getTime(),
-                round: false,
-                ss: true,
-            }]
-        };
-        fixture.detectChanges();
+        hostFixture = TestBed.createComponent(TestHostComponent);
+        hostFixture.detectChanges();
+
+        // Grab the child component instance
+        const lastTimeDebugEl = hostFixture.debugElement.query(
+            By.directive(StopwatchComponent)
+        );
+        component = lastTimeDebugEl.componentInstance;
     });
 
     it('should create', () => {

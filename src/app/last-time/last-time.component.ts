@@ -20,10 +20,10 @@
 import {
     ChangeDetectionStrategy,
     Component,
-    Input,
     OnChanges,
     OnInit,
-    SimpleChanges
+    SimpleChanges,
+    input
 } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -55,7 +55,7 @@ import { UtilsService } from '../services/utils.service';
 })
 export class LastTimeComponent implements OnInit, OnChanges {
 
-    @Input() item!: LastTime;
+    readonly item = input.required<LastTime>();
 
     protected UtilsService: typeof UtilsService = UtilsService;
     protected editedTitle!: string;
@@ -98,28 +98,28 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     updateTimestamps() {
-        this.item.timestamps.forEach((item: TimeStamp) => {
+        this.item().timestamps.forEach((item: TimeStamp) => {
             this.tsFormControls[item._id] = new FormControl(new Date(item.ts));
         })
     }
 
     get lastTimestamp(): number {
-        return this.item.timestamps[0].ts;
+        return this.item().timestamps[0].ts;
     }
 
     touch() {
-        this.store.dispatch(LastTimeActions.touchLastTime({lastTime: this.item}));
+        this.store.dispatch(LastTimeActions.touchLastTime({lastTime: this.item()}));
     }
 
     deleteItem() {
         this.isWaiting = true;
-        this.store.dispatch(LastTimeActions.deleteLastTime({lastTime: this.item}));
+        this.store.dispatch(LastTimeActions.deleteLastTime({lastTime: this.item()}));
         this.isWaiting = false;
     }
 
     editTitle($event: Event) {
         $event.preventDefault();
-        this.editedTitle = this.item.name;
+        this.editedTitle = this.item().name;
         this.isEditTitle = true;
     }
 
@@ -129,7 +129,7 @@ export class LastTimeComponent implements OnInit, OnChanges {
 
     finishEditTitle() {
         this.store.dispatch(LastTimeActions.updateLastTimeTitle(
-            {lastTime: this.item, title: this.editedTitle}));
+            {lastTime: this.item(), title: this.editedTitle}));
         this.isEditTitle = false;
     }
 
@@ -170,16 +170,16 @@ export class LastTimeComponent implements OnInit, OnChanges {
         for (const x of s) {
             this.statsContent.push({
                 name: x,
-                data: UtilsService.getStats(this.item.timestamps, x)
+                data: UtilsService.getStats(this.item().timestamps, x)
             })
         }
-        this.statsFreq = UtilsService.getStatsFreq(this.item.timestamps.map(item => item.ts));
+        this.statsFreq = UtilsService.getStatsFreq(this.item().timestamps.map(item => item.ts));
     }
 
     protected getAgeCssClass(): string {
         const day = 86400000;
         const now = new Date().getTime();
-        const ts = this.item.timestamps[0].ts;
+        const ts = this.item().timestamps[0].ts;
         const diff = now - ts;
         let name = 'default';
         if (diff <= day) {
@@ -201,7 +201,7 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     protected getNextPredictedTime(): string {
-        const ts = this.item.timestamps;
+        const ts = this.item().timestamps;
         if (ts.length > 1) {
             const p = (ts[0].ts - ts[ts.length - 1].ts) / (ts.length - 1);
             const tsp = ts[0].ts + Math.round(p);

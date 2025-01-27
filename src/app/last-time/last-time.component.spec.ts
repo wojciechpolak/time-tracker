@@ -17,17 +17,43 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideMockStore } from '@ngrx/store/testing';
 
 import { LastTimeComponent } from './last-time.component';
-import { Types } from '../models';
+import { LastTime, Types } from '../models';
 import { provideCore } from '../core/core';
 
+@Component({
+    imports: [
+        LastTimeComponent
+    ],
+    template: `
+        <app-last-time [item]="testItem"></app-last-time>
+    `
+})
+class TestHostComponent {
+  testItem: LastTime = {
+    _id: 'LT-1',
+    type: Types.LAST_TIME,
+    name: 'LT-1',
+    hasMoreTs: false,
+    timestamps: [
+      {
+        _id: 'LT-TS-1',
+        ref: 'LT-1',
+        type: Types.LAST_TIME_TS,
+        ts: new Date().getTime(),
+      },
+    ],
+  };
+}
+
 describe('LastTimeComponent', () => {
+    let hostFixture: ComponentFixture<TestHostComponent>;
     let component: LastTimeComponent;
-    let fixture: ComponentFixture<LastTimeComponent>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -40,24 +66,15 @@ describe('LastTimeComponent', () => {
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();
-    });
 
-    beforeEach(() => {
-        fixture = TestBed.createComponent(LastTimeComponent);
-        component = fixture.componentInstance;
-        component.item = {
-            _id: 'LT-1',
-            type: Types.LAST_TIME,
-            name: 'LT-1',
-            hasMoreTs: false,
-            timestamps: [{
-                _id: 'LT-TS-1',
-                ref: 'LT-1',
-                type: Types.LAST_TIME_TS,
-                ts: new Date().getTime(),
-            }]
-        }
-        fixture.detectChanges();
+        hostFixture = TestBed.createComponent(TestHostComponent);
+        hostFixture.detectChanges();
+
+        // Grab the child component instance
+        const lastTimeDebugEl = hostFixture.debugElement.query(
+            By.directive(LastTimeComponent)
+        );
+        component = lastTimeDebugEl.componentInstance;
     });
 
     it('should create', () => {
