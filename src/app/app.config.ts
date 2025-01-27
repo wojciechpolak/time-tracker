@@ -32,6 +32,7 @@ import { DATE_FORMAT } from './models';
 import { DataService } from './services/data.service';
 import { DbService } from './services/db.service';
 import { LastTimeService } from './last-time/last-time.service';
+import { PouchDbService } from './services/pouch-db.service';
 import { SettingsService } from './settings/settings.service';
 import { StopwatchService } from './stopwatch/stopwatch.service';
 import { TimerService } from './services/timer.service';
@@ -45,11 +46,11 @@ import { routes } from './app.routes';
 export const appConfig: ApplicationConfig = {
     providers: [
         DataService,
-        DbService,
         LastTimeService,
         SettingsService,
         StopwatchService,
         TimerService,
+        {provide: DbService, useClass: PouchDbService},
         provideCore(),
         provideRouter(routes),
         provideServiceWorker('ngsw-worker.js', {
@@ -64,6 +65,6 @@ export const appConfig: ApplicationConfig = {
         provideEffects(appEffects),
         provideStore(appReducer),
         !environment.production && {...provideStoreDevtools()} || [],
-        { provide: APP_BASE_HREF, useValue: environment.baseHref },
+        {provide: APP_BASE_HREF, useValue: environment.baseHref},
     ]
 };

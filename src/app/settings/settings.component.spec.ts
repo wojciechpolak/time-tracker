@@ -23,6 +23,8 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideServiceWorker, SwUpdate } from '@angular/service-worker';
 import { provideMockStore } from '@ngrx/store/testing';
 
+import { DbService } from '../services/db.service';
+import { PouchDbService } from '../services/pouch-db.service';
 import { SettingsComponent } from './settings.component';
 import { SettingsService } from './settings.service';
 import { provideCore } from '../core/core';
@@ -39,6 +41,10 @@ describe('SettingsComponent', () => {
             providers: [
                 SwUpdate,
                 SettingsService,
+                {
+                    provide: DbService,
+                    useClass: PouchDbService,
+                },
                 provideCore(),
                 provideAnimations(),
                 provideMockStore(),

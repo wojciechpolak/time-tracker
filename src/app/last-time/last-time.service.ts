@@ -57,7 +57,7 @@ export class LastTimeService {
         let lastTime: LastTime[] = [];
         console.time('find-LT');
         try {
-            const result = await this.dbService.db.find({
+            lastTime = await this.dbService.find<LastTime>({
                 selector: {
                     type: Types.LAST_TIME,
                     // _id: {$nin: [null]},
@@ -65,7 +65,6 @@ export class LastTimeService {
                 },
                 // sort: [{_id: 'desc'}]
             });
-            lastTime = result.docs as LastTime[];
             for (const item of lastTime) {
                 await this.fetchTimestamps(item);
             }
@@ -107,7 +106,7 @@ export class LastTimeService {
      */
     async fetchTimestamps(item: LastTime, limit: number = LT_TS_MAX_ITEMS) {
         // console.time('find-LTT');
-        const timestamps = await this.dbService.db.find({
+        const timestamps = await this.dbService.find<TimeStamp>({
             selector: {
                 type: Types.LAST_TIME_TS,
                 ref: item._id,
@@ -115,9 +114,9 @@ export class LastTimeService {
             sort: [{_id: 'desc'}],
             ...(limit ? {limit: limit + 1} : {}),
         });
-        timestamps.docs.sort((a: TimeStamp, b: TimeStamp) => b.ts - a.ts);
+        timestamps.sort((a: TimeStamp, b: TimeStamp) => b.ts - a.ts);
         // console.timeEnd('find-LTT');
-        item.timestamps = timestamps.docs;
+        item.timestamps = timestamps;
         if (limit && item.timestamps.length > limit) {
             item.timestamps = item.timestamps.slice(0, limit);
             item.hasMoreTs = true;

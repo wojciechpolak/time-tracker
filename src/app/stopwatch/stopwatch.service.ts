@@ -60,7 +60,7 @@ export class StopwatchService {
         let stopwatches: Stopwatch[] = [];
         console.time('find-SW');
         try {
-            const res = await this.dbService.db.find({
+            stopwatches = await this.dbService.find<Stopwatch>({
                 selector: {
                     type: Types.STOPWATCH,
                     // _id: {$nin: [null]},
@@ -68,7 +68,6 @@ export class StopwatchService {
                 },
                 sort: [{_id: 'desc'}]
             });
-            stopwatches = res.docs as Stopwatch[];
             for (const item of stopwatches) {
                 if (item.tsArch) {
                     item.events = [];
@@ -124,7 +123,7 @@ export class StopwatchService {
 
     async fetchStopwatchEvents(item: Stopwatch) {
         // console.time('find-SWE');
-        const rounds = await this.dbService.db.find({
+        item.events = await this.dbService.find<StopwatchEvent>({
             selector: {
                 type: Types.STOPWATCH_TS,
                 ref: item._id,
@@ -132,7 +131,6 @@ export class StopwatchService {
             // sort: [{_id: 'desc'}]
         });
         // console.timeEnd('find-SWE');
-        item.events = rounds.docs as StopwatchEvent[];
         this.preprocessEvents(item);
     }
 

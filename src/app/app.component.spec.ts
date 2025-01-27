@@ -22,6 +22,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 
 import { AppComponent } from './app.component';
+import { DbService } from './services/db.service';
+import { PouchDbService } from './services/pouch-db.service';
 import { provideCore } from './core/core';
 import { provideServiceWorker } from '@angular/service-worker';
 
@@ -32,6 +34,10 @@ describe('AppComponent', () => {
                 AppComponent,
             ],
             providers: [
+                {
+                    provide: DbService,
+                    useClass: PouchDbService,
+                },
                 provideCore(),
                 provideMockStore(),
                 provideServiceWorker('ngsw-worker.js', {enabled: false}),
