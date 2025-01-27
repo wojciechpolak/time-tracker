@@ -25,7 +25,7 @@ export interface StopwatchState {
     stopwatches: Stopwatch[];
     loading: boolean;
     loadingAll: boolean;
-    error?: any;
+    error?: unknown;
 }
 
 export const initialStopwatchState: StopwatchState = {

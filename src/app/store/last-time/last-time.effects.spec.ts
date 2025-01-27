@@ -22,7 +22,7 @@ import { Action } from '@ngrx/store';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Observable, of } from 'rxjs';
 
-import { DbResponse } from '../../models';
+import { DbResponse, LastTime } from '../../models';
 import { LastTimeActions } from './last-time.actions';
 import { LastTimeEffects } from './last-time.effects';
 import { LastTimeService } from '../../last-time/last-time.service';
@@ -50,7 +50,7 @@ describe('LastTimeEffects', () => {
     });
 
     it('should dispatch deleteLastTimeSuccess on success (async)', (done) => {
-        const item = {_id: '123'} as any;
+        const item = {_id: '123'} as LastTime;
         const action = LastTimeActions.deleteLastTime({lastTime: item});
         const completion = LastTimeActions.deleteLastTimeSuccess({
             resp: {'ok': 'true', id: '123'} as DbResponse,
@@ -68,7 +68,7 @@ describe('LastTimeEffects', () => {
     });
 
     it('should dispatch deleteLastTimeFailure on error (async)', (done) => {
-        const item = {_id: '123'} as any;
+        const item = {_id: '123'} as LastTime;
         const action = LastTimeActions.deleteLastTime({lastTime: item});
         const completion = LastTimeActions.deleteLastTimeFailure({
             error: new Error('fail'),

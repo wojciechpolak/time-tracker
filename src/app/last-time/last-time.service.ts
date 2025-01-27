@@ -65,8 +65,8 @@ export class LastTimeService {
                 },
                 // sort: [{_id: 'desc'}]
             });
-            lastTime = result.docs;
-            for (let item of lastTime) {
+            lastTime = result.docs as LastTime[];
+            for (const item of lastTime) {
                 await this.fetchTimestamps(item);
             }
             lastTime = this.sortLastTimeByTs(lastTime);
@@ -107,7 +107,7 @@ export class LastTimeService {
      */
     async fetchTimestamps(item: LastTime, limit: number = LT_TS_MAX_ITEMS) {
         // console.time('find-LTT');
-        let timestamps = await this.dbService.db.find({
+        const timestamps = await this.dbService.db.find({
             selector: {
                 type: Types.LAST_TIME_TS,
                 ref: item._id,
@@ -115,7 +115,7 @@ export class LastTimeService {
             sort: [{_id: 'desc'}],
             ...(limit ? {limit: limit + 1} : {}),
         });
-        timestamps.docs.sort((a: any, b: any) => b.ts - a.ts);
+        timestamps.docs.sort((a: TimeStamp, b: TimeStamp) => b.ts - a.ts);
         // console.timeEnd('find-LTT');
         item.timestamps = timestamps.docs;
         if (limit && item.timestamps.length > limit) {
@@ -128,14 +128,14 @@ export class LastTimeService {
     }
 
     async addLastTime(): Promise<LastTime> {
-        let ts = UtilsService.getTimestamp();
-        let lastTime = {
+        const ts = UtilsService.getTimestamp();
+        const lastTime = {
             _id: Types.LAST_TIME + '-' + ts.toString(),
             type: Types.LAST_TIME,
             name: 'Last #' + (UtilsService.toISOLocalString(new Date(ts))),
         } as LastTime;
         const doc = await this.dbService.putItem(lastTime);
-        let timestamp: TimeStamp = {
+        const timestamp: TimeStamp = {
             _id: Types.LAST_TIME_TS + '-' + ts.toString(),
             ref: doc._id,
             type: Types.LAST_TIME_TS,
@@ -147,8 +147,8 @@ export class LastTimeService {
     }
 
     async touch(item: LastTime): Promise<TimeStamp> {
-        let ts = UtilsService.getTimestamp();
-        let timestamp: TimeStamp = {
+        const ts = UtilsService.getTimestamp();
+        const timestamp: TimeStamp = {
             _id: Types.LAST_TIME_TS + '-' + ts.toString(),
             ref: item._id,
             type: Types.LAST_TIME_TS,
@@ -178,7 +178,7 @@ export class LastTimeService {
     }
 
     async deleteLastTime(item: LastTime): Promise<DbResponse> {
-        let items = item.timestamps.map((r: any) => {
+        const items = item.timestamps.map((r: TimeStamp) => {
             return {
                 _id: r._id,
                 _rev: r._rev,

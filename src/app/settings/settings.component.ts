@@ -84,14 +84,14 @@ export class SettingsComponent implements OnInit {
         if (!this.form.valid) {
             return;
         }
-        let prevDbName = this.settingsService.getDbName;
-        let prevEndpoint = this.settingsService.getEndpoint();
-        let prevRemoteSync = this.settingsService.hasEnabledRemoteSync();
+        const prevDbName = this.settingsService.getDbName;
+        const prevEndpoint = this.settingsService.getEndpoint();
+        const prevRemoteSync = this.settingsService.hasEnabledRemoteSync();
         this.settingsService.save(this.form.value);
 
-        let dbNameChanged = this.settingsService.getDbName !== prevDbName;
-        let endpointChanged = this.settingsService.getEndpoint() !== prevEndpoint;
-        let remoteSyncChanged = this.settingsService.hasEnabledRemoteSync() !== prevRemoteSync;
+        const dbNameChanged = this.settingsService.getDbName !== prevDbName;
+        const endpointChanged = this.settingsService.getEndpoint() !== prevEndpoint;
+        const remoteSyncChanged = this.settingsService.hasEnabledRemoteSync() !== prevRemoteSync;
 
         if (endpointChanged || remoteSyncChanged) {
             this.dbService.remoteSyncDisable();
@@ -137,7 +137,7 @@ export class SettingsComponent implements OnInit {
 
     importFileChange($event: Event) {
         if ($event.target) {
-            let input = $event.target as HTMLInputElement;
+            const input = $event.target as HTMLInputElement;
             this.importFileReady = input.files?.length === 1;
             this.importFile = input.files?.[0];
         }

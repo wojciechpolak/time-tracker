@@ -55,9 +55,9 @@ export class AppComponent implements OnInit {
     }
 
     ngOnInit() {
-        let settings = this.settingsService.get();
+        const settings = this.settingsService.get();
         if (settings.redirectToHttps && window.location.protocol === 'http:') {
-            let newLoc = window.location.href.replace('http://', 'https://');
+            const newLoc = window.location.href.replace('http://', 'https://');
             fetch(newLoc).then(() => {
                 window.location.href = newLoc;
             }, (err) => {
@@ -76,7 +76,7 @@ export class AppComponent implements OnInit {
                 case 'VERSION_READY':
                     this.loggerService.log(`Current app version: ${evt.currentVersion.hash}`);
                     this.loggerService.log(`New app version ready for use: ${evt.latestVersion.hash}`);
-                    let snack = this.snackBar.open('New app version is available.', 'Reload');
+                    const snack = this.snackBar.open('New app version is available.', 'Reload');
                     snack.onAction().subscribe(() => {
                         this.swUpdate.activateUpdate()
                             .then(() => document.location.reload());
@@ -89,7 +89,7 @@ export class AppComponent implements OnInit {
         });
 
         this.swUpdate.unrecoverable.subscribe(event => {
-            let snack = this.snackBar.open(
+            const snack = this.snackBar.open(
                 `An error occurred that we cannot recover from: ${event.reason}`, 'Reload');
             snack.onAction().subscribe(() => {
                 document.location.reload();
@@ -122,7 +122,7 @@ export class AppComponent implements OnInit {
     }
 
     navigateToMain() {
-        let settings = this.settingsService.get();
+        const settings = this.settingsService.get();
         if (settings.lastPage) {
             this.router.navigate([settings.lastPage]);
         }

@@ -26,7 +26,7 @@ export class LoggerService {
     onLog: EventEmitter<string> = new EventEmitter();
 
     log(...messages: any[]) {
-        let msg = messages.map(m => {
+        const msg = messages.map(m => {
             return typeof m === 'string' ? m : JSON.stringify(m);
         }).join(' ');
         this.buf.push(msg);

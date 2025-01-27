@@ -25,11 +25,11 @@ import { Observable, tap } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { ChartConfiguration } from 'chart.js';
-import { Moment } from 'moment';
+import { MtxDatetimepickerInputEvent } from '@ng-matero/extensions/datetimepicker';
 
 import { AppMaterialModules } from '../app-modules';
 import { LoggerService } from '../services/logger.service';
-import { Stopwatch, StopwatchEvent, StopwatchRoundTime } from '../models';
+import { StatsAvgDay, StatsContent, StatsFreq, Stopwatch, StopwatchEvent, StopwatchRoundTime } from '../models';
 import { selectStopwatchesLoading, StopwatchActions } from '../store/stopwatch';
 import { StopwatchService } from './stopwatch.service';
 import { TimerService } from '../services/timer.service';
@@ -67,9 +67,9 @@ export class StopwatchComponent implements OnChanges, OnInit {
     protected roundsOnly: StopwatchEvent[] = [];
     protected roundsTime: StopwatchRoundTime[] = [];
     protected roundsTimeStr: Record<string, string> = {};
-    protected statsAvgDay: any = {};
-    protected statsContent: any = null;
-    protected statsFreq: any = {};
+    protected statsAvgDay: StatsAvgDay | null = null;
+    protected statsContent: StatsContent[] | null = null;
+    protected statsFreq: StatsFreq | null = null;
     protected titleTime$!: Observable<string>;
     protected titleTime: string = '';
     protected tsArch: number = 0;
@@ -97,7 +97,7 @@ export class StopwatchComponent implements OnChanges, OnInit {
     ngOnInit() {
         this.titleTime$ = this.timerService.timer$.pipe(
             tap(() => {
-                let lastEventItem = this.item.events[this.item.events.length - 1] ?? {};
+                const lastEventItem = this.item.events[this.item.events.length - 1] ?? {};
                 if (lastEventItem.ss || this.item.tsArch) {
                     this.calcTimeSpan();
                 }
@@ -114,11 +114,11 @@ export class StopwatchComponent implements OnChanges, OnInit {
     }
 
     init() {
-        let lastEventItem = this.item.events[this.item.events.length - 1] ?? {};
+        const lastEventItem = this.item.events[this.item.events.length - 1] ?? {};
         this.isRunning = lastEventItem.ss;
         this.revertedEvents = structuredClone(this.item.events).slice().reverse();
         this.revertedEvents.forEach(item => {
-            item.tsFormControl = new FormControl(new Date(item.ts)) as any;
+            item.tsFormControl = new FormControl(new Date(item.ts)) as FormControl<Date>;
         })
         this.roundsOnly = this.revertedEvents.filter(item => item.round);
     }
@@ -131,7 +131,7 @@ export class StopwatchComponent implements OnChanges, OnInit {
         }
         if (this.cacheLastNumberOfItems === this.item.events.length) {
             let timeSum = this.cacheTimeSum;
-            let end = UtilsService.getTimestamp();
+            const end = UtilsService.getTimestamp();
             if (this.cacheLastItemTs) {
                 timeSum = timeSum + (end - this.cacheLastItemTs);
             }
@@ -139,9 +139,9 @@ export class StopwatchComponent implements OnChanges, OnInit {
             this.titleTime = UtilsService.getTimeDiff(timeSum);
 
             if (this.cacheLastRoundItem && this.cacheLastItemTs) {
-                let last = this.cacheLastRoundItem;
-                let t = last.timeDiff + (end - this.cacheLastItemTs);
-                let ret = UtilsService.getTimeDiff(t);
+                const last = this.cacheLastRoundItem;
+                const t = last.timeDiff + (end - this.cacheLastItemTs);
+                const ret = UtilsService.getTimeDiff(t);
                 this.roundsTimeStr[last.id] = `[${ret}]`;
             }
             else if (this.cacheLastRoundItem) {
@@ -163,14 +163,14 @@ export class StopwatchComponent implements OnChanges, OnInit {
 
         let events = this.stopwatchService.markNonStarters(this.item.events);
         events = this.stopwatchService.removeDupes(events);
-        events = this.stopwatchService.createStartEndPairs(events);
+        const eventsPair = this.stopwatchService.createStartEndPairs(events);
 
         this.roundsTime = [];
         this.cacheLastItemTs = 0;
 
-        let events2 = events.map((ev: StopwatchEvent[]) => {
+        const events2 = eventsPair.map((ev: StopwatchEvent[]) => {
             if (ev.length === 2) {
-                let timeDiff = UtilsService.roundTs(ev[1].ts) - UtilsService.roundTs(ev[0].ts);
+                const timeDiff = UtilsService.roundTs(ev[1].ts) - UtilsService.roundTs(ev[0].ts);
                 if (timeDiff < 0) {
                     return 0;
                 }
@@ -181,7 +181,7 @@ export class StopwatchComponent implements OnChanges, OnInit {
                     });
                 }
                 else if (this.roundsTime.length) {
-                    let last = this.roundsTime[this.roundsTime.length - 1];
+                    const last = this.roundsTime[this.roundsTime.length - 1];
                     last.timeDiff += timeDiff;
                 }
                 return timeDiff;
@@ -205,8 +205,8 @@ export class StopwatchComponent implements OnChanges, OnInit {
 
     private prepareRoundsTimeStr() {
         this.roundsTimeStr = {};
-        for (let r of this.roundsTime) {
-            let ret = UtilsService.getTimeDiff(r.timeDiff);
+        for (const r of this.roundsTime) {
+            const ret = UtilsService.getTimeDiff(r.timeDiff);
             this.roundsTimeStr[r.id] = `[${ret}]`;
         }
         this.cacheLastRoundItem = this.item.events.length > 1 ?
@@ -218,8 +218,8 @@ export class StopwatchComponent implements OnChanges, OnInit {
     }
 
     addEvent(newRound: boolean = false) {
-        let lastEventItem: StopwatchEvent = this.item.events[this.item.events.length - 1];
-        let isStart: boolean = lastEventItem.ss;
+        const lastEventItem: StopwatchEvent = this.item.events[this.item.events.length - 1];
+        const isStart: boolean = lastEventItem.ss;
         this.store.dispatch(StopwatchActions.addStopwatchEvent(
             {stopwatchId: this.item._id, newRound, isStart}));
     }
@@ -233,16 +233,16 @@ export class StopwatchComponent implements OnChanges, OnInit {
     }
 
     editEvent(event: StopwatchEvent, idx: number): void {
-        let label = prompt('Label #' + (idx + 1), event.name);
+        const label = prompt('Label #' + (idx + 1), event.name);
         if (label !== null) {
             this.store.dispatch(StopwatchActions.updateStopwatchEventLabel({event, label}));
             this.cacheLastNumberOfItems = 0;
         }
     }
 
-    modifyEvent(datePickerEvent: any,
+    modifyEvent(datePickerEvent: MtxDatetimepickerInputEvent<Date>,
                 event: StopwatchEvent, idx: number): void {
-        let ts = (<Moment>datePickerEvent.value).valueOf();
+        const ts = datePickerEvent.value?.valueOf() ?? 0;
         if (confirm('Do you want to change event #' + (idx + 1) +
             ' to ' + UtilsService.toDate(ts) + '?')) {
             this.store.dispatch(StopwatchActions.updateStopwatchEvent({event, ts}));
@@ -313,7 +313,7 @@ export class StopwatchComponent implements OnChanges, OnInit {
         this.statsContent = [];
 
         this.statsAvgDay = this.calcStatsAvgDay(events);
-        let tmpSecs: number[] = Object.values(this.statsAvgDay.combinedTimeByDay) as number[];
+        const tmpSecs: number[] = Object.values(this.statsAvgDay.combinedTimeByDay) as number[];
         this.statsContent.push({
             name: 'Minutes per day',
             data: {
@@ -328,7 +328,7 @@ export class StopwatchComponent implements OnChanges, OnInit {
         });
 
         const s = ['day', 'hour', 'month', 'year'];
-        for (let x of s) {
+        for (const x of s) {
             this.statsContent.push({
                 name: x,
                 data: UtilsService.getStats(events, x)
@@ -336,9 +336,9 @@ export class StopwatchComponent implements OnChanges, OnInit {
         }
     }
 
-    calcStatsAvgDay(events: StopwatchEvent[]) {
+    calcStatsAvgDay(events: StopwatchEvent[]): StatsAvgDay {
         // Create an object to hold the total combined time for each day
-        const combinedTimeByDay: any = {};
+        const combinedTimeByDay: Record<string, number> = {};
 
         // Loop through the events and calculate the combined time taken for each day
         for (let i = 0; i < events.length - 1; i += 2) {
@@ -366,9 +366,9 @@ export class StopwatchComponent implements OnChanges, OnInit {
             }
             else {
                 // If the event spans across multiple days, calculate the time taken for each day
-                let firstDayEnd = new Date(startDate);
+                const firstDayEnd = new Date(startDate);
                 firstDayEnd.setUTCHours(23, 59, 59, 999);
-                let timeDiffInSeconds1 = (firstDayEnd.getTime() - startEvent.ts) / 1000;
+                const timeDiffInSeconds1 = (firstDayEnd.getTime() - startEvent.ts) / 1000;
                 combinedTimeByDay[startIndex] = (combinedTimeByDay[startIndex] || 0) + timeDiffInSeconds1;
 
                 const lastDayStart = new Date(stopDate);
@@ -382,15 +382,17 @@ export class StopwatchComponent implements OnChanges, OnInit {
                     const currentDate = new Date(startDate);
                     currentDate.setUTCDate(startDay + j);
                     const timeDiffInSeconds = 24 * 60 * 60;
-                    combinedTimeByDay[`${startYear}-${startMonth}-${currentDate.getUTCDate()}`] = (combinedTimeByDay[`${startYear}-${startMonth}-${currentDate.getUTCDate()}`] || 0) + timeDiffInSeconds;
+                    combinedTimeByDay[`${startYear}-${startMonth}-${currentDate.getUTCDate()}`] =
+                        (combinedTimeByDay[`${startYear}-${startMonth}-${currentDate.getUTCDate()}`] || 0) +
+                        timeDiffInSeconds;
                 }
             }
         }
-        let combinedTimeByDayValues = Object.values(combinedTimeByDay);
-        let sumTimeByDay: number = combinedTimeByDayValues
-            .reduce((acc: any, v: any) => acc + v, 0) as number;
-        let avgTimeByDay = sumTimeByDay / combinedTimeByDayValues.length;
-        let avgTimeByDayMinutes = Math.round(avgTimeByDay / 60);
+        const combinedTimeByDayValues = Object.values(combinedTimeByDay);
+        const sumTimeByDay: number = combinedTimeByDayValues
+            .reduce((acc: number, v: number) => acc + v, 0) as number;
+        const avgTimeByDay = sumTimeByDay / combinedTimeByDayValues.length;
+        const avgTimeByDayMinutes = Math.round(avgTimeByDay / 60);
         return {
             combinedTimeByDay: combinedTimeByDay,
             sumTimeByDay: sumTimeByDay,

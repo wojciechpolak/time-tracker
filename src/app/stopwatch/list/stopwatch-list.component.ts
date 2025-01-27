@@ -53,8 +53,8 @@ export class StopwatchListComponent implements OnInit, OnDestroy {
 
         this.sub1 = this.dataService.stopwatches$.subscribe((stopwatches: Stopwatch[]) => {
             // signal if at least one stopwatch is running...
-            let swIsRunning = stopwatches.find(item => {
-                let lastEventItem = item.events[item.events.length - 1] ?? {};
+            const swIsRunning = stopwatches.find(item => {
+                const lastEventItem = item.events[item.events.length - 1] ?? {};
                 return lastEventItem.ss;
             });
             if (swIsRunning) {
@@ -67,7 +67,9 @@ export class StopwatchListComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        this.sub1 && this.sub1.unsubscribe();
+        if (this.sub1) {
+            this.sub1.unsubscribe();
+        }
     }
 
     addStopwatch() {

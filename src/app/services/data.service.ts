@@ -84,7 +84,7 @@ export class DataService {
             .pipe(debounceTime(500))
             .subscribe((err: any) => {
                 this.dbService.remoteSyncDisable();
-                let msg = `Remote DB: ${err.status} - ${err.message}`;
+                const msg = `Remote DB: ${err.status} - ${err.message}`;
                 this.snackBar.open(msg, 'Dismiss');
                 this.fetchAll();
             });

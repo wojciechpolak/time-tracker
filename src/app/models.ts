@@ -46,6 +46,7 @@ export interface Stopwatch {
 
 export interface StopwatchEvent {
     _id: string;
+    _rev?: string;
     type: Types.STOPWATCH_TS,
     ref: string;
     name?: string;
@@ -71,6 +72,7 @@ export interface LastTime {
 
 export interface TimeStamp {
     _id: string;
+    _rev?: string
     type: Types.LAST_TIME_TS,
     ref: string;
     label?: string;
@@ -96,4 +98,29 @@ export const DATE_FORMAT: MtxDatetimeFormats = {
         monthYearA11yLabel: 'MMMM YYYY',
         popupHeaderDateLabel: 'MMM DD, ddd',
     },
+}
+
+export interface StatsAvgDay {
+    combinedTimeByDay: Record<string, number>;
+    sumTimeByDay: number;
+    avgTimeByDay: number;
+    avgTimeByDayMinutes: number;
+}
+
+export interface StatsData {
+    labels: string[];
+    datasets: {
+        data: number[];
+        backgroundColor?: string;
+    }[];
+}
+
+export interface StatsContent {
+    name: string;
+    data: StatsData;
+}
+
+export interface StatsFreq {
+    avgDays: number;
+    avgHours: number;
 }

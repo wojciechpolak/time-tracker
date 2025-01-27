@@ -30,12 +30,12 @@ import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { Moment } from 'moment';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { MtxDatetimepickerInputEvent } from '@ng-matero/extensions/datetimepicker';
 
 import { AppMaterialModules } from '../app-modules';
-import { LastTime, TimeStamp } from '../models';
+import { LastTime, StatsContent, StatsFreq, TimeStamp } from '../models';
 import { LastTimeActions } from '../store/last-time';
 import { TimerService } from '../services/timer.service';
 import { UtilsService } from '../services/utils.service';
@@ -62,10 +62,10 @@ export class LastTimeComponent implements OnInit, OnChanges {
     protected expandTimestamps: boolean = false;
     protected isEditTitle: boolean = false;
     protected isWaiting: boolean = false;
-    protected statsContent: any = null;
-    protected statsFreq: any = {};
+    protected statsContent: StatsContent[] | null = null;
+    protected statsFreq: StatsFreq | null = null;
     protected tsDate$!: Observable<string>;
-    protected tsFormControls = {} as any;
+    protected tsFormControls: Record<string, FormControl<Date | null>> = {};
 
     protected barChartOptions: ChartConfiguration['options'] = {
         responsive: true,
@@ -134,15 +134,15 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     editTimestampLabel(ts: TimeStamp, idx: number) {
-        let label = prompt('Label #' + (idx + 1));
+        const label = prompt('Label #' + (idx + 1));
         if (label !== null) {
             this.store.dispatch(LastTimeActions.updateTimeStampLabel(
                 {timestamp: ts, label}));
         }
     }
 
-    modifyTimestamp(datePickerEvent: any, ts: TimeStamp, idx: number): void {
-        let newTs = (<Moment>datePickerEvent.value).valueOf();
+    modifyTimestamp(datePickerEvent: MtxDatetimepickerInputEvent<Date>, ts: TimeStamp, idx: number): void {
+        const newTs = datePickerEvent.value?.valueOf() ?? 0;
         if (confirm('Do you want to change timestamp #' + (idx + 1) +
             ' to ' + UtilsService.toDate(newTs) + '?')) {
             this.store.dispatch(LastTimeActions.updateTimeStamp(
@@ -165,9 +165,9 @@ export class LastTimeComponent implements OnInit, OnChanges {
             this.statsContent = null;
             return;
         }
-        let s = ['day', 'hour', 'month', 'year'];
+        const s = ['day', 'hour', 'month', 'year'];
         this.statsContent = [];
-        for (let x of s) {
+        for (const x of s) {
             this.statsContent.push({
                 name: x,
                 data: UtilsService.getStats(this.item.timestamps, x)
@@ -178,9 +178,9 @@ export class LastTimeComponent implements OnInit, OnChanges {
 
     protected getAgeCssClass(): string {
         const day = 86400000;
-        let now = new Date().getTime();
-        let ts = this.item.timestamps[0].ts;
-        let diff = now - ts;
+        const now = new Date().getTime();
+        const ts = this.item.timestamps[0].ts;
+        const diff = now - ts;
         let name = 'default';
         if (diff <= day) {
             name = '1d';
@@ -201,10 +201,10 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     protected getNextPredictedTime(): string {
-        let ts = this.item.timestamps;
+        const ts = this.item.timestamps;
         if (ts.length > 1) {
-            let p = (ts[0].ts - ts[ts.length - 1].ts) / (ts.length - 1);
-            let tsp = ts[0].ts + Math.round(p);
+            const p = (ts[0].ts - ts[ts.length - 1].ts) / (ts.length - 1);
+            const tsp = ts[0].ts + Math.round(p);
             return `${UtilsService.formatRelativeTime(tsp)} (${UtilsService.toDate(tsp)})`;
         }
         return '--';

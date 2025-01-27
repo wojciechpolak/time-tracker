@@ -55,7 +55,7 @@ export class SettingsService {
         this.localStorage.set(STORAGE_SETTINGS, this.settings);
     }
 
-    update(settings: any): void {
+    update(settings: Partial<Settings>): void {
         this.settings = {...this.settings, ...settings};
         this.localStorage.set(STORAGE_SETTINGS, this.settings);
     }
@@ -79,7 +79,7 @@ export class SettingsService {
         if (!ret.startsWith('http')) {
             ret = 'http://' + ret;
         }
-        let url = new URL(ret);
+        const url = new URL(ret);
         if (!url.port && url.protocol !== 'https:') {
             url.port = defaultPort;
         }

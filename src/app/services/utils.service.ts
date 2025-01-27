@@ -17,10 +17,12 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { StatsData, StatsFreq } from '../models';
+
 export class UtilsService {
 
     static size2human(size: number): string {
-        let i = Math.floor(Math.log(size) / Math.log(1000));
+        const i = Math.floor(Math.log(size) / Math.log(1000));
         // @ts-ignore
         return (size / Math.pow(1000, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
     }
@@ -37,10 +39,10 @@ export class UtilsService {
     }
 
     static getTimeDiff(time: number, ms: boolean = false): string {
-        let d = new Date(time);
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getSeconds();
+        const d = new Date(time);
+        const hours = d.getUTCHours();
+        const minutes = d.getUTCMinutes();
+        const seconds = d.getSeconds();
         let timeString = hours.toString().padStart(2, '0')
             + ':' + minutes.toString().padStart(2, '0')
             + ':' + seconds.toString().padStart(2, '0');
@@ -54,9 +56,9 @@ export class UtilsService {
     }
 
     static toDate(ts: number, fromMs: boolean = true): string {
-        let time = parseInt(ts?.toString().split('.')[0], 10);
-        let multiply = fromMs ? 1 : 1000;
-        let s = this.toISOLocalString(new Date(time * multiply))
+        const time = parseInt(ts?.toString().split('.')[0], 10);
+        const multiply = fromMs ? 1 : 1000;
+        const s = this.toISOLocalString(new Date(time * multiply))
             .replace('T', ' ')
             .replace('Z', ' ');
         return s.slice(0, 19);
@@ -68,7 +70,7 @@ export class UtilsService {
 
     static formatFromNow(value: number, fromMs: boolean = true, lang: string = 'en') {
         if (Intl && Intl.RelativeTimeFormat) {
-            let rtf = new Intl.RelativeTimeFormat(lang, {
+            const rtf = new Intl.RelativeTimeFormat(lang, {
                 style: 'long',
                 numeric: 'always'
             });
@@ -90,13 +92,13 @@ export class UtilsService {
                 ret = rtf.format(-Math.floor(secDiff / 3600), 'hour');
             }
             else if (secDiff > 86400 && secDiff < (7 * 86400)) {
-                let days = Math.floor(secDiff / 86400);
-                let remainingHours = (secDiff - (days * 86400)) / 3600;
+                const days = Math.floor(secDiff / 86400);
+                const remainingHours = (secDiff - (days * 86400)) / 3600;
                 if (remainingHours > 1) {
-                    let p1 = rtf.formatToParts(-Math.floor(secDiff / 86400), 'day');
+                    const p1 = rtf.formatToParts(-Math.floor(secDiff / 86400), 'day');
                     let daysAgo = p1[0].value;
                     daysAgo = daysAgo + ' ' + (daysAgo === '1' ? 'day' : 'days');
-                    let hours = rtf.format(-Math.floor(remainingHours), 'hour');
+                    const hours = rtf.format(-Math.floor(remainingHours), 'hour');
                     ret = `${daysAgo} ${hours}`;
                 }
                 else {
@@ -138,19 +140,20 @@ export class UtilsService {
         return _formatTimestamp(secondsDifference);
     }
 
-    static getStats(events: any, period: string) {
-        let res: any = {};
+    static getStats(events: any, period: string): StatsData {
+        const res: any = {};
         const oneDay = 86400 * 1000;
-        for (let item of events) {
-            let d: any = new Date(item.ts);
+        for (const item of events) {
+            const date = new Date(item.ts);
+            let d: string | number = '';
             if (period === 'day') {
-                d = (d as Date).toLocaleString('en-us', {weekday: 'long'});
+                d = date.toLocaleString('en-us', {weekday: 'long'});
             }
             else if (period === 'hour') {
-                d = Math.floor(d.getHours())
+                d = Math.floor(date.getHours())
             }
             else if (period === 'week') {
-                d = Math.floor(d.getTime() / (oneDay * 7));
+                d = Math.floor(date.getTime() / (oneDay * 7));
             }
             else if (period === 'month') {
                 const months = [
@@ -158,10 +161,10 @@ export class UtilsService {
                     'May', 'June', 'July', 'August',
                     'September', 'October', 'November', 'December'
                 ];
-                d = months[(((d.getFullYear() - 1970) * 12 + d.getMonth()) % 12)];
+                d = months[(((date.getFullYear() - 1970) * 12 + date.getMonth()) % 12)];
             }
             else if (period === 'year') {
-                d = d.getFullYear();
+                d = date.getFullYear();
             }
             else {
                 console.log('groupByTimePeriod: You have to set a period! day | hours | week | month | year');
@@ -169,8 +172,8 @@ export class UtilsService {
             res[d] = res[d] || 0;
             res[d]++;
         }
-        let ret: any[] = [];
-        for (let k in res) {
+        const ret: any[] = [];
+        for (const k in res) {
             ret.push({key: k, value: res[k]});
         }
         // ret.sort((a, b) => b.value - a.value);
@@ -185,7 +188,7 @@ export class UtilsService {
         };
     }
 
-    static getStatsFreq(ts: number[]) {
+    static getStatsFreq(ts: number[]): StatsFreq | null {
         ts.sort();
 
         // Calculate the differences between adjacent timestamps

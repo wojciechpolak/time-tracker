@@ -108,7 +108,7 @@ export class DbService {
         this.isSyncActive = false;
         this.isSyncPullActive = false;
 
-        let remoteCouch = this.settingsService.hasEndpoint() &&
+        const remoteCouch = this.settingsService.hasEndpoint() &&
             this.settingsService.getEndpoint();
         if (!remoteCouch || !this.settingsService.hasEnabledRemoteSync()) {
             return;
@@ -140,7 +140,7 @@ export class DbService {
                 this.isSyncPullActive = false;
                 this.loggerService.log('sync denied', err);
             })
-            .on('complete', (info: any) => {
+            .on('complete', (_info: any) => {
                 this.isSyncActive = false;
                 this.isSyncPullActive = false;
             })
@@ -192,7 +192,7 @@ export class DbService {
 
     async putItem<T extends {_id: string}>(doc: T): Promise<T> {
         try {
-            let dbResp: DbResponse = await this.db.put(doc);
+            const dbResp: DbResponse = await this.db.put(doc);
             return await this.getItem<T>(dbResp.id);
         }
         catch (err: any) {
@@ -208,7 +208,9 @@ export class DbService {
         updateFn: (doc: T) => void
     ): Promise<DbResponse> {
         const doc = await this.db.get(item._id);
-        updateFn && updateFn(doc);
+        if (updateFn) {
+            updateFn(doc);
+        }
         this.loggerService.log('Updating item', doc._id);
         return this.db.put(doc);
     }
@@ -225,7 +227,7 @@ export class DbService {
 
     deleteAll() {
         this.db.allDocs({include_docs: true}, (err: any, doc: any) => {
-            for (let d of doc.rows) {
+            for (const d of doc.rows) {
                 this.loggerService.log('Removing', d.doc._id);
                 this.db.remove(d.doc);
             }
@@ -237,7 +239,7 @@ export class DbService {
         await this.closeDb();
         window.indexedDB.databases().then((r) => {
             for (let i = 0; i < r.length; i++) {
-                let dbName = r[i].name;
+                const dbName = r[i].name;
                 if (dbName) {
                     this.loggerService.log('Clearing DB ' + dbName);
                     window.indexedDB.deleteDatabase(dbName);
@@ -260,8 +262,8 @@ export class DbService {
         if (!this.est) {
             return 'Unknown';
         }
-        let usage = this.est.usage ?? 0;
-        let quota = this.est.quota ?? 0;
+        const usage = this.est.usage ?? 0;
+        const quota = this.est.quota ?? 0;
         let ret = '';
         ret += ' Usage: ' + UtilsService.size2human(usage);
         ret += ', Quota: ' + UtilsService.size2human(quota);
@@ -275,7 +277,7 @@ export class DbService {
                 this.loggerService.log('export error', err);
             }
             else {
-                let date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+                const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
                 this.download(
                     JSON.stringify(doc.rows.map((doc: any) => doc.doc), undefined, 4),
                     `time-tracker-${date}.json`,
@@ -289,7 +291,7 @@ export class DbService {
         if (!file) {
             return;
         }
-        let result = await file.text();
+        const result = await file.text();
         if (result) {
             await this.db.bulkDocs(
                 JSON.parse(result),
@@ -300,8 +302,8 @@ export class DbService {
     }
 
     private download(data: any, name: string, type: string) {
-        let a = document.createElement('a');
-        let file = new Blob([data], {type: type});
+        const a = document.createElement('a');
+        const file = new Blob([data], {type: type});
         a.href = URL.createObjectURL(file);
         a.download = name;
         a.click();

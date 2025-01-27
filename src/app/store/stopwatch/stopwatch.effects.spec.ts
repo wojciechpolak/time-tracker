@@ -22,7 +22,7 @@ import { Action } from '@ngrx/store';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Observable, of } from 'rxjs';
 
-import { DbResponse } from '../../models';
+import { DbResponse, Stopwatch } from '../../models';
 import { StopwatchActions } from './stopwatch.actions';
 import { StopwatchEffects } from './stopwatch.effects';
 import { StopwatchService } from '../../stopwatch/stopwatch.service';
@@ -50,7 +50,7 @@ describe('StopwatchEffects', () => {
     });
 
     it('should dispatch deleteStopwatchSuccess on success (async)', (done) => {
-        const item = {_id: '123'} as any;
+        const item = {_id: '123'} as Stopwatch;
         const action = StopwatchActions.deleteStopwatch({stopwatch: item});
         const completion = StopwatchActions.deleteStopwatchSuccess({
             resp: {'ok': 'true', id: '123'} as DbResponse,
@@ -68,7 +68,7 @@ describe('StopwatchEffects', () => {
     });
 
     it('should dispatch deleteStopwatchFailure on error (async)', (done) => {
-        const item = {_id: '123'} as any;
+        const item = {_id: '123'} as Stopwatch;
         const action = StopwatchActions.deleteStopwatch({stopwatch: item});
         const completion = StopwatchActions.deleteStopwatchFailure({
             error: new Error('fail'),

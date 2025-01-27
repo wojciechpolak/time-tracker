@@ -25,7 +25,7 @@ export interface LastTimeState {
     lastTimeList: LastTime[];
     loading: boolean;
     loadingAll: boolean;
-    error?: any;
+    error?: unknown;
 }
 
 export const initialLastTimeState: LastTimeState = {

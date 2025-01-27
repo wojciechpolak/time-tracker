@@ -68,8 +68,8 @@ export class StopwatchService {
                 },
                 sort: [{_id: 'desc'}]
             });
-            stopwatches = res.docs;
-            for (let item of stopwatches) {
+            stopwatches = res.docs as Stopwatch[];
+            for (const item of stopwatches) {
                 if (item.tsArch) {
                     item.events = [];
                     continue;
@@ -124,7 +124,7 @@ export class StopwatchService {
 
     async fetchStopwatchEvents(item: Stopwatch) {
         // console.time('find-SWE');
-        let rounds = await this.dbService.db.find({
+        const rounds = await this.dbService.db.find({
             selector: {
                 type: Types.STOPWATCH_TS,
                 ref: item._id,
@@ -132,19 +132,19 @@ export class StopwatchService {
             // sort: [{_id: 'desc'}]
         });
         // console.timeEnd('find-SWE');
-        item.events = rounds.docs;
+        item.events = rounds.docs as StopwatchEvent[];
         this.preprocessEvents(item);
     }
 
     async addStopwatch(): Promise<Stopwatch> {
-        let ts = UtilsService.getTimestamp();
-        let stopwatch = {
+        const ts = UtilsService.getTimestamp();
+        const stopwatch = {
             _id: Types.STOPWATCH + '-' + ts.toString(),
             type: Types.STOPWATCH,
             name: 'Stopwatch #' + (UtilsService.toISOLocalString(new Date(ts))),
         } as Stopwatch;
-        let doc = await this.dbService.putItem(stopwatch);
-        let timestamp: StopwatchEvent = {
+        const doc = await this.dbService.putItem(stopwatch);
+        const timestamp: StopwatchEvent = {
             _id: Types.STOPWATCH_TS + '-' + ts.toString(),
             ref: doc._id,
             type: Types.STOPWATCH_TS,
@@ -167,7 +167,7 @@ export class StopwatchService {
     async addEvent(id: string, newRound: boolean = false, isStart: boolean): Promise<StopwatchEvent[]> {
         let ts = UtilsService.getTimestamp();
         if (newRound && isStart) { // let's stop the previous round first
-            let event: StopwatchEvent = {
+            const event: StopwatchEvent = {
                 _id: Types.STOPWATCH_TS + '-' + ts.toString(),
                 ref: id,
                 type: Types.STOPWATCH_TS,
@@ -178,7 +178,7 @@ export class StopwatchService {
             eventObj1.inUse = true;
 
             ts = UtilsService.getTimestamp();
-            let event2: StopwatchEvent = {
+            const event2: StopwatchEvent = {
                 _id: Types.STOPWATCH_TS + '-' + ts.toString(),
                 ref: id,
                 type: Types.STOPWATCH_TS,
@@ -186,13 +186,13 @@ export class StopwatchService {
                 ss: true, // start
                 round: true,
             };
-            let eventObj2 = await this.dbService.putItem(event2);
+            const eventObj2 = await this.dbService.putItem(event2);
             eventObj2.inUse = true;
             this.loggerService.log('Successfully posted a new Stopwatch Event!');
             return [eventObj1, eventObj2];
         }
         else {
-            let event: StopwatchEvent = {
+            const event: StopwatchEvent = {
                 _id: Types.STOPWATCH_TS + '-' + ts.toString(),
                 ref: id,
                 type: Types.STOPWATCH_TS,
@@ -200,7 +200,7 @@ export class StopwatchService {
                 ss: !isStart,
                 round: newRound,
             };
-            let eventObj = await this.dbService.putItem(event);
+            const eventObj = await this.dbService.putItem(event);
             eventObj.inUse = true;
             this.loggerService.log('Successfully posted a new Stopwatch Event!');
             return [eventObj];
@@ -231,14 +231,14 @@ export class StopwatchService {
     }
 
     async deleteStopwatch(item: Stopwatch): Promise<DbResponse> {
-        let items = item.events.map((r: any) => {
+        const items = item.events.map((r: StopwatchEvent) => {
             return {
                 _id: r._id,
                 _rev: r._rev,
                 _deleted: true,
             };
         });
-        let ret = await this.dbService.deleteItem(item);
+        const ret = await this.dbService.deleteItem(item);
         await this.dbService.bulkDocs(items);
         return ret;
     }
@@ -247,8 +247,8 @@ export class StopwatchService {
      * Utilities
      */
 
-    markNonStarters(events: StopwatchEvent[]): any[] {
-        let idx = events.findIndex((item: StopwatchEvent) => item.ss);
+    markNonStarters(events: StopwatchEvent[]): StopwatchEvent[] {
+        const idx = events.findIndex((item: StopwatchEvent) => item.ss);
         for (let i = 0; i < idx; i++) {
             events[i].inUse = false;
         }
@@ -256,9 +256,9 @@ export class StopwatchService {
     }
 
     removeDupes(events: StopwatchEvent[]): StopwatchEvent[] {
-        let ret: StopwatchEvent[] = [];
+        const ret: StopwatchEvent[] = [];
         for (let i = 0; i < events.length; i++) {
-            let ev: StopwatchEvent = events[i];
+            const ev: StopwatchEvent = events[i];
             if (i > 0 && ev.ss && ev.ss === events[i - 1].ss) {
                 // do not push
             }
@@ -275,8 +275,8 @@ export class StopwatchService {
         return ret;
     }
 
-    createStartEndPairs(arr: any[]) {
-        return arr.reduce((result, value, index: number, array: any[]) => {
+    createStartEndPairs(arr: StopwatchEvent[]): StopwatchEvent[][] {
+        return arr.reduce((result: StopwatchEvent[][], _value, index: number, array: StopwatchEvent[]) => {
             if (index % 2 === 0) {
                 result.push(array.slice(index, index + 2));
             }
@@ -285,7 +285,7 @@ export class StopwatchService {
     }
 
     preprocessEvents(item: Stopwatch) {
-        let lastEventItem = item.events[item.events.length - 1] ?? {};
+        const lastEventItem = item.events[item.events.length - 1] ?? {};
         item.finished = !lastEventItem.ss;
         this.markNonStarters(item.events);
         this.removeDupes(item.events);

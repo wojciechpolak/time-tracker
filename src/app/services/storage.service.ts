@@ -25,7 +25,7 @@ export abstract class StorageService {
     protected abstract $s: Storage;
 
     get(key: string, isJson: boolean = true) {
-        let item = this.$s.getItem(key);
+        const item = this.$s.getItem(key);
         return isJson ? item && this._deserialize(item):item;
     }
 
@@ -38,7 +38,7 @@ export abstract class StorageService {
     }
 
     removeByKeyPrefix(key_prefix: string) {
-        for (let key in this.$s) {
+        for (const key in this.$s) {
             if (key.startsWith(key_prefix)) {
                 this.remove(key);
             }
@@ -51,12 +51,12 @@ export abstract class StorageService {
 
     protected isStorageAvailable() {
         try {
-            let x = '__storage_test__';
+            const x = '__storage_test__';
             this.$s.setItem(x, x);
             this.$s.removeItem(x);
             return true;
         }
-        catch (e) {
+        catch {
             return false;
         }
     }

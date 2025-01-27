@@ -43,7 +43,7 @@ export class DebugComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.dbService.estimateStorage();
         this.log('Welcome!');
-        for (let msg of this.loggerService.buf) {
+        for (const msg of this.loggerService.buf) {
             this.log(msg);
         }
         this.sub = this.loggerService.onLog.subscribe((msg: string) => {
@@ -52,7 +52,9 @@ export class DebugComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        this.sub && this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
     get storageEstimated() {
@@ -73,17 +75,17 @@ export class DebugComponent implements OnInit, OnDestroy {
 
     clearConsole() {
         this.loggerService.clear();
-        let output = document.querySelector('#output') as HTMLDivElement;
+        const output = document.querySelector('#output') as HTMLDivElement;
         if (output) {
             output.innerHTML = '';
         }
     }
 
     log(msg: string) {
-        let message = document.createElement('li');
-        let content = document.createTextNode(msg);
+        const message = document.createElement('li');
+        const content = document.createTextNode(msg);
         message.appendChild(content);
-        let output = document.querySelector('#output') as HTMLDivElement;
+        const output = document.querySelector('#output') as HTMLDivElement;
         if (output) {
             output.appendChild(message);
             output.scrollTop = output.scrollHeight;

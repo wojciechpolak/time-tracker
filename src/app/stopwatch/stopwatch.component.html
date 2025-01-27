@@ -114,7 +114,7 @@
           <p>
             Frequency of events: every {{ statsFreq.avgDays.toFixed(2) }} days
             (or {{ statsFreq.avgHours.toFixed(2) }} hours)
-            <br>Average time per day: {{ statsAvgDay.avgTimeByDayMinutes }} minutes
+            <br>Average time per day: {{ statsAvgDay?.avgTimeByDayMinutes }} minutes
           </p>
         }
         @for (stats of statsContent; track stats) {
