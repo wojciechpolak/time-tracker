@@ -18,7 +18,7 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { SwUpdate } from '@angular/service-worker';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -40,7 +40,7 @@ import { environment } from '../../environments/environment';
 })
 export class SettingsComponent implements OnInit {
 
-    protected form: UntypedFormGroup;
+    protected form: FormGroup;
     protected importFile?: File;
     protected importFileReady: boolean = false;
 
@@ -50,14 +50,14 @@ export class SettingsComponent implements OnInit {
                 private settingsService: SettingsService,
                 private dbService: DbService,
                 private dataService: DataService) {
-        this.form = new UntypedFormGroup({
-            user: new UntypedFormControl(),
-            password: new UntypedFormControl(),
-            dbName: new UntypedFormControl(),
-            endpoint: new UntypedFormControl(),
-            enableRemoteSync: new UntypedFormControl(),
-            redirectToHttps: new UntypedFormControl(),
-            showDebug: new UntypedFormControl(),
+        this.form = new FormGroup({
+            user: new FormControl<string>(''),
+            password: new FormControl<string>(''),
+            dbName: new FormControl<string>(''),
+            endpoint: new FormControl<string>(''),
+            enableRemoteSync: new FormControl<boolean>(false),
+            redirectToHttps: new FormControl<boolean>(false),
+            showDebug: new FormControl<boolean>(false),
         });
     }
 
