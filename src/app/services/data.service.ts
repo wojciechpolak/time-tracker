@@ -82,8 +82,9 @@ export class DataService {
 
         this.dbService.onRemoteDbError
             .pipe(debounceTime(500))
-            .subscribe((err: any) => {
+            .subscribe((err: unknown) => {
                 this.dbService.remoteSyncDisable();
+                // @ts-expect-error  PouchDB.Core.Error
                 const msg = `Remote DB: ${err.status} - ${err.message}`;
                 this.snackBar.open(msg, 'Dismiss');
                 this.fetchAll();

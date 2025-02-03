@@ -335,7 +335,7 @@ export class StopwatchComponent implements OnChanges, OnInit {
         for (const x of s) {
             this.statsContent.push({
                 name: x,
-                data: UtilsService.getStats(events, x)
+                data: UtilsService.getStats<StopwatchEvent>(events, x)
             })
         }
     }

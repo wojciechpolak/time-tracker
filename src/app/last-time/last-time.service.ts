@@ -20,7 +20,7 @@
 import { Injectable } from '@angular/core';
 
 import { DbService } from '../services/db.service';
-import { DbResponse, LastTime, TimeStamp, Types } from '../models';
+import { DbResponse, Deleted, LastTime, TimeStamp, Types } from '../models';
 import { LoggerService } from '../services/logger.service';
 import { UtilsService } from '../services/utils.service';
 
@@ -177,15 +177,15 @@ export class LastTimeService {
     }
 
     async deleteLastTime(item: LastTime): Promise<DbResponse> {
-        const items = item.timestamps.map((r: TimeStamp) => {
+        const items: Deleted[] = item.timestamps.map((r: TimeStamp): Deleted => {
             return {
                 _id: r._id,
-                _rev: r._rev,
+                _rev: r._rev as string,
                 _deleted: true,
             };
         });
-        const ret = await this.dbService.deleteItem(item);
-        await this.dbService.bulkDocs(items);
+        const ret = await this.dbService.deleteItem<LastTime>(item);
+        await this.dbService.bulkDocs<Deleted>(items);
         return ret;
     }
 }

@@ -29,8 +29,8 @@ export abstract class StorageService {
         return isJson ? item && this._deserialize(item):item;
     }
 
-    set(key: string, value: any, isJson: boolean = true) {
-        this.$s.setItem(key, isJson ? this._serialize(value):value);
+    set(key: string, value: unknown, isJson: boolean = true) {
+        this.$s.setItem(key, isJson ? this._serialize(value) : value as string);
     }
 
     remove(key: string) {
@@ -61,12 +61,12 @@ export abstract class StorageService {
         }
     }
 
-    private _serialize(data: any) {
+    private _serialize(data: unknown): string {
         return JSON.stringify(data);
     }
 
-    private _deserialize(x: any) {
-        return JSON.parse(x || null) || {};
+    private _deserialize(x: string) {
+        return JSON.parse(x || '') || {};
     }
 }
 

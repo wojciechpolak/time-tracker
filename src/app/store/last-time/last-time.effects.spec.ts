@@ -53,10 +53,10 @@ describe('LastTimeEffects', () => {
         const item = {_id: '123'} as LastTime;
         const action = LastTimeActions.deleteLastTime({lastTime: item});
         const completion = LastTimeActions.deleteLastTimeSuccess({
-            resp: {'ok': 'true', id: '123'} as DbResponse,
+            resp: {'ok': true, id: '123'} as DbResponse,
         });
         lastTimeService.deleteLastTime.and.returnValue(
-            Promise.resolve({ok: 'true', id: '123'} as DbResponse)
+            Promise.resolve({ok: true, id: '123'} as DbResponse)
         );
 
         actions$ = of(action);

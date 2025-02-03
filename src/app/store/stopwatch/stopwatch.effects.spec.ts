@@ -53,10 +53,10 @@ describe('StopwatchEffects', () => {
         const item = {_id: '123'} as Stopwatch;
         const action = StopwatchActions.deleteStopwatch({stopwatch: item});
         const completion = StopwatchActions.deleteStopwatchSuccess({
-            resp: {'ok': 'true', id: '123'} as DbResponse,
+            resp: {'ok': true, id: '123'} as DbResponse,
         });
         stopwatchService.deleteStopwatch.and.returnValue(
-            Promise.resolve({ok: 'true', id: '123'} as DbResponse)
+            Promise.resolve({ok: true, id: '123'} as DbResponse)
         );
 
         actions$ = of(action);

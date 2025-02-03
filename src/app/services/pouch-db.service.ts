@@ -23,19 +23,24 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import PouchDB from 'pouchdb-browser';
 import PouchDbFind from 'pouchdb-find';
 
-import { DbResponse } from '../models';
-import { DbService } from './db.service';
+import { Db } from '../models';
+import { DbService, DbServiceResponses } from './db.service';
 import { LoggerService } from './logger.service';
 import { SettingsService } from '../settings/settings.service';
 import { UtilsService } from './utils.service';
 
 PouchDB.plugin(PouchDbFind);
 
+export interface PouchDbResponses extends DbServiceResponses {
+    bulkDocs: (PouchDB.Core.Response | PouchDB.Core.Error)[];
+    deleteItem: PouchDB.Core.Response;
+    updateItem: PouchDB.Core.Response;
+}
 
 @Injectable({
     providedIn: 'root'
 })
-export class PouchDbService extends DbService {
+export class PouchDbService extends DbService<PouchDbResponses> {
 
     est!: StorageEstimate;
     isSyncActive: boolean = false;
@@ -46,8 +51,8 @@ export class PouchDbService extends DbService {
     onDbChange: Subject<void> = new Subject<void>();
     onRemoteDbError: Subject<void> = new Subject<void>();
 
-    private db: any;
-    private remoteDb: any;
+    private db!: PouchDB.Database<Db>;
+    private remoteDb!: PouchDB.Replication.Sync<object>;
 
     constructor(private loggerService: LoggerService,
                 private snackBar: MatSnackBar,
@@ -68,9 +73,9 @@ export class PouchDbService extends DbService {
     }
 
     openDb() {
-        this.db = new PouchDB(this.settingsService.getDbName,
+        this.db = new PouchDB<Db>(this.settingsService.getDbName,
             {auto_compaction: true});
-        this.db.on('error', (err: any) => {
+        this.db.on('error', (err: unknown) => {
             this.loggerService.log('DB error', err);
         });
     }
@@ -82,27 +87,33 @@ export class PouchDbService extends DbService {
     }
 
     createIndex() {
-        this.db.createIndex({
-            index: {
-                name: 'index1',
-                fields: ['_id', 'ref', 'type']
-            }
-        }).catch((err: any) => {
+        try {
+            this.db.createIndex({
+                index: {
+                    name: 'index1',
+                    fields: ['_id', 'ref', 'type']
+                }
+            });
+        }
+        catch (err: unknown) {
             if (err) {
                 this.loggerService.log('createIndex', err);
             }
-        });
+        }
 
-        this.db.createIndex({
-            index: {
-                name: 'index2',
-                fields: ['ref', 'type']
-            }
-        }).catch((err: any) => {
+        try {
+            this.db.createIndex({
+                index: {
+                    name: 'index2',
+                    fields: ['ref', 'type']
+                }
+            });
+        }
+        catch (err: unknown) {
             if (err) {
                 this.loggerService.log('createIndex', err);
             }
-        });
+        }
     }
 
     remoteSyncEnable() {
@@ -130,22 +141,24 @@ export class PouchDbService extends DbService {
                     this.onDbChange.next();
                 }
             })
-            .on('active', (info: any) => {
+            // @ts-expect-error  active is missing in @types/pouchdb
+            .on('active', (info: PouchDB.Replication.SyncResult<object>) => {
                 this.isSyncActive = true;
                 if (info?.direction === 'pull') {
                     this.isSyncPullActive = true;
                     this.loggerService.log('Remote pull sync active');
                 }
             })
-            .on('denied', (err: any) => {
+            .on('denied', (err: object) => {
                 this.isSyncActive = false;
                 this.isSyncPullActive = false;
                 this.loggerService.log('sync denied', err);
             })
-            .on('complete', (_info: any) => {
+            .on('complete', () => {
                 this.isSyncActive = false;
                 this.isSyncPullActive = false;
             })
+            // eslint-disable-next-line
             .on('error', (err: any) => {
                 this.isSyncActive = false;
                 this.isSyncPullActive = false;
@@ -189,16 +202,18 @@ export class PouchDbService extends DbService {
     }
 
     async getItem<T>(id: string): Promise<T> {
-        return await this.db.get(id);
+        return await this.db.get<T>(id);
     }
 
     async putItem<T extends {_id: string}>(doc: T): Promise<T> {
         try {
-            const dbResp: DbResponse = await this.db.put(doc);
+            // @ts-expect-error  put() signature mismatch
+            const dbResp: PouchDB.Core.Response = await this.db.put<T>(doc);
             return await this.getItem<T>(dbResp.id);
         }
-        catch (err: any) {
+        catch (err: unknown) {
             this.loggerService.log('putItem error', err);
+            // @ts-expect-error  PouchDB.Core.Error
             const msg = `DB putItem: ${err.status} - ${err.message}`;
             this.snackBar.open(msg, 'Dismiss');
             throw err;
@@ -208,8 +223,8 @@ export class PouchDbService extends DbService {
     async updateItem<T extends {_id: string}>(
         item: T,
         updateFn: (doc: T) => void
-    ): Promise<DbResponse> {
-        const doc = await this.db.get(item._id);
+    ): Promise<PouchDB.Core.Response> {
+        const doc = await this.db.get<T>(item._id);
         if (updateFn) {
             updateFn(doc);
         }
@@ -217,28 +232,37 @@ export class PouchDbService extends DbService {
         return this.db.put(doc);
     }
 
-    async find<T>(props: any): Promise<T[]> {
+    async find<T>(props: PouchDB.Find.FindRequest<Db>): Promise<T[]> {
         const res = await this.db.find(props);
         return res.docs as T[];
     }
 
-    bulkDocs(items: any[]): Promise<DbResponse[]> {
+    bulkDocs<T>(items: PouchDB.Core.PutDocument<Db & T>[]):
+        Promise<(PouchDB.Core.Response | PouchDB.Core.Error)[]> {
         return this.db.bulkDocs(items);
     }
 
-    async deleteItem<T extends {_id: string}>(item: T): Promise<DbResponse> {
-        const doc = await this.db.get(item._id);
+    async deleteItem<T extends {_id: string}>(item: T): Promise<PouchDB.Core.Response> {
+        const doc = await this.db.get<T>(item._id);
         this.loggerService.log('Removing item', doc._id);
         return this.db.remove(doc);
     }
 
-    deleteAll() {
-        this.db.allDocs({include_docs: true}, (err: any, doc: any) => {
-            for (const d of doc.rows) {
-                this.loggerService.log('Removing', d.doc._id);
-                this.db.remove(d.doc);
+    async deleteAll() {
+        try {
+            const doc = await this.db.allDocs({include_docs: true});
+            if (doc) {
+                for (const d of doc.rows) {
+                    if (d.doc) {
+                        this.loggerService.log('Removing', d.doc._id);
+                        this.db.remove(d.doc);
+                    }
+                }
             }
-        });
+        }
+        catch (err) {
+            this.loggerService.log('deleteAll error', err);
+        }
     }
 
     async clearLocalDB(): Promise<void> {
@@ -278,20 +302,19 @@ export class PouchDbService extends DbService {
         return ret;
     }
 
-    exportDb() {
-        this.db.allDocs({include_docs: true}, (err: any, doc: any) => {
-            if (err) {
-                this.loggerService.log('export error', err);
-            }
-            else {
-                const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
-                this.download(
-                    JSON.stringify(doc.rows.map((doc: any) => doc.doc), undefined, 4),
-                    `time-tracker-${date}.json`,
-                    'text/plain'
-                );
-            }
-        });
+    async exportDb() {
+        try {
+            const doc = await this.db.allDocs({include_docs: true});
+            const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            this.download(
+                JSON.stringify(doc.rows.map((doc) => doc.doc), undefined, 4),
+                `time-tracker-${date}.json`,
+                'text/plain'
+            );
+        }
+        catch (err) {
+            this.loggerService.log('export error', err);
+        }
     }
 
     async importDb(file?: File): Promise<void> {
@@ -300,15 +323,14 @@ export class PouchDbService extends DbService {
         }
         const result = await file.text();
         if (result) {
-            await this.db.bulkDocs(
+            const args = await this.db.bulkDocs(
                 JSON.parse(result),
-                {new_edits: false},
-                (...args: any) => this.loggerService.log('import done', args)
-            );
+                {new_edits: false});
+            this.loggerService.log('import done', args);
         }
     }
 
-    private download(data: any, name: string, type: string) {
+    private download(data: string, name: string, type: string) {
         const a = document.createElement('a');
         const file = new Blob([data], {type: type});
         a.href = URL.createObjectURL(file);

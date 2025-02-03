@@ -170,7 +170,7 @@ export class LastTimeComponent implements OnInit, OnChanges {
         for (const x of s) {
             this.statsContent.push({
                 name: x,
-                data: UtilsService.getStats(this.item().timestamps, x)
+                data: UtilsService.getStats<TimeStamp>(this.item().timestamps, x)
             })
         }
         this.statsFreq = UtilsService.getStatsFreq(this.item().timestamps.map(item => item.ts));

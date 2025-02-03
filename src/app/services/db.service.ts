@@ -19,12 +19,18 @@
 
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { DbResponse } from '../models';
+import { DbError, DbResponse } from '../models';
+
+export interface DbServiceResponses {
+    bulkDocs: (DbResponse | DbError)[];
+    deleteItem: DbResponse;
+    updateItem: DbResponse;
+}
 
 @Injectable({
     providedIn: 'root'
 })
-export abstract class DbService {
+export abstract class DbService<TDB extends DbServiceResponses = DbServiceResponses> {
 
     abstract onDbChange: Subject<void>;
     abstract onRemoteDbError: Subject<void>;
@@ -40,13 +46,13 @@ export abstract class DbService {
     abstract getItem<T>(id: string): Promise<T>;
     abstract putItem<T extends {_id: string}>(doc: T): Promise<T>;
     abstract updateItem<T extends {_id: string}>(
-        item: T, updateFn: (doc: T) => void): Promise<DbResponse>;
+        item: T, updateFn: (doc: T) => void): Promise<TDB['updateItem']>;
 
-    abstract find<T>(props: any): Promise<T[]>;
+    abstract find<T>(props: object): Promise<T[]>;
 
-    abstract bulkDocs(items: any[]): Promise<DbResponse[]>;
+    abstract bulkDocs<T>(items: T[]): Promise<TDB['bulkDocs']>;
 
-    abstract deleteItem<T extends {_id: string}>(item: T): Promise<DbResponse>
+    abstract deleteItem<T extends {_id: string}>(item: T): Promise<TDB['deleteItem']>
     abstract deleteAll(): void;
 
     abstract clearLocalDB(): Promise<void>;

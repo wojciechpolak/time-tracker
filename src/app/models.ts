@@ -30,9 +30,14 @@ export enum Types {
 }
 
 export interface DbResponse {
-    ok: string;
+    ok: boolean;
     id: string;
     rev: string;
+}
+
+export interface DbError {
+    message?: string | undefined;
+    error?: string | boolean | undefined;
 }
 
 export interface Stopwatch {
@@ -78,6 +83,14 @@ export interface TimeStamp {
     label?: string;
     ts: number;
 }
+
+export interface Deleted {
+    _id: string;
+    _rev: string;
+    _deleted: true;
+}
+
+export type Db = Stopwatch | StopwatchEvent | LastTime | TimeStamp | Deleted;
 
 export const DATE_FORMAT: MtxDatetimeFormats = {
     parse: {

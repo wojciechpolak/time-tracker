@@ -19,12 +19,13 @@
 
 import { StatsData, StatsFreq } from '../models';
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class UtilsService {
 
     static size2human(size: number): string {
         const i = Math.floor(Math.log(size) / Math.log(1000));
-        // @ts-ignore
-        return (size / Math.pow(1000, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+        const num = parseFloat((size / Math.pow(1000, i)).toFixed(2));
+        return num + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
     }
 
     static getTimestamp(ms: boolean = true): number {
@@ -140,8 +141,13 @@ export class UtilsService {
         return _formatTimestamp(secondsDifference);
     }
 
-    static getStats(events: any, period: string): StatsData {
-        const res: any = {};
+    static getStats<T extends {ts: number}>(events: T[], period: string): StatsData {
+        type Res = Record<string | number, number>;
+        type Ret = {
+            key: string;
+            value: number;
+        };
+        const res: Res = {};
         const oneDay = 86400 * 1000;
         for (const item of events) {
             const date = new Date(item.ts);
@@ -172,7 +178,7 @@ export class UtilsService {
             res[d] = res[d] || 0;
             res[d]++;
         }
-        const ret: any[] = [];
+        const ret: Ret[] = [];
         for (const k in res) {
             ret.push({key: k, value: res[k]});
         }

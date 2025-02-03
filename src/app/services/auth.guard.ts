@@ -18,7 +18,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+import { GuardResult, MaybeAsync, Router } from '@angular/router';
 import { SettingsService } from '../settings/settings.service';
 import { PATHS } from '../app.routes';
 
@@ -31,8 +31,7 @@ export class AuthGuard  {
                 private settingsService: SettingsService) {
     }
 
-    canActivate(route: ActivatedRouteSnapshot,
-                state: RouterStateSnapshot): boolean | UrlTree {
+    canActivate(): MaybeAsync<GuardResult> {
         if (this.settingsService.hasEnabledRemoteSync() &&
             !this.settingsService.getUser &&
             !this.settingsService.getPassword) {

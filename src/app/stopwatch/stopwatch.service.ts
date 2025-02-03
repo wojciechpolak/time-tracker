@@ -19,7 +19,7 @@
 
 import { Injectable } from '@angular/core';
 
-import { DbResponse, Stopwatch, StopwatchEvent, Types } from '../models';
+import { DbResponse, Deleted, Stopwatch, StopwatchEvent, Types } from '../models';
 import { DbService } from '../services/db.service';
 import { LoggerService } from '../services/logger.service';
 import { UtilsService } from '../services/utils.service';
@@ -229,15 +229,15 @@ export class StopwatchService {
     }
 
     async deleteStopwatch(item: Stopwatch): Promise<DbResponse> {
-        const items = item.events.map((r: StopwatchEvent) => {
+        const items: Deleted[] = item.events.map((r: StopwatchEvent): Deleted => {
             return {
                 _id: r._id,
-                _rev: r._rev,
+                _rev: r._rev as string,
                 _deleted: true,
             };
         });
-        const ret = await this.dbService.deleteItem(item);
-        await this.dbService.bulkDocs(items);
+        const ret = await this.dbService.deleteItem<Stopwatch>(item);
+        await this.dbService.bulkDocs<Deleted>(items);
         return ret;
     }
 

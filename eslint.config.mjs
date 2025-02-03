@@ -14,7 +14,7 @@ const compat = new FlatCompat({
 export default [{
     ignores: ["projects/**/*"],
 }, ...compat.extends(
-    // "plugin:@typescript-eslint/strict",
+    "plugin:@typescript-eslint/strict",
     "plugin:@angular-eslint/recommended",
     "plugin:@angular-eslint/template/process-inline-templates",
 ).map(config => ({
