@@ -5,7 +5,7 @@
     <mat-icon>add</mat-icon>
   </button>
   @if (dataService.lastTimeLoadingAll$ | async) {
-    @if (dataService.lastTimeLoadingAllDelayed$ | async) {
+    @defer (on timer(100ms)) {
       <div class="empty-list">Loading...</div>
     }
   }

@@ -19,8 +19,7 @@
 
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { debounceTime, delay, distinctUntilChanged, Observable, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { debounceTime, Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
 
 import { DbService } from './db.service';
@@ -30,8 +29,6 @@ import { selectAllLastTimeList, selectLastTimeLoading, selectLastTimeLoadingAll,
 import { selectAllStopwatches, selectStopwatchesLoading, selectStopwatchesLoadingAll,
     StopwatchActions } from '../store/stopwatch';
 
-const LOADING_DELAY = 100; // ms
-
 @Injectable({
     providedIn: 'root'
 })
@@ -40,11 +37,9 @@ export class DataService {
     isOnline: boolean = window.navigator.onLine;
     lastTimeLoading$: Observable<boolean>;
     lastTimeLoadingAll$: Observable<boolean>;
-    lastTimeLoadingAllDelayed$: Observable<boolean>;
     lastTimeList$: Observable<LastTime[]>;
     stopwatchesLoading$: Observable<boolean>;
     stopwatchesLoadingAll$: Observable<boolean>;
-    stopwatchesLoadingAllDelayed$: Observable<boolean>;
     stopwatches$: Observable<Stopwatch[]>;
 
     constructor(private store: Store,
@@ -57,19 +52,6 @@ export class DataService {
         this.stopwatches$ = this.store.select(selectAllStopwatches);
         this.stopwatchesLoading$ = this.store.select(selectStopwatchesLoading);
         this.stopwatchesLoadingAll$ = this.store.select(selectStopwatchesLoadingAll);
-
-        this.lastTimeLoadingAllDelayed$ = this.lastTimeLoadingAll$.pipe(
-                switchMap((loading: boolean) =>
-                    loading ? of(true).pipe(delay(LOADING_DELAY)) : of(false)
-                ),
-                distinctUntilChanged()
-            );
-        this.stopwatchesLoadingAllDelayed$ = this.stopwatchesLoadingAll$.pipe(
-                switchMap((loading: boolean) =>
-                    loading ? of(true).pipe(delay(LOADING_DELAY)) : of(false)
-                ),
-                distinctUntilChanged()
-            );
 
         this.init();
     }
