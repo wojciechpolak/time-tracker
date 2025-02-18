@@ -19,7 +19,7 @@
 
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { DbError, DbResponse } from '../models';
+import { DbError, DbFind, DbResponse } from '../models';
 
 export interface DbServiceResponses {
     bulkDocs: (DbResponse | DbError)[];
@@ -32,11 +32,13 @@ export interface DbServiceResponses {
 })
 export abstract class DbService<TDB extends DbServiceResponses = DbServiceResponses> {
 
+    abstract dbLoaded: Promise<void>;
     abstract onDbChange: Subject<void>;
     abstract onRemoteDbError: Subject<void>;
     abstract isSyncActive: boolean;
     abstract isSyncError: boolean;
 
+    abstract initDb(): void;
     abstract openDb(): void;
     abstract closeDb(): Promise<void>;
 
@@ -48,16 +50,16 @@ export abstract class DbService<TDB extends DbServiceResponses = DbServiceRespon
     abstract updateItem<T extends {_id: string}>(
         item: T, updateFn: (doc: T) => void): Promise<TDB['updateItem']>;
 
-    abstract find<T>(props: object): Promise<T[]>;
+    abstract find<T>(props: DbFind): Promise<T[]>;
 
     abstract bulkDocs<T>(items: T[]): Promise<TDB['bulkDocs']>;
 
     abstract deleteItem<T extends {_id: string}>(item: T): Promise<TDB['deleteItem']>
+    abstract deleteItems<T extends {_id: string}>(items: T[]): Promise<void>;
     abstract deleteAll(): void;
 
     abstract clearLocalDB(): Promise<void>;
-    abstract estimateStorage(): void;
-    abstract get storageEstimated(): string;
+    abstract getStorageEstimated(): Promise<string>;
 
     abstract exportDb(): void;
     abstract importDb(file?: File): Promise<void>;

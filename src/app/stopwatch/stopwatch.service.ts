@@ -232,12 +232,12 @@ export class StopwatchService {
         const items: Deleted[] = item.events.map((r: StopwatchEvent): Deleted => {
             return {
                 _id: r._id,
-                _rev: r._rev as string,
+                _rev: r._rev as string ?? null,
                 _deleted: true,
             };
         });
         const ret = await this.dbService.deleteItem<Stopwatch>(item);
-        await this.dbService.bulkDocs<Deleted>(items);
+        await this.dbService.deleteItems<Deleted>(items);
         return ret;
     }
 

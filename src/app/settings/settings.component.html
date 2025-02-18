@@ -8,13 +8,6 @@
 
         <form id="settingsForm" [formGroup]="form" (ngSubmit)="save()">
 
-          <mat-form-field>
-            <mat-label>Database name (local)</mat-label>
-            <input matInput formControlName="dbName">
-          </mat-form-field>
-
-          <mat-divider></mat-divider>
-
           <div class="mat-form-field">
             <div class="mat-form-field-wrapper">
               <mat-checkbox class="mat-form-field-flex" formControlName="redirectToHttps">
@@ -32,39 +25,73 @@
           </div>
 
           <mat-divider></mat-divider>
-          <h3>Remote Sync with CouchDB</h3>
+          <h3>Database Engine</h3>
 
-          <div class="mat-form-field">
-            <div class="mat-form-field-wrapper">
-              <mat-checkbox class="mat-form-field-flex" formControlName="enableRemoteSync">
-                Enable Remote Sync
-              </mat-checkbox>
+          <mat-form-field>
+            <mat-select formControlName="dbEngine">
+              @for (engine of databases | keyvalue; track engine) {
+                <mat-option [value]="engine.key">
+                  {{ engine.value }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          @if (form.get('dbEngine')?.value === 'firestore') {
+            <mat-form-field>
+              <mat-label>Firestore Collection Name</mat-label>
+              <input matInput formControlName="dbName">
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Firebase JSON Config</mat-label>
+              <textarea matInput
+                        formControlName="firebaseConfig"
+                        rows="12"
+                        [placeholder]="firebaseConfigPlaceholder">
+              </textarea>
+            </mat-form-field>
+          }
+          @else {
+            <mat-form-field>
+              <mat-label>Database Name (local)</mat-label>
+              <input matInput formControlName="dbName">
+            </mat-form-field>
+
+            <h3>Remote Sync with CouchDB</h3>
+
+            <div class="mat-form-field">
+              <div class="mat-form-field-wrapper">
+                <mat-checkbox class="mat-form-field-flex" formControlName="enableRemoteSync">
+                  Enable Remote Sync
+                </mat-checkbox>
+              </div>
             </div>
-          </div>
 
-          <mat-form-field>
-            <mat-label>User</mat-label>
-            <input matInput formControlName="user"
-                   autocomplete="username"
-                   [required]="form.controls['enableRemoteSync'].value">
-          </mat-form-field>
+            <mat-form-field>
+              <mat-label>User</mat-label>
+              <input matInput formControlName="user"
+                     autocomplete="username"
+                     [required]="form.controls['enableRemoteSync'].value">
+            </mat-form-field>
 
-          <mat-form-field>
-            <mat-label>Password</mat-label>
-            <input matInput formControlName="password" type="password"
-                   autocomplete="current-password"
-                   [required]="form.controls['enableRemoteSync'].value">
-          </mat-form-field>
+            <mat-form-field>
+              <mat-label>Password</mat-label>
+              <input matInput formControlName="password" type="password"
+                     autocomplete="current-password"
+                     [required]="form.controls['enableRemoteSync'].value">
+            </mat-form-field>
 
-          <mat-form-field>
-            <mat-label>Remote database endpoint</mat-label>
-            <input matInput placeholder="CouchDB URL" formControlName="endpoint"
-                   [required]="form.controls['enableRemoteSync'].value">
-            <button matSuffix mat-icon-button aria-label="Add default"
-                    (click)="fillDefaultEndpoint($event)">
-              <mat-icon>add</mat-icon>
-            </button>
-          </mat-form-field>
+            <mat-form-field>
+              <mat-label>Remote database endpoint</mat-label>
+              <input matInput placeholder="CouchDB URL" formControlName="endpoint"
+                     [required]="form.controls['enableRemoteSync'].value">
+              <button matSuffix mat-icon-button aria-label="Add default"
+                      (click)="fillDefaultEndpoint($event)">
+                <mat-icon>add</mat-icon>
+              </button>
+            </mat-form-field>
+          }
 
           <mat-divider></mat-divider>
 
@@ -88,7 +115,7 @@
         <mat-card-title>Database Info</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <p>{{ storageEstimated }}</p>
+        <p>{{ storageInfo$ | async }}</p>
         <div style="margin-top: 2em">
           <p>
             <button mat-raised-button color="primary"

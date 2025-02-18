@@ -21,13 +21,23 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
+import { of, Subject } from 'rxjs';
 
+import { DbService } from '../services/db.service';
 import { MainComponent } from './main.component';
 import { provideCore } from '../core/core';
 
 describe('MainComponent', () => {
     let component: MainComponent;
     let fixture: ComponentFixture<MainComponent>;
+
+    const onDbChangeSubject = new Subject<void>();
+    const onRemoteDbErrorSubject = new Subject<void>();
+    const dbServiceStub = {
+        dbLoaded: of(true),
+        onDbChange: onDbChangeSubject.asObservable(),
+        onRemoteDbError: onRemoteDbErrorSubject.asObservable(),
+    };
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -38,6 +48,7 @@ describe('MainComponent', () => {
                 provideCore(),
                 provideRouter([]),
                 provideMockStore(),
+                {provide: DbService, useValue: dbServiceStub}
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();

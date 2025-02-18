@@ -17,19 +17,27 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { LocalStorageService } from '../services/storage.service';
 import { LoggerService } from '../services/logger.service';
 
 const STORAGE_SETTINGS = 'settings';
 
+export const Databases = {
+    pouchdb: 'PouchDB',
+    firestore: 'Google\'s Firestore',
+}
+export type DbEngine = keyof typeof Databases;
+
 export interface Settings {
+    dbEngine: DbEngine;
     dbName?: string;
     endpoint?: string;
     user: string;
     password: string;
     lastPage: string;
     enableRemoteSync: boolean;
+    firebaseConfig: string;
     redirectToHttps: boolean;
     showDebug: boolean;
 }
@@ -40,6 +48,7 @@ export interface Settings {
 export class SettingsService {
 
     settings: Settings = {} as Settings;
+    settingsChanged: EventEmitter<Settings> = new EventEmitter<Settings>();
 
     constructor(private localStorage: LocalStorageService,
                 private loggerService: LoggerService) {
@@ -53,6 +62,7 @@ export class SettingsService {
     save(settings: Settings): void {
         this.settings = settings;
         this.localStorage.set(STORAGE_SETTINGS, this.settings);
+        this.settingsChanged.emit(this.settings);
     }
 
     update(settings: Partial<Settings>): void {
@@ -105,7 +115,15 @@ export class SettingsService {
         return this.settings.password;
     }
 
+    get getDbEngine(): DbEngine {
+        return this.settings.dbEngine || 'pouchdb';
+    }
+
     get getDbName(): string {
         return this.settings.dbName || 'time-tracker';
+    }
+
+    get getFirebaseOptions(): object {
+        return JSON.parse(this.settings.firebaseConfig) || {};
     }
 }

@@ -82,7 +82,12 @@ export class LastTimeService {
 
     sortLastTimeByTs(lastTime: LastTime[]): LastTime[] {
         return lastTime.sort(
-            (a: LastTime, b: LastTime) => b.timestamps[0].ts - a.timestamps[0].ts);
+            (a: LastTime, b: LastTime) => {
+                if (a.timestamps.length && b.timestamps.length) {
+                    return b.timestamps[0].ts - a.timestamps[0].ts
+                }
+                return 0;
+            });
     }
 
     async fetchTimeStamp(id: string): Promise<TimeStamp> {
@@ -180,12 +185,12 @@ export class LastTimeService {
         const items: Deleted[] = item.timestamps.map((r: TimeStamp): Deleted => {
             return {
                 _id: r._id,
-                _rev: r._rev as string,
+                _rev: r._rev as string ?? null,
                 _deleted: true,
             };
         });
         const ret = await this.dbService.deleteItem<LastTime>(item);
-        await this.dbService.bulkDocs<Deleted>(items);
+        await this.dbService.deleteItems<Deleted>(items);
         return ret;
     }
 }

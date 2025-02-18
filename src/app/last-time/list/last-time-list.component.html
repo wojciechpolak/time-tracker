@@ -4,7 +4,9 @@
           (click)="addLastTime()">
     <mat-icon>add</mat-icon>
   </button>
-  @if (dataService.lastTimeLoadingAll$ | async) {
+  @if ((dataService.dbLoaded$ | async) === false) {
+  }
+  @else if (dataService.lastTimeLoadingAll$ | async) {
     @defer (on timer(100ms)) {
       <div class="empty-list">Loading...</div>
     }

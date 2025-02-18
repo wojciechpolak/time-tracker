@@ -21,11 +21,13 @@ import { MatButton, MatFabButton, MatIconButton } from '@angular/material/button
 import { MatCard, MatCardSubtitle, MatCardHeader, MatCardTitle,
     MatCardContent, MatCardActions } from '@angular/material/card';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { MatDialogActions, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
 import { MatDivider } from '@angular/material/divider';
 import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
+import { MatOption, MatSelect } from '@angular/material/select';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatTabGroup, MatTab, MatTabLink, MatTabNav, MatTabNavPanel } from '@angular/material/tabs';
 import { MatToolbar } from '@angular/material/toolbar';
@@ -43,6 +45,9 @@ export const AppMaterialModules = [
     MatCardSubtitle,
     MatCardTitle,
     MatCheckbox,
+    MatDialogActions,
+    MatDialogContent,
+    MatDialogTitle,
     MatDivider,
     MatFabButton,
     MatFormField,
@@ -53,7 +58,9 @@ export const AppMaterialModules = [
     MatMenu,
     MatMenuItem,
     MatMenuTrigger,
+    MatOption,
     MatProgressSpinner,
+    MatSelect,
     MatSuffix,
     MatTab,
     MatTabGroup,

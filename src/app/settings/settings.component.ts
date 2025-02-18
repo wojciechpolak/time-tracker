@@ -18,17 +18,50 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+    AbstractControl,
+    FormControl,
+    FormGroup,
+    ReactiveFormsModule,
+    ValidationErrors,
+    Validators
+} from '@angular/forms';
+import { AsyncPipe, KeyValuePipe } from '@angular/common';
 import { SwUpdate } from '@angular/service-worker';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { z } from 'zod';
 
 import { AppMaterialModules } from '../app-modules';
 import { DataService } from '../services/data.service';
 import { DbService } from '../services/db.service';
 import { LoggerService } from '../services/logger.service';
-import { SettingsService } from './settings.service';
+import { SettingsService, Databases, DbEngine } from './settings.service';
 import { environment } from '../../environments/environment';
 
+
+const firebaseConfigSchema = z.object({
+  apiKey: z.string(),
+  authDomain: z.string(),
+  projectId: z.string(),
+  storageBucket: z.string(),
+  messagingSenderId: z.string(),
+  appId: z.string(),
+}).strict();
+
+function firebaseConfigValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+        return null;
+    }
+    try {
+        const parsed = JSON.parse(control.value);
+        firebaseConfigSchema.parse(parsed);
+        return null;
+    }
+    catch (error: unknown) {
+        console.error(error);
+        return {invalidJson: true};
+    }
+}
 
 @Component({
     selector: 'app-settings',
@@ -36,13 +69,25 @@ import { environment } from '../../environments/environment';
     imports: [
         ...AppMaterialModules,
         ReactiveFormsModule,
+        KeyValuePipe,
+        AsyncPipe,
     ]
 })
 export class SettingsComponent implements OnInit {
 
+    protected databases = Databases;
     protected form: FormGroup;
     protected importFile?: File;
     protected importFileReady: boolean = false;
+    protected storageInfo$!: Promise<string>;
+    protected firebaseConfigPlaceholder = `{
+   "apiKey": "",
+   "authDomain": "",
+   "projectId": "",
+   "storageBucket": "",
+   "messagingSenderId": "",
+   "appId": ""
+}`;
 
     constructor(private swUpdate: SwUpdate,
                 private snackBar: MatSnackBar,
@@ -53,7 +98,9 @@ export class SettingsComponent implements OnInit {
         this.form = new FormGroup({
             user: new FormControl<string>(''),
             password: new FormControl<string>(''),
+            dbEngine: new FormControl<DbEngine>('pouchdb'),
             dbName: new FormControl<string>(''),
+            firebaseConfig: new FormControl<string>(''),
             endpoint: new FormControl<string>(''),
             enableRemoteSync: new FormControl<boolean>(false),
             redirectToHttps: new FormControl<boolean>(false),
@@ -61,11 +108,24 @@ export class SettingsComponent implements OnInit {
         });
     }
 
-    ngOnInit() {
+    async ngOnInit() {
+        await this.dbService.dbLoaded;
+        this.storageInfo$ = this.getStorageEstimated();
         this.form.patchValue(this.settingsService.get());
         this.form.controls['dbName'].patchValue(
             this.settingsService.getDbName);
-        this.dbService.estimateStorage();
+
+        this.form.get('dbEngine')?.valueChanges.subscribe((dbEngineValue: DbEngine) => {
+            const firebaseConfigControl = this.form.get('firebaseConfig');
+            if (dbEngineValue === 'firestore') {
+                firebaseConfigControl?.setValidators(
+                    [Validators.required, firebaseConfigValidator]);
+            }
+            else {
+                firebaseConfigControl?.clearValidators();
+            }
+            firebaseConfigControl?.updateValueAndValidity();
+        });
     }
 
     fillDefaultEndpoint($event: Event) {
@@ -105,6 +165,7 @@ export class SettingsComponent implements OnInit {
             this.dbService.remoteSyncEnable();
         }
         window.history.back();
+        window.location.reload();
     }
 
     async checkForUpdate($event: Event) {
@@ -132,6 +193,7 @@ export class SettingsComponent implements OnInit {
             await this.dbService.importDb(this.importFile);
             this.importFileReady = false;
             this.snackBar.open('Database imported', 'OK');
+            this.dataService.fetchAll();
         }
     }
 
@@ -147,8 +209,8 @@ export class SettingsComponent implements OnInit {
         return window.navigator.onLine;
     }
 
-    get storageEstimated() {
-        return this.dbService.storageEstimated;
+    async getStorageEstimated(): Promise<string> {
+        return await this.dbService.getStorageEstimated();
     }
 
     get version() {

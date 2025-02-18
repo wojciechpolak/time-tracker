@@ -31,8 +31,8 @@ import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { DATE_FORMAT } from './models';
 import { DataService } from './services/data.service';
 import { DbService } from './services/db.service';
+import { DynamicDbService } from './services/dynamic-db.service';
 import { LastTimeService } from './last-time/last-time.service';
-import { PouchDbService } from './services/pouch-db.service';
 import { SettingsService } from './settings/settings.service';
 import { StopwatchService } from './stopwatch/stopwatch.service';
 import { TimerService } from './services/timer.service';
@@ -50,7 +50,7 @@ export const appConfig: ApplicationConfig = {
         SettingsService,
         StopwatchService,
         TimerService,
-        {provide: DbService, useClass: PouchDbService},
+        {provide: DbService, useClass: DynamicDbService},
         provideCore(),
         provideRouter(routes),
         provideServiceWorker('ngsw-worker.js', {

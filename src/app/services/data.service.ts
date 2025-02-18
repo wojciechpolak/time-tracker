@@ -19,7 +19,8 @@
 
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { debounceTime, Observable } from 'rxjs';
+import { debounceTime, from, Observable, startWith } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 
 import { DbService } from './db.service';
@@ -35,6 +36,7 @@ import { selectAllStopwatches, selectStopwatchesLoading, selectStopwatchesLoadin
 export class DataService {
 
     isOnline: boolean = window.navigator.onLine;
+    dbLoaded$: Observable<boolean>;
     lastTimeLoading$: Observable<boolean>;
     lastTimeLoadingAll$: Observable<boolean>;
     lastTimeList$: Observable<LastTime[]>;
@@ -52,6 +54,11 @@ export class DataService {
         this.stopwatches$ = this.store.select(selectAllStopwatches);
         this.stopwatchesLoading$ = this.store.select(selectStopwatchesLoading);
         this.stopwatchesLoadingAll$ = this.store.select(selectStopwatchesLoadingAll);
+
+        this.dbLoaded$ = from(this.dbService.dbLoaded).pipe(
+            map(() => true),
+            startWith(false)
+        );
 
         this.init();
     }
@@ -71,8 +78,11 @@ export class DataService {
                 this.snackBar.open(msg, 'Dismiss');
                 this.fetchAll();
             });
+    }
 
-        this.fetchAll();
+    // Proxy the readiness promise
+    get dbLoaded(): Promise<void> {
+        return this.dbService.dbLoaded;
     }
 
     fetchAll() {

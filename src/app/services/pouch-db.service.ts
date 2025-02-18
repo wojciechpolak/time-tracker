@@ -42,7 +42,7 @@ export interface PouchDbResponses extends DbServiceResponses {
 })
 export class PouchDbService extends DbService<PouchDbResponses> {
 
-    est!: StorageEstimate;
+    dbLoaded: Promise<void> = Promise.resolve();
     isSyncActive: boolean = false;
     isSyncPullActive: boolean = false;
     isSyncError: boolean = false;
@@ -59,7 +59,6 @@ export class PouchDbService extends DbService<PouchDbResponses> {
                 private settingsService: SettingsService) {
         super();
         this.listenToOnlineStatus();
-        this.initDb();
     }
 
     initDb() {
@@ -248,6 +247,10 @@ export class PouchDbService extends DbService<PouchDbResponses> {
         return this.db.remove(doc);
     }
 
+    async deleteItems<T>(items: PouchDB.Core.PutDocument<Db & T>[]): Promise<void> {
+        await this.bulkDocs<T>(items);
+    }
+
     async deleteAll() {
         try {
             const doc = await this.db.allDocs({include_docs: true});
@@ -281,21 +284,17 @@ export class PouchDbService extends DbService<PouchDbResponses> {
         });
     }
 
-    estimateStorage() {
-        if (navigator.storage && navigator.storage.estimate) {
-            navigator.storage.estimate().then((est: StorageEstimate) => {
-                this.est = est;
-            });
+    async getStorageEstimated(): Promise<string> {
+        let estimated: StorageEstimate;
+        if (navigator.storage?.estimate) {
+            estimated = await navigator.storage.estimate();
         }
-    }
-
-    get storageEstimated() {
-        if (!this.est) {
+        else {
             return 'Unknown';
         }
-        const usage = this.est.usage ?? 0;
-        const quota = this.est.quota ?? 0;
-        let ret = '';
+        const usage = estimated.usage ?? 0;
+        const quota = estimated.quota ?? 0;
+        let ret = 'PouchDB:';
         ret += ' Usage: ' + UtilsService.size2human(usage);
         ret += ', Quota: ' + UtilsService.size2human(quota);
         ret += ', ' + (usage / quota * 100).toFixed(2) + '%';
@@ -323,10 +322,15 @@ export class PouchDbService extends DbService<PouchDbResponses> {
         }
         const result = await file.text();
         if (result) {
-            const args = await this.db.bulkDocs(
-                JSON.parse(result),
-                {new_edits: false});
-            this.loggerService.log('import done', args);
+            let parsed = JSON.parse(result);
+            parsed = parsed.map((doc: {ref: unknown}) => {
+                if (doc.ref === null) {
+                    delete doc.ref;
+                }
+                return doc;
+            });
+            await this.db.bulkDocs(parsed, {new_edits: false});
+            this.loggerService.log('import done');
         }
     }
 

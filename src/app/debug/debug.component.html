@@ -1,6 +1,6 @@
 <section class="debug">
     <p>
-        DB Info: {{ storageEstimated }}
+        DB Info: {{ storageInfo$ | async }}
     </p>
     <div>
         <button mat-raised-button color="primary" (click)="clearConsole()">

@@ -21,6 +21,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLinkActive, RouterLink, RouterOutlet } from '@angular/router';
 
 import { AppMaterialModules } from '../app-modules';
+import { DataService } from '../services/data.service';
 import { SettingsService } from '../settings/settings.service';
 
 @Component({
@@ -38,12 +39,15 @@ export class MainComponent implements OnInit {
     protected redirectToHttps: boolean = false;
     protected showDebug: boolean = false;
 
-    constructor(private settings: SettingsService) {
+    constructor(private settings: SettingsService,
+                private dataService: DataService) {
     }
 
-    ngOnInit() {
+    async ngOnInit() {
         const settings = this.settings.get();
         this.showDebug = settings.showDebug;
         this.redirectToHttps = settings.redirectToHttps;
+        await this.dataService.dbLoaded;
+        this.dataService.fetchAll();
     }
 }

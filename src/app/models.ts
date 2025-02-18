@@ -32,12 +32,21 @@ export enum Types {
 export interface DbResponse {
     ok: boolean;
     id: string;
-    rev: string;
+    rev: string | null;
 }
 
 export interface DbError {
     message?: string | undefined;
     error?: string | boolean | undefined;
+}
+
+export interface DbFind {
+    selector: {
+        type: Types,
+        ref: {$exists: boolean} | string,
+    },
+    sort?: [{_id: 'asc' | 'desc'}],
+    limit?: number,
 }
 
 export interface Stopwatch {

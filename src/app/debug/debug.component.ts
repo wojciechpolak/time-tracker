@@ -18,6 +18,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 
 import { AppMaterialModules } from '../app-modules';
@@ -30,19 +31,21 @@ import { LoggerService } from '../services/logger.service';
     templateUrl: './debug.component.html',
     imports: [
         ...AppMaterialModules,
+        AsyncPipe,
     ]
 })
 export class DebugComponent implements OnInit, OnDestroy {
 
     private sub!: Subscription;
+    protected storageInfo$!: Promise<string>;
 
     constructor(private loggerService: LoggerService,
                 private dbService: DbService) {
     }
 
     ngOnInit() {
-        this.dbService.estimateStorage();
         this.log('Welcome!');
+        this.storageInfo$ = this.getStorageEstimated();
         for (const msg of this.loggerService.buf) {
             this.log(msg);
         }
@@ -57,8 +60,8 @@ export class DebugComponent implements OnInit, OnDestroy {
         }
     }
 
-    get storageEstimated() {
-        return this.dbService.storageEstimated;
+    async getStorageEstimated() {
+        return await this.dbService.getStorageEstimated();
     }
 
     deleteAll() {

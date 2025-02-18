@@ -104,7 +104,8 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     get lastTimestamp(): number {
-        return this.item().timestamps[0].ts;
+        const timestamps = this.item().timestamps;
+        return timestamps.length ? timestamps[0].ts : 0;
     }
 
     touch() {
@@ -179,7 +180,8 @@ export class LastTimeComponent implements OnInit, OnChanges {
     protected getAgeCssClass(): string {
         const day = 86400000;
         const now = new Date().getTime();
-        const ts = this.item().timestamps[0].ts;
+        const timestamps = this.item().timestamps
+        const ts = timestamps.length ? timestamps[0].ts : 0;
         const diff = now - ts;
         let name = 'default';
         if (diff <= day) {
