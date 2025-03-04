@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterLinkActive, RouterLink, RouterOutlet } from '@angular/router';
 
 import { AppMaterialModules } from '../app-modules';
@@ -36,12 +36,11 @@ import { SettingsService } from '../settings/settings.service';
 })
 export class MainComponent implements OnInit {
 
+    private dataService = inject(DataService);
+    private settings = inject(SettingsService);
+
     protected redirectToHttps: boolean = false;
     protected showDebug: boolean = false;
-
-    constructor(private settings: SettingsService,
-                private dataService: DataService) {
-    }
 
     async ngOnInit() {
         const settings = this.settings.get();

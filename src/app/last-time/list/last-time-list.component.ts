@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 
@@ -39,10 +39,9 @@ import { SettingsService } from '../../settings/settings.service';
 })
 export class LastTimeListComponent implements OnInit {
 
-    constructor(private store: Store,
-                protected dataService: DataService,
-                private settingsService: SettingsService) {
-    }
+    private settingsService = inject(SettingsService);
+    private store = inject(Store);
+    protected dataService = inject(DataService);
 
     ngOnInit() {
         this.settingsService.update({lastPage: `/${PATHS.Main}/${PATHS.Last}`});

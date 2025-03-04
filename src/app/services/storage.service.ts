@@ -17,7 +17,8 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Inject, Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { WINDOW_TOKEN } from '../core/core';
 
 
 export abstract class StorageService {
@@ -73,8 +74,9 @@ export abstract class StorageService {
 
 @Injectable()
 export class LocalStorageService extends StorageService {
+    protected $window: Window = inject(WINDOW_TOKEN);
     protected $s;
-    constructor(@Inject('$window') protected $window: Window) {
+    constructor() {
         super();
         this.$s = this.$window.localStorage;
         if (!this.isStorageAvailable()) {
@@ -86,8 +88,9 @@ export class LocalStorageService extends StorageService {
 
 @Injectable()
 export class SessionStorageService extends StorageService {
+    protected $window: Window = inject(WINDOW_TOKEN);
     protected $s;
-    constructor(@Inject('$window') protected $window: Window) {
+    constructor() {
         super();
         this.$s = this.$window.sessionStorage;
         if (!this.isStorageAvailable()) {

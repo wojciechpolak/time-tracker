@@ -23,7 +23,7 @@ import {
     OnChanges,
     OnInit,
     SimpleChanges,
-    input
+    input, inject
 } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -55,6 +55,9 @@ import { UtilsService } from '../services/utils.service';
 })
 export class LastTimeComponent implements OnInit, OnChanges {
 
+    private store = inject(Store);
+    private timerService = inject(TimerService);
+
     readonly item = input.required<LastTime>();
 
     protected UtilsService: typeof UtilsService = UtilsService;
@@ -79,10 +82,6 @@ export class LastTimeComponent implements OnInit, OnChanges {
             },
         }
     };
-
-    constructor(private store: Store,
-                private timerService: TimerService) {
-    }
 
     ngOnInit() {
         this.updateTimestamps();

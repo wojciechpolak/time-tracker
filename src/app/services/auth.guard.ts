@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { GuardResult, MaybeAsync, Router } from '@angular/router';
 import { SettingsService } from '../settings/settings.service';
 import { PATHS } from '../app.routes';
@@ -27,9 +27,8 @@ import { PATHS } from '../app.routes';
 })
 export class AuthGuard  {
 
-    constructor(private router: Router,
-                private settingsService: SettingsService) {
-    }
+    private router = inject(Router);
+    private settingsService = inject(SettingsService);
 
     canActivate(): MaybeAsync<GuardResult> {
         if (this.settingsService.hasEnabledRemoteSync() &&

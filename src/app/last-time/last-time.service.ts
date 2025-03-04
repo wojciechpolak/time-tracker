@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 
 import { DbService } from '../services/db.service';
 import { DbResponse, Deleted, LastTime, TimeStamp, Types } from '../models';
@@ -34,9 +34,8 @@ const LT_TS_MAX_ITEMS = 10;
 })
 export class LastTimeService {
 
-    constructor(private dbService: DbService,
-                private loggerService: LoggerService) {
-    }
+    private dbService = inject(DbService);
+    private loggerService = inject(LoggerService);
 
     async fetchLastTime(id: string, limit: number = 0): Promise<LastTime> {
         try {

@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
@@ -41,12 +41,11 @@ import { StopwatchComponent } from '../stopwatch.component';
 })
 export class StopwatchListComponent implements OnInit, OnDestroy {
 
-    private sub1!: Subscription;
+    private settingsService = inject(SettingsService);
+    private store = inject(Store);
+    protected dataService = inject(DataService);
 
-    constructor(private store: Store,
-                protected dataService: DataService,
-                private settingsService: SettingsService) {
-    }
+    private sub1!: Subscription;
 
     ngOnInit() {
         this.settingsService.update({lastPage: `/${PATHS.Main}/${PATHS.Stopwatch}`});

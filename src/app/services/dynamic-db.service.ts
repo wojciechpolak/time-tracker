@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable, Injector } from '@angular/core';
+import { inject, Injectable, Injector } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 
 import { DbFind } from '../models';
@@ -28,6 +28,9 @@ import { DbEngine, SettingsService } from '../settings/settings.service';
     providedIn: 'root',
 })
 export class DynamicDbService extends DbService {
+
+    private injector = inject(Injector);
+    private settings = inject(SettingsService);
 
     onDbChange: Subject<void> = new Subject<void>();
     onRemoteDbError: Subject<void> = new Subject<void>();
@@ -42,10 +45,8 @@ export class DynamicDbService extends DbService {
         this.dbLoadedResolver = resolve;
     });
 
-    constructor(private injector: Injector,
-                private settings: SettingsService) {
+    constructor() {
         super();
-
         this.loadDbService(this.settings.getDbEngine);
     }
 

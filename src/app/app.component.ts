@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ApplicationRef, Component, OnInit } from '@angular/core';
+import { ApplicationRef, Component, inject, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
@@ -44,15 +44,14 @@ import { SettingsService } from './settings/settings.service';
 })
 export class AppComponent implements OnInit {
 
-    constructor(private router: Router,
-                private appRef: ApplicationRef,
-                private swUpdate: SwUpdate,
-                private snackBar: MatSnackBar,
-                private loggerService: LoggerService,
-                private settingsService: SettingsService,
-                private dbService: DbService,
-                private dataService: DataService) {
-    }
+    private appRef = inject(ApplicationRef);
+    private dataService = inject(DataService);
+    private dbService = inject(DbService);
+    private loggerService = inject(LoggerService);
+    private router = inject(Router);
+    private settingsService = inject(SettingsService);
+    private snackBar = inject(MatSnackBar);
+    private swUpdate = inject(SwUpdate);
 
     ngOnInit() {
         const settings = this.settingsService.get();

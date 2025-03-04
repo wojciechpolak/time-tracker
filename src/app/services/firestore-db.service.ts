@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
@@ -54,6 +54,11 @@ import { AppDialogComponent } from '../main/dialog.component';
 })
 export class FirestoreDbService extends DbService {
 
+    private dialog = inject(MatDialog);
+    private loggerService = inject(LoggerService);
+    private settingsService = inject(SettingsService);
+    private snackBar = inject(MatSnackBar);
+
     dbLoaded: Promise<void> = Promise.resolve();
     isSyncActive: boolean = false;
     isSyncError: boolean = false;
@@ -64,10 +69,7 @@ export class FirestoreDbService extends DbService {
     private config!: FirebaseOptions;
     private collection!: CollectionReference;
 
-    constructor(private loggerService: LoggerService,
-                private snackBar: MatSnackBar,
-                private dialog: MatDialog,
-                private settingsService: SettingsService) {
+    constructor() {
         super();
         this.listenToOnlineStatus();
     }

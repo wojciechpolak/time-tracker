@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ChangeDetectionStrategy, Component, OnChanges, OnInit, SimpleChanges, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnChanges, OnInit, SimpleChanges, input, inject } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AsyncPipe, NgClass } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
@@ -49,6 +49,11 @@ import { UtilsService } from '../services/utils.service';
     ]
 })
 export class StopwatchComponent implements OnChanges, OnInit {
+
+    private loggerService = inject(LoggerService);
+    private stopwatchService = inject(StopwatchService);
+    private store = inject(Store);
+    private timerService = inject(TimerService);
 
     readonly item = input.required<Stopwatch>();
 
@@ -87,10 +92,7 @@ export class StopwatchComponent implements OnChanges, OnInit {
         }
     };
 
-    constructor(private store: Store,
-                private loggerService: LoggerService,
-                private timerService: TimerService,
-                private stopwatchService: StopwatchService) {
+    constructor() {
         this.addEventLocked$ = this.store.select(selectStopwatchesLoading);
     }
 

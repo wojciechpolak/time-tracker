@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { debounceTime, from, Observable, startWith } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -35,6 +35,10 @@ import { selectAllStopwatches, selectStopwatchesLoading, selectStopwatchesLoadin
 })
 export class DataService {
 
+    private dbService = inject(DbService);
+    private snackBar = inject(MatSnackBar);
+    private store = inject(Store);
+
     isOnline: boolean = window.navigator.onLine;
     dbLoaded$: Observable<boolean>;
     lastTimeLoading$: Observable<boolean>;
@@ -44,10 +48,7 @@ export class DataService {
     stopwatchesLoadingAll$: Observable<boolean>;
     stopwatches$: Observable<Stopwatch[]>;
 
-    constructor(private store: Store,
-                private dbService: DbService,
-                private snackBar: MatSnackBar) {
-
+    constructor() {
         this.lastTimeList$ = this.store.select(selectAllLastTimeList);
         this.lastTimeLoading$ = this.store.select(selectLastTimeLoading);
         this.lastTimeLoadingAll$ = this.store.select(selectLastTimeLoadingAll);

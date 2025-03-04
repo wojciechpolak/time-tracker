@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AppMaterialModules } from '../app-modules';
 
@@ -41,11 +41,13 @@ type ParsedData = {link: string | null, text: string};
 })
 export class AppDialogComponent {
 
+    public dialogRef = inject(MatDialogRef<AppDialogComponent>);
+    public data = inject(MAT_DIALOG_DATA) as {title: string; message: string};
+
     parsedData: ParsedData;
 
-    constructor(public dialogRef: MatDialogRef<AppDialogComponent>,
-                @Inject(MAT_DIALOG_DATA) public data: {title: string; message: string}) {
-        this.parsedData = this.extractAndRemoveHttpLink(data.message);
+    constructor() {
+        this.parsedData = this.extractAndRemoveHttpLink(this.data.message);
     }
 
     onClose(): void {

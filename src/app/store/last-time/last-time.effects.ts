@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { from, of } from 'rxjs';
 import { mergeMap, map, catchError, switchMap } from 'rxjs/operators';
@@ -29,9 +29,8 @@ import { LastTimeService } from '../../last-time/last-time.service';
 @Injectable()
 export class LastTimeEffects {
 
-    constructor(private actions$: Actions,
-                private lastTimeService: LastTimeService) {
-    }
+    private actions$ = inject(Actions);
+    private lastTimeService = inject(LastTimeService);
 
     /**
      * Effect to load a single last-time

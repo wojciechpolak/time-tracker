@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import {
     AbstractControl,
     FormControl,
@@ -75,6 +75,13 @@ function firebaseConfigValidator(control: AbstractControl): ValidationErrors | n
 })
 export class SettingsComponent implements OnInit {
 
+    private dataService = inject(DataService);
+    private dbService = inject(DbService);
+    private loggerService = inject(LoggerService);
+    private settingsService = inject(SettingsService);
+    private snackBar = inject(MatSnackBar);
+    private swUpdate = inject(SwUpdate);
+
     protected databases = Databases;
     protected form: FormGroup;
     protected importFile?: File;
@@ -89,12 +96,7 @@ export class SettingsComponent implements OnInit {
    "appId": ""
 }`;
 
-    constructor(private swUpdate: SwUpdate,
-                private snackBar: MatSnackBar,
-                private loggerService: LoggerService,
-                private settingsService: SettingsService,
-                private dbService: DbService,
-                private dataService: DataService) {
+    constructor() {
         this.form = new FormGroup({
             user: new FormControl<string>(''),
             password: new FormControl<string>(''),

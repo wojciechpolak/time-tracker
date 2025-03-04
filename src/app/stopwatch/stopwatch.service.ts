@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 
 import { DbResponse, Deleted, Stopwatch, StopwatchEvent, Types } from '../models';
 import { DbService } from '../services/db.service';
@@ -32,9 +32,8 @@ type StopwatchEventUpdate = Partial<Pick<StopwatchEvent, 'name' | 'ts'>>;
 })
 export class StopwatchService {
 
-    constructor(private dbService: DbService,
-                private loggerService: LoggerService) {
-    }
+    private dbService = inject(DbService);
+    private loggerService = inject(LoggerService);
 
     async fetchStopwatch(id: string, ignoreTsArch: boolean = false): Promise<Stopwatch> {
         try {

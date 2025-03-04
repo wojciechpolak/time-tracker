@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Provider } from '@angular/core';
+import { InjectionToken, Provider } from '@angular/core';
 import { LocalStorageService, SessionStorageService } from '../services/storage.service';
 import { LoggerService } from '../services/logger.service';
 
@@ -26,9 +26,11 @@ export function provideCore(): Provider[] {
       LoggerService,
       LocalStorageService,
       SessionStorageService,
-      {provide: '$window', useFactory: getWindow},
+      {provide: WINDOW_TOKEN, useFactory: getWindow},
   ];
 }
+
+export const WINDOW_TOKEN = new InjectionToken<Window>('WINDOW_TOKEN');
 
 export function getWindow() {
     return window;

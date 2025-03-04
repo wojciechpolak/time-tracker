@@ -22,12 +22,14 @@ import { MtxDatetimeFormats } from '@ng-matero/extensions/core';
 
 export const AppTitle = 'Time Tracker';
 
-export enum Types {
-    LAST_TIME = 'LT',
-    LAST_TIME_TS = 'LT-TS',
-    STOPWATCH = 'SW',
-    STOPWATCH_TS = 'SW-TS',
-}
+export const Types = {
+    LAST_TIME: 'LT',
+    LAST_TIME_TS: 'LT-TS',
+    STOPWATCH: 'SW',
+    STOPWATCH_TS: 'SW-TS',
+} as const;
+
+export type TypeValues = (typeof Types)[keyof typeof Types];
 
 export interface DbResponse {
     ok: boolean;
@@ -42,7 +44,7 @@ export interface DbError {
 
 export interface DbFind {
     selector: {
-        type: Types,
+        type: TypeValues,
         ref: {$exists: boolean} | string,
     },
     sort?: [{_id: 'asc' | 'desc'}],
@@ -51,7 +53,7 @@ export interface DbFind {
 
 export interface Stopwatch {
     _id: string;
-    type: Types.STOPWATCH;
+    type: typeof Types.STOPWATCH;
     name: string;
     events: StopwatchEvent[];
     tsArch?: number;
@@ -61,7 +63,7 @@ export interface Stopwatch {
 export interface StopwatchEvent {
     _id: string;
     _rev?: string;
-    type: Types.STOPWATCH_TS,
+    type: typeof Types.STOPWATCH_TS,
     ref: string;
     name?: string;
     ts: number;
@@ -78,7 +80,7 @@ export interface StopwatchRoundTime {
 
 export interface LastTime {
     _id: string;
-    type: Types.LAST_TIME;
+    type: typeof Types.LAST_TIME;
     name: string;
     timestamps: TimeStamp[];
     hasMoreTs: boolean;
@@ -87,7 +89,7 @@ export interface LastTime {
 export interface TimeStamp {
     _id: string;
     _rev?: string
-    type: Types.LAST_TIME_TS,
+    type: typeof Types.LAST_TIME_TS,
     ref: string;
     label?: string;
     ts: number;

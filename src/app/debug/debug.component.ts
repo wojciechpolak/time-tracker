@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 
@@ -36,12 +36,11 @@ import { LoggerService } from '../services/logger.service';
 })
 export class DebugComponent implements OnInit, OnDestroy {
 
+    private dbService = inject(DbService);
+    private loggerService = inject(LoggerService);
+
     private sub!: Subscription;
     protected storageInfo$!: Promise<string>;
-
-    constructor(private loggerService: LoggerService,
-                private dbService: DbService) {
-    }
 
     ngOnInit() {
         this.log('Welcome!');

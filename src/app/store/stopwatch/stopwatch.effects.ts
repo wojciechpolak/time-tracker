@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { from, of } from 'rxjs';
 import { mergeMap, map, catchError, switchMap } from 'rxjs/operators';
@@ -29,9 +29,8 @@ import { StopwatchService } from '../../stopwatch/stopwatch.service';
 @Injectable()
 export class StopwatchEffects {
 
-    constructor(private actions$: Actions,
-                private stopwatchService: StopwatchService) {
-    }
+    private actions$ = inject(Actions);
+    private stopwatchService = inject(StopwatchService);
 
     /**
      * Effect to load a single stopwatch

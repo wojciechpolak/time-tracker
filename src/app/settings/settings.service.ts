@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { EventEmitter, Injectable } from '@angular/core';
+import { EventEmitter, inject, Injectable } from '@angular/core';
 import { LocalStorageService } from '../services/storage.service';
 import { LoggerService } from '../services/logger.service';
 
@@ -47,11 +47,13 @@ export interface Settings {
 })
 export class SettingsService {
 
+    private localStorage = inject(LocalStorageService);
+    private loggerService = inject(LoggerService);
+
     settings: Settings = {} as Settings;
     settingsChanged: EventEmitter<Settings> = new EventEmitter<Settings>();
 
-    constructor(private localStorage: LocalStorageService,
-                private loggerService: LoggerService) {
+    constructor() {
         this.load();
     }
 

@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, Subject } from 'rxjs';
 import PouchDB from 'pouchdb-browser';
@@ -42,6 +42,10 @@ export interface PouchDbResponses extends DbServiceResponses {
 })
 export class PouchDbService extends DbService<PouchDbResponses> {
 
+    private loggerService = inject(LoggerService);
+    private settingsService = inject(SettingsService);
+    private snackBar = inject(MatSnackBar);
+
     dbLoaded: Promise<void> = Promise.resolve();
     isSyncActive: boolean = false;
     isSyncPullActive: boolean = false;
@@ -54,9 +58,7 @@ export class PouchDbService extends DbService<PouchDbResponses> {
     private db!: PouchDB.Database<Db>;
     private remoteDb!: PouchDB.Replication.Sync<object>;
 
-    constructor(private loggerService: LoggerService,
-                private snackBar: MatSnackBar,
-                private settingsService: SettingsService) {
+    constructor() {
         super();
         this.listenToOnlineStatus();
     }
