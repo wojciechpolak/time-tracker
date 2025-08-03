@@ -22,8 +22,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideMockStore } from '@ngrx/store/testing';
 
-import { StopwatchComponent } from './stopwatch.component';
 import { Stopwatch, Types } from '../models';
+import { StopwatchComponent } from './stopwatch.component';
+import { initialStopwatchState, selectStopwatchesLoading } from '../store/stopwatch';
 import { provideCore } from '../core/core';
 
 @Component({
@@ -62,7 +63,15 @@ describe('StopwatchComponent', () => {
             ],
             providers: [
                 provideCore(),
-                provideMockStore(),
+                provideMockStore({
+                    initialState: initialStopwatchState,
+                    selectors: [
+                        {
+                            selector: selectStopwatchesLoading,
+                            value: false
+                        }
+                    ]
+                }),
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();
