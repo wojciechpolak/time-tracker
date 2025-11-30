@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, NO_ERRORS_SCHEMA, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideMockStore } from '@ngrx/store/testing';
@@ -62,6 +62,7 @@ describe('StopwatchComponent', () => {
                 StopwatchComponent,
             ],
             providers: [
+                provideZonelessChangeDetection(),
                 provideCore(),
                 provideMockStore({
                     initialState: initialStopwatchState,

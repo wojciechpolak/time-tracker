@@ -17,6 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Action } from '@ngrx/store';
 import { provideMockActions } from '@ngrx/effects/testing';
@@ -40,6 +41,7 @@ describe('LastTimeEffects', () => {
         TestBed.configureTestingModule({
             providers: [
                 LastTimeEffects,
+                provideZonelessChangeDetection(),
                 provideMockActions(() => actions$),
                 {provide: LastTimeService, useValue: serviceSpy},
             ],

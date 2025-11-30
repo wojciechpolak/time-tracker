@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { APP_BASE_HREF } from '@angular/common';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -59,6 +59,7 @@ export const appConfig: ApplicationConfig = {
             // or after 30 seconds (whichever comes first).
             registrationStrategy: 'registerWhenStable:30000'
         }),
+        provideZonelessChangeDetection(),
         provideMomentDatetimeAdapter(DATE_FORMAT),
         provideCharts(withDefaultRegisterables()),
         provideAnimations(),
