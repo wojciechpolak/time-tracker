@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ApplicationRef, Component, inject, OnInit } from '@angular/core';
+import { ApplicationRef, ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
@@ -36,6 +36,7 @@ import { SettingsService } from './settings/settings.service';
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         ...AppMaterialModules,
         NgClass,

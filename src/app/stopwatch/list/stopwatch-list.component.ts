@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
@@ -33,6 +33,7 @@ import { StopwatchComponent } from '../stopwatch.component';
 @Component({
     selector: 'app-stopwatch-list',
     templateUrl: './stopwatch-list.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         ...AppMaterialModules,
         StopwatchComponent,

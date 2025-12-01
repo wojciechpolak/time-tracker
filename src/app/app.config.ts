@@ -20,7 +20,6 @@
 import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { APP_BASE_HREF } from '@angular/common';
 import { provideServiceWorker } from '@angular/service-worker';
-import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { provideMomentDatetimeAdapter } from '@ng-matero/extensions-moment-adapter';
@@ -62,7 +61,6 @@ export const appConfig: ApplicationConfig = {
         provideZonelessChangeDetection(),
         provideMomentDatetimeAdapter(DATE_FORMAT),
         provideCharts(withDefaultRegisterables()),
-        provideAnimations(),
         provideEffects(appEffects),
         provideStore(appReducer),
         !environment.production && {...provideStoreDevtools()} || [],

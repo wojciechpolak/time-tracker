@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 
@@ -31,6 +31,7 @@ import { SettingsService } from '../../settings/settings.service';
 @Component({
     selector: 'app-last-time-list',
     templateUrl: './last-time-list.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         ...AppMaterialModules,
         LastTimeComponent,

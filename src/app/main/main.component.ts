@@ -17,7 +17,7 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { RouterLinkActive, RouterLink, RouterOutlet } from '@angular/router';
 
 import { AppMaterialModules } from '../app-modules';
@@ -27,6 +27,7 @@ import { SettingsService } from '../settings/settings.service';
 @Component({
     selector: 'app-main',
     templateUrl: './main.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         ...AppMaterialModules,
         RouterLink,
