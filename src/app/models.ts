@@ -148,3 +148,22 @@ export interface StatsFreq {
     avgDays: number;
     avgHours: number;
 }
+
+export const Databases = {
+    pouchdb: 'PouchDB',
+    firestore: 'Google\'s Firestore',
+}
+export type DbEngine = keyof typeof Databases;
+
+export interface Settings {
+    dbEngine: DbEngine;
+    dbName?: string;
+    endpoint?: string;
+    user: string;
+    password: string;
+    lastPage: string;
+    enableRemoteSync: boolean;
+    firebaseConfig: string;
+    redirectToHttps: boolean;
+    showDebug: boolean;
+}

@@ -20,11 +20,12 @@
 import { Component, NO_ERRORS_SCHEMA, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { provideMockStore } from '@ngrx/store/testing';
 
 import { LastTimeComponent } from './last-time.component';
 import { LastTime, Types } from '../models';
 import { provideCore } from '../core/core';
+import { LastTimeStore } from '../store/last-time.store';
+import { LastTimeService } from './last-time.service';
 
 @Component({
     imports: [
@@ -35,25 +36,39 @@ import { provideCore } from '../core/core';
     `
 })
 class TestHostComponent {
-  testItem: LastTime = {
-    _id: 'LT-1',
-    type: Types.LAST_TIME,
-    name: 'LT-1',
-    hasMoreTs: false,
-    timestamps: [
-      {
-        _id: 'LT-TS-1',
-        ref: 'LT-1',
-        type: Types.LAST_TIME_TS,
-        ts: new Date().getTime(),
-      },
-    ],
-  };
+    testItem: LastTime = {
+        _id: 'LT-1',
+        type: Types.LAST_TIME,
+        name: 'LT-1',
+        hasMoreTs: false,
+        timestamps: [
+            {
+                _id: 'LT-TS-1',
+                ref: 'LT-1',
+                type: Types.LAST_TIME_TS,
+                ts: new Date().getTime(),
+            },
+        ],
+    };
 }
 
 describe('LastTimeComponent', () => {
     let hostFixture: ComponentFixture<TestHostComponent>;
     let component: LastTimeComponent;
+
+    const mockLastTimeStore = {
+        addLastTimeTimestamp: () => { },
+        deleteLastTimeTimestamp: () => { },
+        updateLastTimeTimestampLabel: () => { },
+        updateLastTimeTimestamp: () => { },
+        deleteLastTime: () => { },
+        updateLastTimeTitle: () => { },
+        loadLastTime: () => { },
+    };
+
+    const mockLastTimeService = {
+        // Add methods if needed by LastTimeComponent
+    };
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -63,7 +78,8 @@ describe('LastTimeComponent', () => {
             providers: [
                 provideZonelessChangeDetection(),
                 provideCore(),
-                provideMockStore(),
+                {provide: LastTimeStore, useValue: mockLastTimeStore},
+                {provide: LastTimeService, useValue: mockLastTimeService},
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();

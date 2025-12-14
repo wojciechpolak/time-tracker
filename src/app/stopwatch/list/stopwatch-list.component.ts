@@ -17,18 +17,16 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
-import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
 
-import { AppTitle, Stopwatch } from '../../models';
+import { AppTitle } from '../../models';
 import { AppMaterialModules } from '../../app-modules';
 import { DataService } from '../../services/data.service';
 import { PATHS } from '../../app.routes';
 import { SettingsService } from '../../settings/settings.service';
-import { StopwatchActions } from '../../store/stopwatch';
 import { StopwatchComponent } from '../stopwatch.component';
+import { StopwatchStore } from '../../store/stopwatch.store';
 
 @Component({
     selector: 'app-stopwatch-list',
@@ -40,18 +38,15 @@ import { StopwatchComponent } from '../stopwatch.component';
         AsyncPipe,
     ]
 })
-export class StopwatchListComponent implements OnInit, OnDestroy {
+export class StopwatchListComponent implements OnInit {
 
     private settingsService = inject(SettingsService);
-    private store = inject(Store);
+    private stopwatchStore = inject(StopwatchStore);
     protected dataService = inject(DataService);
 
-    private sub1!: Subscription;
-
-    ngOnInit() {
-        this.settingsService.update({lastPage: `/${PATHS.Main}/${PATHS.Stopwatch}`});
-
-        this.sub1 = this.dataService.stopwatches$.subscribe((stopwatches: Stopwatch[]) => {
+    constructor() {
+        effect(() => {
+            const stopwatches = this.dataService.stopwatches();
             // signal if at least one stopwatch is running...
             const swIsRunning = stopwatches.find(item => {
                 const lastEventItem = item.events[item.events.length - 1] ?? {};
@@ -66,13 +61,11 @@ export class StopwatchListComponent implements OnInit, OnDestroy {
         });
     }
 
-    ngOnDestroy() {
-        if (this.sub1) {
-            this.sub1.unsubscribe();
-        }
+    ngOnInit() {
+        this.settingsService.update({lastPage: `/${PATHS.Main}/${PATHS.Stopwatch}`});
     }
 
     addStopwatch() {
-        this.store.dispatch(StopwatchActions.addStopwatch());
+        this.stopwatchStore.addStopwatch();
     }
 }

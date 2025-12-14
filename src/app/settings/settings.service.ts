@@ -17,76 +17,58 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { EventEmitter, inject, Injectable } from '@angular/core';
-import { LocalStorageService } from '../services/storage.service';
+import { EventEmitter, inject, Injectable, effect } from '@angular/core';
 import { LoggerService } from '../services/logger.service';
 
-const STORAGE_SETTINGS = 'settings';
+import { Databases, DbEngine, Settings } from '../models';
+import { SettingsStore } from '../store/settings.store';
 
-export const Databases = {
-    pouchdb: 'PouchDB',
-    firestore: 'Google\'s Firestore',
-}
-export type DbEngine = keyof typeof Databases;
-
-export interface Settings {
-    dbEngine: DbEngine;
-    dbName?: string;
-    endpoint?: string;
-    user: string;
-    password: string;
-    lastPage: string;
-    enableRemoteSync: boolean;
-    firebaseConfig: string;
-    redirectToHttps: boolean;
-    showDebug: boolean;
-}
+export { Databases, DbEngine, Settings };
 
 @Injectable({
     providedIn: 'root'
 })
 export class SettingsService {
 
-    private localStorage = inject(LocalStorageService);
     private loggerService = inject(LoggerService);
+    private settingsStore = inject(SettingsStore);
 
-    settings: Settings = {} as Settings;
     settingsChanged: EventEmitter<Settings> = new EventEmitter<Settings>();
 
     constructor() {
-        this.load();
+        this.settingsStore.load();
+        effect(() => {
+            this.settingsChanged.emit(this.settingsStore.settings());
+        });
     }
 
     load() {
-        this.settings = this.localStorage.get(STORAGE_SETTINGS) ?? {};
+        this.settingsStore.load();
     }
 
     save(settings: Settings): void {
-        this.settings = settings;
-        this.localStorage.set(STORAGE_SETTINGS, this.settings);
-        this.settingsChanged.emit(this.settings);
+        this.settingsStore.save(settings);
     }
 
     update(settings: Partial<Settings>): void {
-        this.settings = {...this.settings, ...settings};
-        this.localStorage.set(STORAGE_SETTINGS, this.settings);
+        this.settingsStore.update(settings);
     }
 
     get(): Settings {
-        return this.settings;
+        return this.settingsStore.settings();
     }
 
     hasEndpoint(): boolean {
-        return !!this.settings.endpoint;
+        return !!this.get().endpoint;
     }
 
     hasEnabledRemoteSync(): boolean {
-        return this.settings.enableRemoteSync;
+        return this.get().enableRemoteSync;
     }
 
     getEndpoint(creds: boolean = true): string | undefined {
         const defaultPort = '5984';
-        let ret = this.settings.endpoint ||
+        let ret = this.get().endpoint ||
             `${window.location.protocol}//${window.location.hostname}`;
         if (!ret.startsWith('http')) {
             ret = 'http://' + ret;
@@ -110,22 +92,22 @@ export class SettingsService {
     }
 
     get getUser(): string {
-        return this.settings.user;
+        return this.get().user;
     }
 
     get getPassword(): string {
-        return this.settings.password;
+        return this.get().password;
     }
 
     get getDbEngine(): DbEngine {
-        return this.settings.dbEngine || 'pouchdb';
+        return this.get().dbEngine || 'pouchdb';
     }
 
     get getDbName(): string {
-        return this.settings.dbName || 'time-tracker';
+        return this.get().dbName || 'time-tracker';
     }
 
     get getFirebaseOptions(): object {
-        return JSON.parse(this.settings.firebaseConfig) || {};
+        return JSON.parse(this.get().firebaseConfig ?? '{}') || {};
     }
 }

@@ -17,15 +17,17 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, NO_ERRORS_SCHEMA, provideZonelessChangeDetection } from '@angular/core';
+import { Component, NO_ERRORS_SCHEMA, signal, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { provideMockStore } from '@ngrx/store/testing';
+import { of } from 'rxjs';
 
-import { Stopwatch, Types } from '../models';
+import { Stopwatch, StopwatchEvent, Types } from '../models';
 import { StopwatchComponent } from './stopwatch.component';
-import { initialStopwatchState, selectStopwatchesLoading } from '../store/stopwatch';
 import { provideCore } from '../core/core';
+import { StopwatchStore } from '../store/stopwatch.store';
+import { StopwatchService } from './stopwatch.service';
+import { TimerService } from '../services/timer.service';
 
 @Component({
     imports: [
@@ -36,25 +38,46 @@ import { provideCore } from '../core/core';
     `
 })
 class TestHostComponent {
-  testItem: Stopwatch = {
-      _id: 'EV-1',
-      name: 'EV-1',
-      type: Types.STOPWATCH,
-      finished: false,
-      events: [{
-          _id: 'EV-TS-1',
-          ref: 'EV-1',
-          type: Types.STOPWATCH_TS,
-          ts: new Date().getTime(),
-          round: false,
-          ss: true,
-      }]
-  };
+    testItem: Stopwatch = {
+        _id: 'EV-1',
+        name: 'EV-1',
+        type: Types.STOPWATCH,
+        finished: false,
+        events: [{
+            _id: 'EV-TS-1',
+            ref: 'EV-1',
+            type: Types.STOPWATCH_TS,
+            ts: new Date().getTime(),
+            round: false,
+            ss: true,
+        }]
+    };
 }
 
 describe('StopwatchComponent', () => {
     let hostFixture: ComponentFixture<TestHostComponent>;
     let component: StopwatchComponent;
+
+    const mockStopwatchStore = {
+        loading: signal(false),
+        addStopwatchEvent: () => { },
+        deleteStopwatchEvent: () => { },
+        updateStopwatchEventLabel: () => { },
+        updateStopwatchEvent: () => { },
+        deleteStopwatch: () => { },
+        updateStopwatchTitle: () => { },
+        toggleArchiveStopwatch: () => { },
+        loadStopwatch: () => { },
+    };
+
+    const mockStopwatchService = {
+        markNonStarters: (events: StopwatchEvent[]) => events,
+        removeDupes: (events: StopwatchEvent[]) => events,
+        createStartEndPairs: () => [],
+    };
+    const mockTimerService = {
+        timer$: of('00:00:00')
+    };
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -64,15 +87,9 @@ describe('StopwatchComponent', () => {
             providers: [
                 provideZonelessChangeDetection(),
                 provideCore(),
-                provideMockStore({
-                    initialState: initialStopwatchState,
-                    selectors: [
-                        {
-                            selector: selectStopwatchesLoading,
-                            value: false
-                        }
-                    ]
-                }),
+                {provide: StopwatchStore, useValue: mockStopwatchStore},
+                {provide: StopwatchService, useValue: mockStopwatchService},
+                {provide: TimerService, useValue: mockTimerService},
             ],
             schemas: [NO_ERRORS_SCHEMA]
         }).compileComponents();

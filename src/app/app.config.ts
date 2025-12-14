@@ -23,10 +23,6 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { provideRouter } from '@angular/router';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { provideMomentDatetimeAdapter } from '@ng-matero/extensions-moment-adapter';
-import { provideStore } from '@ngrx/store';
-import { provideEffects } from '@ngrx/effects';
-import { provideStoreDevtools } from '@ngrx/store-devtools';
-
 import { DATE_FORMAT } from './models';
 import { DataService } from './services/data.service';
 import { DbService } from './services/db.service';
@@ -35,8 +31,6 @@ import { LastTimeService } from './last-time/last-time.service';
 import { SettingsService } from './settings/settings.service';
 import { StopwatchService } from './stopwatch/stopwatch.service';
 import { TimerService } from './services/timer.service';
-import { appEffects } from './store/app.effects';
-import { appReducer } from './store/app.reducer';
 import { environment } from '../environments/environment';
 import { provideCore } from './core/core';
 import { routes } from './app.routes';
@@ -61,9 +55,6 @@ export const appConfig: ApplicationConfig = {
         provideZonelessChangeDetection(),
         provideMomentDatetimeAdapter(DATE_FORMAT),
         provideCharts(withDefaultRegisterables()),
-        provideEffects(appEffects),
-        provideStore(appReducer),
-        !environment.production && {...provideStoreDevtools()} || [],
         {provide: APP_BASE_HREF, useValue: environment.baseHref},
     ]
 };

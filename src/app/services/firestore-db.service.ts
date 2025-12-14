@@ -117,7 +117,7 @@ export class FirestoreDbService extends DbService {
         const docRef = doc(this.collection, id);
         const docSnap = await getDoc(docRef);
         this.isSyncActive = false;
-        return <T>docSnap.data();
+        return docSnap.data() as T;
     }
 
     async putItem<T extends {_id: string, ref?: string | null}>(myDoc: T): Promise<T> {

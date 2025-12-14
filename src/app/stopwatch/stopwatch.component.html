@@ -79,9 +79,7 @@
                                     [touchUi]="UtilsService.isMobile()"
                                     [timeInput]="true">
                 </mtx-datetimepicker>
-                <mtx-datetimepicker-toggle
-                  [for]="$any(datePicker)"
-                  matSuffix>
+                <mtx-datetimepicker-toggle [for]="$any(datePicker)" matSuffix>
                 </mtx-datetimepicker-toggle>
               </mat-form-field>
               {{ event.round ? '[R]' : '' }}
@@ -132,13 +130,13 @@
     @if (!item().tsArch) {
       <mat-card-actions class="bottom">
         <button mat-stroked-button color="accent"
-                [disabled]="addEventLocked$ | async"
+                [disabled]="addEventLocked()"
                 (click)="addEvent(true)">
           NEW ROUND
         </button>
         <button mat-stroked-button color="accent"
                 [ngClass]="{'finished': !isRunning}"
-                [disabled]="addEventLocked$ | async"
+                [disabled]="addEventLocked()"
                 (click)="startStopStopwatch()">
           {{ isRunning ? 'STOP' : 'START' }}
         </button>

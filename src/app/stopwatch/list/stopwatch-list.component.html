@@ -6,13 +6,13 @@
   </button>
   @if ((dataService.dbLoaded$ | async) === false) {
   }
-  @else if (dataService.stopwatchesLoadingAll$ | async) {
+  @else if (dataService.stopwatchesLoadingAll()) {
     @defer (on timer(100ms)) {
       <div class="empty-list">Loading...</div>
     }
   }
   @else {
-    @if (dataService.stopwatches$ | async; as stopwatches) {
+    @if (dataService.stopwatches(); as stopwatches) {
       @for (item of stopwatches; track item._id) {
         <app-stopwatch [item]="item"></app-stopwatch>
       }

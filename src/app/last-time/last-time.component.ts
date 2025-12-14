@@ -27,7 +27,6 @@ import {
 } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { Store } from '@ngrx/store';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Observable } from 'rxjs';
@@ -36,9 +35,9 @@ import { MtxDatetimepickerInputEvent } from '@ng-matero/extensions/datetimepicke
 
 import { AppMaterialModules } from '../app-modules';
 import { LastTime, StatsContent, StatsFreq, TimeStamp } from '../models';
-import { LastTimeActions } from '../store/last-time';
 import { TimerService } from '../services/timer.service';
 import { UtilsService } from '../services/utils.service';
+import { LastTimeStore } from '../store/last-time.store';
 
 
 @Component({
@@ -55,7 +54,7 @@ import { UtilsService } from '../services/utils.service';
 })
 export class LastTimeComponent implements OnInit, OnChanges {
 
-    private store = inject(Store);
+    private lastTimeStore = inject(LastTimeStore);
     private timerService = inject(TimerService);
 
     readonly item = input.required<LastTime>();
@@ -108,12 +107,12 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     touch() {
-        this.store.dispatch(LastTimeActions.touchLastTime({lastTime: this.item()}));
+        this.lastTimeStore.touchLastTime(this.item());
     }
 
     deleteItem() {
         this.isWaiting = true;
-        this.store.dispatch(LastTimeActions.deleteLastTime({lastTime: this.item()}));
+        this.lastTimeStore.deleteLastTime(this.item());
         this.isWaiting = false;
     }
 
@@ -128,16 +127,16 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     finishEditTitle() {
-        this.store.dispatch(LastTimeActions.updateLastTimeTitle(
-            {lastTime: this.item(), title: this.editedTitle}));
+        this.lastTimeStore.updateLastTimeTitle(
+            {lastTime: this.item(), title: this.editedTitle});
         this.isEditTitle = false;
     }
 
     editTimestampLabel(ts: TimeStamp, idx: number) {
         const label = prompt('Label #' + (idx + 1));
         if (label !== null) {
-            this.store.dispatch(LastTimeActions.updateTimeStampLabel(
-                {timestamp: ts, label}));
+            this.lastTimeStore.updateTimeStampLabel(
+                {timestamp: ts, label});
         }
     }
 
@@ -145,19 +144,19 @@ export class LastTimeComponent implements OnInit, OnChanges {
         const newTs = datePickerEvent.value?.valueOf() ?? 0;
         if (confirm('Do you want to change timestamp #' + (idx + 1) +
             ' to ' + UtilsService.toDate(newTs) + '?')) {
-            this.store.dispatch(LastTimeActions.updateTimeStamp(
-                {timestamp: ts, newTs}));
+            this.lastTimeStore.updateTimeStamp(
+                {timestamp: ts, newTs});
         }
     }
 
     removeTimestamp(ts: TimeStamp, idx: number) {
         if (confirm('Do you confirm removing timestamp #' + (idx + 1))) {
-            this.store.dispatch(LastTimeActions.deleteTimeStamp({timestamp: ts}));
+            this.lastTimeStore.deleteTimeStamp(ts);
         }
     }
 
     showOlderTimestamps(item: LastTime) {
-        this.store.dispatch(LastTimeActions.loadLastTime({id: item._id, limit: 0}));
+        this.lastTimeStore.loadLastTime({id: item._id, limit: 0});
     }
 
     toggleStats() {

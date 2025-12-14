@@ -19,14 +19,13 @@
 
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
-import { Store } from '@ngrx/store';
 
 import { AppMaterialModules } from '../../app-modules';
 import { DataService } from '../../services/data.service';
-import { LastTimeActions } from '../../store/last-time';
 import { LastTimeComponent } from '../last-time.component';
 import { PATHS } from '../../app.routes';
 import { SettingsService } from '../../settings/settings.service';
+import { LastTimeStore } from '../../store/last-time.store';
 
 @Component({
     selector: 'app-last-time-list',
@@ -41,7 +40,7 @@ import { SettingsService } from '../../settings/settings.service';
 export class LastTimeListComponent implements OnInit {
 
     private settingsService = inject(SettingsService);
-    private store = inject(Store);
+    private lastTimeStore = inject(LastTimeStore);
     protected dataService = inject(DataService);
 
     ngOnInit() {
@@ -49,6 +48,6 @@ export class LastTimeListComponent implements OnInit {
     }
 
     addLastTime() {
-        this.store.dispatch(LastTimeActions.addLastTime());
+        this.lastTimeStore.addLastTime();
     }
 }

@@ -6,13 +6,13 @@
   </button>
   @if ((dataService.dbLoaded$ | async) === false) {
   }
-  @else if (dataService.lastTimeLoadingAll$ | async) {
+  @else if (dataService.lastTimeLoadingAll()) {
     @defer (on timer(100ms)) {
       <div class="empty-list">Loading...</div>
     }
   }
   @else {
-    @if (dataService.lastTimeList$ | async; as lastTimeList) {
+    @if (dataService.lastTimeList(); as lastTimeList) {
       @for (item of lastTimeList; track item._id) {
         <app-last-time [item]="item"></app-last-time>
       }

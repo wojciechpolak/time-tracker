@@ -17,18 +17,15 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, Signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { debounceTime, from, Observable, startWith } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Store } from '@ngrx/store';
 
 import { DbService } from './db.service';
 import { LastTime, Stopwatch } from '../models';
-import { selectAllLastTimeList, selectLastTimeLoading, selectLastTimeLoadingAll,
-    LastTimeActions } from '../store/last-time';
-import { selectAllStopwatches, selectStopwatchesLoading, selectStopwatchesLoadingAll,
-    StopwatchActions } from '../store/stopwatch';
+import { LastTimeStore } from '../store/last-time.store';
+import { StopwatchStore } from '../store/stopwatch.store';
 
 @Injectable({
     providedIn: 'root'
@@ -37,25 +34,23 @@ export class DataService {
 
     private dbService = inject(DbService);
     private snackBar = inject(MatSnackBar);
-    private store = inject(Store);
+    private lastTimeStore = inject(LastTimeStore);
+    private stopwatchStore = inject(StopwatchStore);
 
     isOnline: boolean = window.navigator.onLine;
     dbLoaded$: Observable<boolean>;
-    lastTimeLoading$: Observable<boolean>;
-    lastTimeLoadingAll$: Observable<boolean>;
-    lastTimeList$: Observable<LastTime[]>;
-    stopwatchesLoading$: Observable<boolean>;
-    stopwatchesLoadingAll$: Observable<boolean>;
-    stopwatches$: Observable<Stopwatch[]>;
+
+    // LastTime Signals
+    lastTimeLoading: Signal<boolean> = this.lastTimeStore.loading;
+    lastTimeLoadingAll: Signal<boolean> = this.lastTimeStore.loadingAll;
+    lastTimeList: Signal<LastTime[]> = this.lastTimeStore.lastTimeList;
+
+    // Stopwatch Signals
+    stopwatchesLoading: Signal<boolean> = this.stopwatchStore.loading;
+    stopwatchesLoadingAll: Signal<boolean> = this.stopwatchStore.loadingAll;
+    stopwatches: Signal<Stopwatch[]> = this.stopwatchStore.stopwatches;
 
     constructor() {
-        this.lastTimeList$ = this.store.select(selectAllLastTimeList);
-        this.lastTimeLoading$ = this.store.select(selectLastTimeLoading);
-        this.lastTimeLoadingAll$ = this.store.select(selectLastTimeLoadingAll);
-        this.stopwatches$ = this.store.select(selectAllStopwatches);
-        this.stopwatchesLoading$ = this.store.select(selectStopwatchesLoading);
-        this.stopwatchesLoadingAll$ = this.store.select(selectStopwatchesLoadingAll);
-
         this.dbLoaded$ = from(this.dbService.dbLoaded).pipe(
             map(() => true),
             startWith(false)
@@ -92,11 +87,11 @@ export class DataService {
     }
 
     fetchLastTime() {
-        this.store.dispatch(LastTimeActions.loadLastTimeList());
+        this.lastTimeStore.loadLastTimeList();
     }
 
     fetchStopwatchList() {
-        this.store.dispatch(StopwatchActions.loadStopwatches());
+        this.stopwatchStore.loadStopwatches();
     }
 
     syncChanges() {
