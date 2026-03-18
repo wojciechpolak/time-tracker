@@ -37,8 +37,9 @@ yarn-error.log
 /libpeerconnection.log
 testem.log
 /typings
-cypress/videos
-cypress/screenshots
+/test-results
+/playwright-report
+/blob-report
 
 # System files
 .DS_Store

@@ -95,21 +95,6 @@
           },
           "defaultConfiguration": "development"
         },
-        "serve-e2e": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "port": 4201
-          },
-          "configurations": {
-            "production": {
-              "buildTarget": "time-tracker:build:production"
-            },
-            "development": {
-              "buildTarget": "time-tracker:build:development"
-            }
-          },
-          "defaultConfiguration": "development"
-        },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
@@ -145,51 +130,6 @@
             ]
           }
         },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "time-tracker:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "time-tracker:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false
-          }
-        },
-        "ct": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "time-tracker:serve",
-            "watch": true,
-            "headless": true,
-            "testingType": "component"
-          },
-          "configurations": {
-            "development": {
-              "devServerTarget": "time-tracker:serve:development"
-            }
-          }
-        },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "time-tracker:serve-e2e",
-            "watch": false,
-            "headless": true
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "time-tracker:serve:production"
-            }
-          }
-        }
       }
     }
   },
@@ -197,7 +137,6 @@
     "analytics": false,
     "schematicCollections": [
       "@angular-eslint/schematics",
-      "@cypress/schematic",
       "@ngrx/schematics"
     ]
   },
