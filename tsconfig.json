@@ -22,10 +22,6 @@
       "erasableSyntaxOnly": true,
       "useDefineForClassFields": false
     },
-    "exclude": [
-        "cypress.config.ts",
-        "cypress/**/*.ts"
-    ],
     "angularCompilerOptions": {
         "enableI18nLegacyMessageIdFormat": false,
         "strictInjectionParameters": true,
