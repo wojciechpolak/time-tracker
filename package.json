@@ -61,7 +61,7 @@
     "@ngrx/schematics": "^21.0.1",
     "@playwright/test": "^1.57.0",
     "@types/jasmine": "~5.1.0",
-    "@types/node": "^22.10.0",
+    "@types/node": "^24.12.0",
     "@types/pouchdb-browser": "^6.1.3",
     "@types/ws": "^8.5.4",
     "@typescript-eslint/eslint-plugin": "^8.50.0",

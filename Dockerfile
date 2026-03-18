@@ -1,5 +1,5 @@
-ARG node=22.17-slim
-ARG nginx=1.26
+ARG node=24.14-slim
+ARG nginx=1.29
 
 FROM node:${node} AS tt-builder-node
 RUN apt update -y
@@ -8,7 +8,6 @@ WORKDIR /app
 COPY *.json .
 COPY *.js .
 COPY src src
-ENV CYPRESS_INSTALL_BINARY=0
 RUN npm ci
 RUN npm run build
 
