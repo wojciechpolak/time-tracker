@@ -31,20 +31,15 @@ import { LastTimeStore } from '../../store/last-time.store';
     selector: 'app-last-time-list',
     templateUrl: './last-time-list.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [
-        ...AppMaterialModules,
-        LastTimeComponent,
-        AsyncPipe,
-    ]
+    imports: [...AppMaterialModules, LastTimeComponent, AsyncPipe],
 })
 export class LastTimeListComponent implements OnInit {
-
     private settingsService = inject(SettingsService);
     private lastTimeStore = inject(LastTimeStore);
     protected dataService = inject(DataService);
 
     ngOnInit() {
-        this.settingsService.update({lastPage: `/${PATHS.Main}/${PATHS.Last}`});
+        this.settingsService.update({ lastPage: `/${PATHS.Main}/${PATHS.Last}` });
     }
 
     addLastTime() {

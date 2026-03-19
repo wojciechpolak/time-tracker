@@ -22,12 +22,12 @@ import { LocalStorageService, SessionStorageService } from '../services/storage.
 import { LoggerService } from '../services/logger.service';
 
 export function provideCore(): Provider[] {
-  return [
-      LoggerService,
-      LocalStorageService,
-      SessionStorageService,
-      {provide: WINDOW_TOKEN, useFactory: getWindow},
-  ];
+    return [
+        LoggerService,
+        LocalStorageService,
+        SessionStorageService,
+        { provide: WINDOW_TOKEN, useFactory: getWindow },
+    ];
 }
 
 export const WINDOW_TOKEN = new InjectionToken<Window>('WINDOW_TOKEN');

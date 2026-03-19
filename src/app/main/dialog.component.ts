@@ -21,28 +21,25 @@ import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AppMaterialModules } from '../app-modules';
 
-type ParsedData = {link: string | null, text: string};
+type ParsedData = { link: string | null; text: string };
 
 @Component({
     selector: 'app-dialog',
-    imports: [
-        ...AppMaterialModules,
-    ],
+    imports: [...AppMaterialModules],
     template: `
-    <h1 mat-dialog-title>{{ data.title }}</h1>
-    <div mat-dialog-content>
-        <p>{{ parsedData.text }}</p>
-        <p><a href="{{ parsedData.link }}" target="_blank">Link</a></p>
-    </div>
-    <div mat-dialog-actions>
-        <button mat-button (click)="onClose()">Dismiss</button>
-    </div>
+        <h1 mat-dialog-title>{{ data.title }}</h1>
+        <div mat-dialog-content>
+            <p>{{ parsedData.text }}</p>
+            <p><a href="{{ parsedData.link }}" target="_blank">Link</a></p>
+        </div>
+        <div mat-dialog-actions>
+            <button mat-button (click)="onClose()">Dismiss</button>
+        </div>
     `,
 })
 export class AppDialogComponent {
-
     public dialogRef = inject(MatDialogRef<AppDialogComponent>);
-    public data = inject(MAT_DIALOG_DATA) as {title: string; message: string};
+    public data = inject(MAT_DIALOG_DATA) as { title: string; message: string };
 
     parsedData: ParsedData;
 
@@ -58,10 +55,10 @@ export class AppDialogComponent {
         const urlRegex = /https?:\/\/[^\s]+/;
         const match = input.match(urlRegex);
         if (!match) {
-            return {link: null, text: input};
+            return { link: null, text: input };
         }
         const link = match[0];
         const text = input.replace(urlRegex, '').trim();
-        return {link, text};
+        return { link, text };
     }
 }

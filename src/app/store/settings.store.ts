@@ -46,39 +46,38 @@ const Actions = {
 } as const;
 
 export const SettingsStore = signalStore(
-    {providedIn: 'root'},
+    { providedIn: 'root' },
     withDevtools('settings'),
     withState(initialState),
     withMethods((store, localStorage = inject(LocalStorageService)) => ({
-
         // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
         load: rxMethod<void>(
             pipe(
                 tap(() => {
                     const settings = localStorage.get(STORAGE_SETTINGS) ?? {};
-                    updateState(store, Actions.load, {settings});
-                })
-            )
+                    updateState(store, Actions.load, { settings });
+                }),
+            ),
         ),
 
         save: rxMethod<Settings>(
             pipe(
                 tap((settings) => {
                     localStorage.set(STORAGE_SETTINGS, settings);
-                    updateState(store, Actions.save, {settings});
-                })
-            )
+                    updateState(store, Actions.save, { settings });
+                }),
+            ),
         ),
 
         update: rxMethod<Partial<Settings>>(
             pipe(
                 tap((partialSettings) => {
                     const currentSettings = store.settings();
-                    const newSettings = {...currentSettings, ...partialSettings};
+                    const newSettings = { ...currentSettings, ...partialSettings };
                     localStorage.set(STORAGE_SETTINGS, newSettings);
-                    updateState(store, Actions.update, {settings: newSettings});
-                })
-            )
+                    updateState(store, Actions.update, { settings: newSettings });
+                }),
+            ),
         ),
-    }))
+    })),
 );

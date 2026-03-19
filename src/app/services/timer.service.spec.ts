@@ -31,13 +31,12 @@ describe('TimerService', () => {
         const emissions: number[] = [];
 
         try {
-            const subscription = service.timer$.subscribe(value => emissions.push(value));
+            const subscription = service.timer$.subscribe((value) => emissions.push(value));
             jasmine.clock().tick(2_100);
 
             expect(emissions).toEqual([0, 1, 2]);
             subscription.unsubscribe();
-        }
-        finally {
+        } finally {
             jasmine.clock().uninstall();
         }
     });

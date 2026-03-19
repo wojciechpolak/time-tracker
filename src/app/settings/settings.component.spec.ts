@@ -34,9 +34,7 @@ describe('SettingsComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-                SettingsComponent,
-            ],
+            imports: [SettingsComponent],
             providers: [
                 SwUpdate,
                 SettingsService,
@@ -47,9 +45,9 @@ describe('SettingsComponent', () => {
                 provideZonelessChangeDetection(),
                 provideCore(),
                 provideMockStore(),
-                provideServiceWorker('ngsw-worker.js', {enabled: false}),
+                provideServiceWorker('ngsw-worker.js', { enabled: false }),
             ],
-            schemas: [NO_ERRORS_SCHEMA]
+            schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
 

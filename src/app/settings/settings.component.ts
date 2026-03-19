@@ -24,7 +24,7 @@ import {
     FormGroup,
     ReactiveFormsModule,
     ValidationErrors,
-    Validators
+    Validators,
 } from '@angular/forms';
 import { AsyncPipe, KeyValuePipe } from '@angular/common';
 import { SwUpdate } from '@angular/service-worker';
@@ -38,15 +38,16 @@ import { LoggerService } from '../services/logger.service';
 import { SettingsService, Databases, DbEngine } from './settings.service';
 import { environment } from '../../environments/environment';
 
-
-const firebaseConfigSchema = z.object({
-  apiKey: z.string(),
-  authDomain: z.string(),
-  projectId: z.string(),
-  storageBucket: z.string(),
-  messagingSenderId: z.string(),
-  appId: z.string(),
-}).strict();
+const firebaseConfigSchema = z
+    .object({
+        apiKey: z.string(),
+        authDomain: z.string(),
+        projectId: z.string(),
+        storageBucket: z.string(),
+        messagingSenderId: z.string(),
+        appId: z.string(),
+    })
+    .strict();
 
 function firebaseConfigValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) {
@@ -56,25 +57,18 @@ function firebaseConfigValidator(control: AbstractControl): ValidationErrors | n
         const parsed = JSON.parse(control.value);
         firebaseConfigSchema.parse(parsed);
         return null;
-    }
-    catch (error: unknown) {
+    } catch (error: unknown) {
         console.error(error);
-        return {invalidJson: true};
+        return { invalidJson: true };
     }
 }
 
 @Component({
     selector: 'app-settings',
     templateUrl: './settings.component.html',
-    imports: [
-        ...AppMaterialModules,
-        ReactiveFormsModule,
-        KeyValuePipe,
-        AsyncPipe,
-    ]
+    imports: [...AppMaterialModules, ReactiveFormsModule, KeyValuePipe, AsyncPipe],
 })
 export class SettingsComponent implements OnInit {
-
     private dataService = inject(DataService);
     private dbService = inject(DbService);
     private loggerService = inject(LoggerService);
@@ -114,16 +108,16 @@ export class SettingsComponent implements OnInit {
         await this.dbService.dbLoaded;
         this.storageInfo$ = this.getStorageEstimated();
         this.form.patchValue(this.settingsService.get());
-        this.form.controls['dbName'].patchValue(
-            this.settingsService.getDbName);
+        this.form.controls['dbName'].patchValue(this.settingsService.getDbName);
 
         this.form.get('dbEngine')?.valueChanges.subscribe((dbEngineValue: DbEngine) => {
             const firebaseConfigControl = this.form.get('firebaseConfig');
             if (dbEngineValue === 'firestore') {
-                firebaseConfigControl?.setValidators(
-                    [Validators.required, firebaseConfigValidator]);
-            }
-            else {
+                firebaseConfigControl?.setValidators([
+                    Validators.required,
+                    firebaseConfigValidator,
+                ]);
+            } else {
                 firebaseConfigControl?.clearValidators();
             }
             firebaseConfigControl?.updateValueAndValidity();
@@ -132,8 +126,7 @@ export class SettingsComponent implements OnInit {
 
     fillDefaultEndpoint($event: Event) {
         $event.preventDefault();
-        this.form.controls['endpoint'].patchValue(
-            this.settingsService.getEndpoint(false));
+        this.form.controls['endpoint'].patchValue(this.settingsService.getEndpoint(false));
         this.form.markAsDirty();
     }
 
@@ -177,8 +170,7 @@ export class SettingsComponent implements OnInit {
             const res = await this.swUpdate.checkForUpdate();
             if (!res) {
                 this.snackBar.open('Time Tracker is up to date', 'OK');
-            }
-            else {
+            } else {
                 this.loggerService.log('swUpdate checkForUpdate:', res);
             }
         }

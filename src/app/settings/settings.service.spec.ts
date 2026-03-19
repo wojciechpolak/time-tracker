@@ -50,7 +50,7 @@ describe('SettingsService', () => {
     };
 
     beforeEach(() => {
-        settingsSignal = signal({...baseSettings});
+        settingsSignal = signal({ ...baseSettings });
         settingsStore = {
             settings: settingsSignal,
             load: jasmine.createSpy('load'),
@@ -62,8 +62,8 @@ describe('SettingsService', () => {
         TestBed.configureTestingModule({
             providers: [
                 SettingsService,
-                {provide: LoggerService, useValue: loggerService},
-                {provide: SettingsStore, useValue: settingsStore},
+                { provide: LoggerService, useValue: loggerService },
+                { provide: SettingsStore, useValue: settingsStore },
             ],
         });
 
@@ -75,11 +75,11 @@ describe('SettingsService', () => {
 
         service.load();
         service.save(baseSettings);
-        service.update({endpoint: 'updated.example.com'});
+        service.update({ endpoint: 'updated.example.com' });
 
         expect(settingsStore.load).toHaveBeenCalledTimes(2);
         expect(settingsStore.save).toHaveBeenCalledWith(baseSettings);
-        expect(settingsStore.update).toHaveBeenCalledWith({endpoint: 'updated.example.com'});
+        expect(settingsStore.update).toHaveBeenCalledWith({ endpoint: 'updated.example.com' });
         expect(service.get()).toEqual(baseSettings);
     });
 
@@ -92,9 +92,11 @@ describe('SettingsService', () => {
         });
         TestBed.flushEffects();
 
-        expect(emitSpy).toHaveBeenCalledWith(jasmine.objectContaining({
-            endpoint: 'next.example.com',
-        }));
+        expect(emitSpy).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                endpoint: 'next.example.com',
+            }),
+        );
     });
 
     it('reports whether endpoint and remote sync are enabled', () => {
@@ -117,7 +119,7 @@ describe('SettingsService', () => {
         expect(endpoint).toBe('http://alice:secret@db.example.com:5984/time-tracker');
         expect(loggerService.log).toHaveBeenCalledWith(
             'getEndpoint',
-            'http://alice:***@db.example.com:5984/time-tracker'
+            'http://alice:***@db.example.com:5984/time-tracker',
         );
     });
 
@@ -153,6 +155,6 @@ describe('SettingsService', () => {
         expect(service.getPassword).toBe('secret');
         expect(service.getDbEngine).toBe('firestore');
         expect(service.getDbName).toBe('time-tracker');
-        expect(service.getFirebaseOptions).toEqual({apiKey: 'abc'});
+        expect(service.getFirebaseOptions).toEqual({ apiKey: 'abc' });
     });
 });

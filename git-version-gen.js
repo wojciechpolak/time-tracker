@@ -30,22 +30,19 @@ function getGitVersion() {
                 commit: gitRevSync.short(),
                 commit_date: gitRevSync.date(),
             };
-        }
-        else if (fs.existsSync(`./${GV_FILE}.json`)) {
+        } else if (fs.existsSync(`./${GV_FILE}.json`)) {
             let gv = require(`./${GV_FILE}.json`);
             return {
                 commit: gv.commit,
                 commit_date: gv.commit_date,
             };
-        }
-        else {
+        } else {
             return {
                 commit: 'HEAD',
                 commit_date: '',
             };
         }
-    }
-    catch (e) {
+    } catch (e) {
         return {
             commit: 'HEAD',
             commit_date: '',

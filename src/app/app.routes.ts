@@ -32,7 +32,7 @@ export const PATHS = {
     Stopwatch: 'stopwatch',
     Settings: 'settings',
     Debug: 'debug',
-}
+};
 
 export const routes: Routes = [
     {
@@ -55,17 +55,17 @@ export const routes: Routes = [
             },
             {
                 path: PATHS.Debug,
-                component: DebugComponent
-            }
-        ]
+                component: DebugComponent,
+            },
+        ],
     },
     {
         path: PATHS.Settings,
-        component: SettingsComponent
+        component: SettingsComponent,
     },
     {
         path: '',
         redirectTo: `/${PATHS.Main}/${PATHS.Last}`,
-        pathMatch: 'full'
+        pathMatch: 'full',
     },
 ];

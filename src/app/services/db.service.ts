@@ -28,10 +28,9 @@ export interface DbServiceResponses {
 }
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export abstract class DbService<TDB extends DbServiceResponses = DbServiceResponses> {
-
     abstract dbLoaded: Promise<void>;
     abstract onDbChange: Subject<void>;
     abstract onRemoteDbError: Subject<void>;
@@ -46,16 +45,18 @@ export abstract class DbService<TDB extends DbServiceResponses = DbServiceRespon
     abstract remoteSyncDisable(): void;
 
     abstract getItem<T>(id: string): Promise<T>;
-    abstract putItem<T extends {_id: string}>(doc: T): Promise<T>;
-    abstract updateItem<T extends {_id: string}>(
-        item: T, updateFn: (doc: T) => void): Promise<TDB['updateItem']>;
+    abstract putItem<T extends { _id: string }>(doc: T): Promise<T>;
+    abstract updateItem<T extends { _id: string }>(
+        item: T,
+        updateFn: (doc: T) => void,
+    ): Promise<TDB['updateItem']>;
 
     abstract find<T>(props: DbFind): Promise<T[]>;
 
     abstract bulkDocs<T>(items: T[]): Promise<TDB['bulkDocs']>;
 
-    abstract deleteItem<T extends {_id: string}>(item: T): Promise<TDB['deleteItem']>
-    abstract deleteItems<T extends {_id: string}>(items: T[]): Promise<void>;
+    abstract deleteItem<T extends { _id: string }>(item: T): Promise<TDB['deleteItem']>;
+    abstract deleteItems<T extends { _id: string }>(items: T[]): Promise<void>;
     abstract deleteAll(): void;
 
     abstract clearLocalDB(): Promise<void>;

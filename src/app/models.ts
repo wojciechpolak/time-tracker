@@ -44,11 +44,11 @@ export interface DbError {
 
 export interface DbFind {
     selector: {
-        type: TypeValues,
-        ref: {$exists: boolean} | string,
-    },
-    sort?: [{_id: 'asc' | 'desc'}],
-    limit?: number,
+        type: TypeValues;
+        ref: { $exists: boolean } | string;
+    };
+    sort?: [{ _id: 'asc' | 'desc' }];
+    limit?: number;
 }
 
 export interface Stopwatch {
@@ -63,7 +63,7 @@ export interface Stopwatch {
 export interface StopwatchEvent {
     _id: string;
     _rev?: string;
-    type: typeof Types.STOPWATCH_TS,
+    type: typeof Types.STOPWATCH_TS;
     ref: string;
     name?: string;
     ts: number;
@@ -88,8 +88,8 @@ export interface LastTime {
 
 export interface TimeStamp {
     _id: string;
-    _rev?: string
-    type: typeof Types.LAST_TIME_TS,
+    _rev?: string;
+    type: typeof Types.LAST_TIME_TS;
     ref: string;
     label?: string;
     ts: number;
@@ -122,7 +122,7 @@ export const DATE_FORMAT: MtxDatetimeFormats = {
         monthYearA11yLabel: 'MMMM YYYY',
         popupHeaderDateLabel: 'MMM DD, ddd',
     },
-}
+};
 
 export interface StatsAvgDay {
     combinedTimeByDay: Record<string, number>;
@@ -151,8 +151,8 @@ export interface StatsFreq {
 
 export const Databases = {
     pouchdb: 'PouchDB',
-    firestore: 'Google\'s Firestore',
-}
+    firestore: "Google's Firestore",
+};
 export type DbEngine = keyof typeof Databases;
 
 export interface Settings {

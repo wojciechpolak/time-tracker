@@ -30,12 +30,10 @@ import { StopwatchService } from './stopwatch.service';
 import { TimerService } from '../services/timer.service';
 
 @Component({
-    imports: [
-        StopwatchComponent
-    ],
+    imports: [StopwatchComponent],
     template: `
         <app-stopwatch [item]="testItem"></app-stopwatch>
-    `
+    `,
 })
 class TestHostComponent {
     testItem: Stopwatch = {
@@ -43,14 +41,16 @@ class TestHostComponent {
         name: 'EV-1',
         type: Types.STOPWATCH,
         finished: false,
-        events: [{
-            _id: 'EV-TS-1',
-            ref: 'EV-1',
-            type: Types.STOPWATCH_TS,
-            ts: new Date().getTime(),
-            round: false,
-            ss: true,
-        }]
+        events: [
+            {
+                _id: 'EV-TS-1',
+                ref: 'EV-1',
+                type: Types.STOPWATCH_TS,
+                ts: new Date().getTime(),
+                round: false,
+                ss: true,
+            },
+        ],
     };
 }
 
@@ -60,14 +60,14 @@ describe('StopwatchComponent', () => {
 
     const mockStopwatchStore = {
         loading: signal(false),
-        addStopwatchEvent: () => { },
-        deleteStopwatchEvent: () => { },
-        updateStopwatchEventLabel: () => { },
-        updateStopwatchEvent: () => { },
-        deleteStopwatch: () => { },
-        updateStopwatchTitle: () => { },
-        toggleArchiveStopwatch: () => { },
-        loadStopwatch: () => { },
+        addStopwatchEvent: () => {},
+        deleteStopwatchEvent: () => {},
+        updateStopwatchEventLabel: () => {},
+        updateStopwatchEvent: () => {},
+        deleteStopwatch: () => {},
+        updateStopwatchTitle: () => {},
+        toggleArchiveStopwatch: () => {},
+        loadStopwatch: () => {},
     };
 
     const mockStopwatchService = {
@@ -76,31 +76,27 @@ describe('StopwatchComponent', () => {
         createStartEndPairs: () => [],
     };
     const mockTimerService = {
-        timer$: of('00:00:00')
+        timer$: of('00:00:00'),
     };
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-                StopwatchComponent,
-            ],
+            imports: [StopwatchComponent],
             providers: [
                 provideZonelessChangeDetection(),
                 provideCore(),
-                {provide: StopwatchStore, useValue: mockStopwatchStore},
-                {provide: StopwatchService, useValue: mockStopwatchService},
-                {provide: TimerService, useValue: mockTimerService},
+                { provide: StopwatchStore, useValue: mockStopwatchStore },
+                { provide: StopwatchService, useValue: mockStopwatchService },
+                { provide: TimerService, useValue: mockTimerService },
             ],
-            schemas: [NO_ERRORS_SCHEMA]
+            schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
 
         hostFixture = TestBed.createComponent(TestHostComponent);
         hostFixture.detectChanges();
 
         // Grab the child component instance
-        const lastTimeDebugEl = hostFixture.debugElement.query(
-            By.directive(StopwatchComponent)
-        );
+        const lastTimeDebugEl = hostFixture.debugElement.query(By.directive(StopwatchComponent));
         component = lastTimeDebugEl.componentInstance;
     });
 

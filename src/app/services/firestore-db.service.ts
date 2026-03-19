@@ -40,7 +40,7 @@ import {
     query,
     setDoc,
     updateDoc,
-    where
+    where,
 } from 'firebase/firestore';
 
 import { Db, DbFind, DbResponse } from '../models';
@@ -50,10 +50,9 @@ import { SettingsService } from '../settings/settings.service';
 import { AppDialogComponent } from '../main/dialog.component';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class FirestoreDbService extends DbService {
-
     private dialog = inject(MatDialog);
     private loggerService = inject(LoggerService);
     private settingsService = inject(SettingsService);
@@ -85,23 +84,19 @@ export class FirestoreDbService extends DbService {
         try {
             const app = initializeApp(this.config);
             this.db = initializeFirestore(app, {
-                localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+                localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
             });
             this.collection = collection(this.db, this.settingsService.getDbName);
-        }
-        catch (error: unknown) {
+        } catch (error: unknown) {
             this.loggerService.log('Error initializing Firestore DB', error);
         }
     }
 
-    async closeDb(): Promise<void> {
-    }
+    async closeDb(): Promise<void> {}
 
-    remoteSyncEnable() {
-    }
+    remoteSyncEnable() {}
 
-    remoteSyncDisable() {
-    }
+    remoteSyncDisable() {}
 
     listenToOnlineStatus() {
         window.addEventListener('online', () => {
@@ -120,7 +115,7 @@ export class FirestoreDbService extends DbService {
         return docSnap.data() as T;
     }
 
-    async putItem<T extends {_id: string, ref?: string | null}>(myDoc: T): Promise<T> {
+    async putItem<T extends { _id: string; ref?: string | null }>(myDoc: T): Promise<T> {
         this.isSyncActive = true;
         try {
             if (myDoc.ref === undefined) {
@@ -129,21 +124,19 @@ export class FirestoreDbService extends DbService {
             const docRef = doc(this.collection, myDoc._id);
             await setDoc(docRef, myDoc);
             return await this.getItem<T>(myDoc._id);
-        }
-        catch (err: unknown) {
+        } catch (err: unknown) {
             this.loggerService.log('putItem error', err);
             const msg = `DB putItem: ${err}`;
             this.snackBar.open(msg, 'Dismiss');
             throw err;
-        }
-        finally {
+        } finally {
             this.isSyncActive = false;
         }
     }
 
-    async updateItem<T extends {_id: string}>(
+    async updateItem<T extends { _id: string }>(
         item: T,
-        updateFn: (doc: T) => void
+        updateFn: (doc: T) => void,
     ): Promise<DbResponse> {
         this.isSyncActive = true;
         const docRes = await this.getItem<T>(item._id);
@@ -158,7 +151,7 @@ export class FirestoreDbService extends DbService {
             ok: true,
             id: docRes._id,
             rev: null,
-        }
+        };
     }
 
     async find<T>(props: DbFind): Promise<T[]> {
@@ -169,8 +162,7 @@ export class FirestoreDbService extends DbService {
         }
         if (typeof props.selector.ref === 'object' && !props.selector.ref.$exists) {
             queryConstraints.push(where('ref', '==', null));
-        }
-        else if (props.selector.ref && props.selector.ref) {
+        } else if (props.selector.ref && props.selector.ref) {
             queryConstraints.push(where('ref', '==', props.selector.ref));
         }
         if (props.sort) {
@@ -187,21 +179,18 @@ export class FirestoreDbService extends DbService {
         try {
             const querySnapshot = await getDocs(q);
             return querySnapshot.docs.map((doc) => doc.data()) as T[];
-        }
-        catch (err: unknown) {
+        } catch (err: unknown) {
             if (err instanceof FirebaseError) {
                 this.loggerService.log(err.message);
                 if (this.dialog.openDialogs.length === 0) {
                     this.dialog.open(AppDialogComponent, {
-                        data: {title: 'Google Firebase Error', message: err.message}
+                        data: { title: 'Google Firebase Error', message: err.message },
                     });
                 }
-            }
-            else {
+            } else {
                 this.loggerService.log(err);
             }
-        }
-        finally {
+        } finally {
             this.isSyncActive = false;
         }
         return [];
@@ -211,13 +200,13 @@ export class FirestoreDbService extends DbService {
         this.isSyncActive = true;
         for (const item of items) {
             const docRef = doc(this.collection, item._id);
-            await setDoc(docRef, item, {merge: false});
+            await setDoc(docRef, item, { merge: false });
         }
         this.isSyncActive = false;
         return [];
     }
 
-    async deleteItem<T extends {_id: string}>(item: T): Promise<DbResponse> {
+    async deleteItem<T extends { _id: string }>(item: T): Promise<DbResponse> {
         this.isSyncActive = true;
         const docRef = doc(this.collection, item._id);
         this.loggerService.log('Removing item', item._id);
@@ -227,10 +216,10 @@ export class FirestoreDbService extends DbService {
             ok: true,
             id: item._id,
             rev: null,
-        }
+        };
     }
 
-    async deleteItems<T extends {_id: string}>(items: T[]): Promise<void> {
+    async deleteItems<T extends { _id: string }>(items: T[]): Promise<void> {
         this.isSyncActive = true;
         for (const item of items) {
             const docRef = doc(this.collection, item._id);
@@ -248,11 +237,9 @@ export class FirestoreDbService extends DbService {
                 const docRef = doc(this.collection, d.data()['_id']);
                 await deleteDoc(docRef);
             }
-        }
-        catch (err) {
+        } catch (err) {
             this.loggerService.log('deleteAll error', err);
-        }
-        finally {
+        } finally {
             this.isSyncActive = false;
         }
     }
@@ -260,21 +247,24 @@ export class FirestoreDbService extends DbService {
     async clearLocalDB(): Promise<void> {
         this.remoteSyncDisable();
         await this.closeDb();
-        window.indexedDB.databases().then((r) => {
-            for (let i = 0; i < r.length; i++) {
-                const dbName = r[i].name;
-                if (dbName) {
-                    this.loggerService.log('Clearing DB ' + dbName);
-                    window.indexedDB.deleteDatabase(dbName);
+        window.indexedDB
+            .databases()
+            .then((r) => {
+                for (let i = 0; i < r.length; i++) {
+                    const dbName = r[i].name;
+                    if (dbName) {
+                        this.loggerService.log('Clearing DB ' + dbName);
+                        window.indexedDB.deleteDatabase(dbName);
+                    }
                 }
-            }
-        }).then(() => {
-            this.loggerService.log('All DB data cleared.');
-        });
+            })
+            .then(() => {
+                this.loggerService.log('All DB data cleared.');
+            });
     }
 
     async getStorageEstimated(): Promise<string> {
-        return 'Google\'s Firestore';
+        return "Google's Firestore";
     }
 
     async exportDb() {
@@ -285,10 +275,9 @@ export class FirestoreDbService extends DbService {
             this.download(
                 JSON.stringify(allDocs, undefined, 4),
                 `time-tracker-${date}.json`,
-                'text/plain'
+                'text/plain',
             );
-        }
-        catch (err) {
+        } catch (err) {
             this.loggerService.log('export error', err);
         }
     }
@@ -300,7 +289,7 @@ export class FirestoreDbService extends DbService {
         const result = await file.text();
         if (result) {
             let parsed = JSON.parse(result);
-            parsed = parsed.map((doc: {ref: unknown}) => {
+            parsed = parsed.map((doc: { ref: unknown }) => {
                 if (doc.ref === undefined) {
                     doc.ref = null;
                 }
@@ -313,7 +302,7 @@ export class FirestoreDbService extends DbService {
 
     private download(data: string, name: string, type: string) {
         const a = document.createElement('a');
-        const file = new Blob([data], {type: type});
+        const file = new Blob([data], { type: type });
         a.href = URL.createObjectURL(file);
         a.download = name;
         a.click();

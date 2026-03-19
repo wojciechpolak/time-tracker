@@ -30,9 +30,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 describe('AppComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-                AppComponent,
-            ],
+            imports: [AppComponent],
             providers: [
                 {
                     provide: DbService,
@@ -41,9 +39,9 @@ describe('AppComponent', () => {
                 provideZonelessChangeDetection(),
                 provideCore(),
                 provideMockStore(),
-                provideServiceWorker('ngsw-worker.js', {enabled: false}),
+                provideServiceWorker('ngsw-worker.js', { enabled: false }),
             ],
-            schemas: [NO_ERRORS_SCHEMA]
+            schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
 

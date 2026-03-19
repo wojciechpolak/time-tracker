@@ -28,15 +28,9 @@ import { SettingsService } from '../settings/settings.service';
     selector: 'app-main',
     templateUrl: './main.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [
-        ...AppMaterialModules,
-        RouterLink,
-        RouterLinkActive,
-        RouterOutlet,
-    ]
+    imports: [...AppMaterialModules, RouterLink, RouterLinkActive, RouterOutlet],
 })
 export class MainComponent implements OnInit {
-
     private dataService = inject(DataService);
     private settings = inject(SettingsService);
 

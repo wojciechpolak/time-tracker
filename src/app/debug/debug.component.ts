@@ -25,17 +25,12 @@ import { AppMaterialModules } from '../app-modules';
 import { DbService } from '../services/db.service';
 import { LoggerService } from '../services/logger.service';
 
-
 @Component({
     selector: 'app-debug',
     templateUrl: './debug.component.html',
-    imports: [
-        ...AppMaterialModules,
-        AsyncPipe,
-    ]
+    imports: [...AppMaterialModules, AsyncPipe],
 })
 export class DebugComponent implements OnInit, OnDestroy {
-
     private dbService = inject(DbService);
     private loggerService = inject(LoggerService);
 

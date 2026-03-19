@@ -28,12 +28,10 @@ import { LastTimeStore } from '../store/last-time.store';
 import { LastTimeService } from './last-time.service';
 
 @Component({
-    imports: [
-        LastTimeComponent
-    ],
+    imports: [LastTimeComponent],
     template: `
         <app-last-time [item]="testItem"></app-last-time>
-    `
+    `,
 })
 class TestHostComponent {
     testItem: LastTime = {
@@ -57,13 +55,13 @@ describe('LastTimeComponent', () => {
     let component: LastTimeComponent;
 
     const mockLastTimeStore = {
-        addLastTimeTimestamp: () => { },
-        deleteLastTimeTimestamp: () => { },
-        updateLastTimeTimestampLabel: () => { },
-        updateLastTimeTimestamp: () => { },
-        deleteLastTime: () => { },
-        updateLastTimeTitle: () => { },
-        loadLastTime: () => { },
+        addLastTimeTimestamp: () => {},
+        deleteLastTimeTimestamp: () => {},
+        updateLastTimeTimestampLabel: () => {},
+        updateLastTimeTimestamp: () => {},
+        deleteLastTime: () => {},
+        updateLastTimeTitle: () => {},
+        loadLastTime: () => {},
     };
 
     const mockLastTimeService = {
@@ -72,25 +70,21 @@ describe('LastTimeComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-                LastTimeComponent,
-            ],
+            imports: [LastTimeComponent],
             providers: [
                 provideZonelessChangeDetection(),
                 provideCore(),
-                {provide: LastTimeStore, useValue: mockLastTimeStore},
-                {provide: LastTimeService, useValue: mockLastTimeService},
+                { provide: LastTimeStore, useValue: mockLastTimeStore },
+                { provide: LastTimeService, useValue: mockLastTimeService },
             ],
-            schemas: [NO_ERRORS_SCHEMA]
+            schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
 
         hostFixture = TestBed.createComponent(TestHostComponent);
         hostFixture.detectChanges();
 
         // Grab the child component instance
-        const lastTimeDebugEl = hostFixture.debugElement.query(
-            By.directive(LastTimeComponent)
-        );
+        const lastTimeDebugEl = hostFixture.debugElement.query(By.directive(LastTimeComponent));
         component = lastTimeDebugEl.componentInstance;
     });
 

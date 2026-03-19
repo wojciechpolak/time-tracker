@@ -41,17 +41,15 @@ describe('MainComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-                MainComponent,
-            ],
+            imports: [MainComponent],
             providers: [
                 provideZonelessChangeDetection(),
                 provideCore(),
                 provideRouter([]),
                 provideMockStore(),
-                {provide: DbService, useValue: dbServiceStub}
+                { provide: DbService, useValue: dbServiceStub },
             ],
-            schemas: [NO_ERRORS_SCHEMA]
+            schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
 

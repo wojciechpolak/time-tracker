@@ -145,7 +145,7 @@ test.describe('Time Tracker', () => {
         await page.getByRole('menuitem', { name: 'Show Rounds' }).click();
         await expect(card.getByText('Round #2')).toBeVisible();
 
-        page.once('dialog', dialog => dialog.accept());
+        page.once('dialog', (dialog) => dialog.accept());
         await openCardActions(card);
         await page.getByRole('menuitem', { name: 'Delete' }).click();
 
@@ -171,18 +171,21 @@ test.describe('Time Tracker', () => {
 
     test('shows the debug tab when persisted settings enable it', async ({ page }) => {
         await page.addInitScript(() => {
-            window.localStorage.setItem('settings', JSON.stringify({
-                dbEngine: 'pouchdb',
-                dbName: 'time-tracker',
-                endpoint: '',
-                user: '',
-                password: '',
-                lastPage: '/main/last-time',
-                enableRemoteSync: false,
-                firebaseConfig: '',
-                redirectToHttps: false,
-                showDebug: true,
-            }));
+            window.localStorage.setItem(
+                'settings',
+                JSON.stringify({
+                    dbEngine: 'pouchdb',
+                    dbName: 'time-tracker',
+                    endpoint: '',
+                    user: '',
+                    password: '',
+                    lastPage: '/main/last-time',
+                    enableRemoteSync: false,
+                    firebaseConfig: '',
+                    redirectToHttps: false,
+                    showDebug: true,
+                }),
+            );
         });
 
         await page.goto('/');

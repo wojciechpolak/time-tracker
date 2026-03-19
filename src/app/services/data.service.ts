@@ -28,10 +28,9 @@ import { LastTimeStore } from '../store/last-time.store';
 import { StopwatchStore } from '../store/stopwatch.store';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class DataService {
-
     private dbService = inject(DbService);
     private snackBar = inject(MatSnackBar);
     private lastTimeStore = inject(LastTimeStore);
@@ -53,27 +52,24 @@ export class DataService {
     constructor() {
         this.dbLoaded$ = from(this.dbService.dbLoaded).pipe(
             map(() => true),
-            startWith(false)
+            startWith(false),
         );
 
         this.init();
     }
 
     init() {
-        this.dbService.onDbChange
-            .subscribe(() => {
-                this.syncChanges();
-            });
+        this.dbService.onDbChange.subscribe(() => {
+            this.syncChanges();
+        });
 
-        this.dbService.onRemoteDbError
-            .pipe(debounceTime(500))
-            .subscribe((err: unknown) => {
-                this.dbService.remoteSyncDisable();
-                // @ts-expect-error  PouchDB.Core.Error
-                const msg = `Remote DB: ${err.status} - ${err.message}`;
-                this.snackBar.open(msg, 'Dismiss');
-                this.fetchAll();
-            });
+        this.dbService.onRemoteDbError.pipe(debounceTime(500)).subscribe((err: unknown) => {
+            this.dbService.remoteSyncDisable();
+            // @ts-expect-error  PouchDB.Core.Error
+            const msg = `Remote DB: ${err.status} - ${err.message}`;
+            this.snackBar.open(msg, 'Dismiss');
+            this.fetchAll();
+        });
     }
 
     // Proxy the readiness promise

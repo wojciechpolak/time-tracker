@@ -21,10 +21,9 @@ import { Injectable } from '@angular/core';
 import { timer, Observable } from 'rxjs';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class TimerService {
-
     timer$: Observable<number>;
     private timerInterval: number = 1000;
 

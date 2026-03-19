@@ -17,7 +17,16 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ChangeDetectionStrategy, Component, OnChanges, OnInit, SimpleChanges, input, inject, Signal } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    OnChanges,
+    OnInit,
+    SimpleChanges,
+    input,
+    inject,
+    Signal,
+} from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AsyncPipe, NgClass } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
@@ -28,7 +37,14 @@ import { MtxDatetimepickerInputEvent } from '@ng-matero/extensions/datetimepicke
 
 import { AppMaterialModules } from '../app-modules';
 import { LoggerService } from '../services/logger.service';
-import { StatsAvgDay, StatsContent, StatsFreq, Stopwatch, StopwatchEvent, StopwatchRoundTime } from '../models';
+import {
+    StatsAvgDay,
+    StatsContent,
+    StatsFreq,
+    Stopwatch,
+    StopwatchEvent,
+    StopwatchRoundTime,
+} from '../models';
 import { StopwatchService } from './stopwatch.service';
 import { TimerService } from '../services/timer.service';
 import { UtilsService } from '../services/utils.service';
@@ -45,10 +61,9 @@ import { StopwatchStore } from '../store/stopwatch.store';
         FormsModule,
         NgClass,
         ReactiveFormsModule,
-    ]
+    ],
 })
 export class StopwatchComponent implements OnChanges, OnInit {
-
     private loggerService = inject(LoggerService);
     private stopwatchService = inject(StopwatchService);
     private stopwatchStore = inject(StopwatchStore);
@@ -88,7 +103,7 @@ export class StopwatchComponent implements OnChanges, OnInit {
             legend: {
                 display: false,
             },
-        }
+        },
     };
 
     ngOnInit() {
@@ -114,10 +129,10 @@ export class StopwatchComponent implements OnChanges, OnInit {
         const lastEventItem = this.item().events[this.item().events.length - 1] ?? {};
         this.isRunning = lastEventItem.ss;
         this.revertedEvents = structuredClone(this.item().events).slice().reverse();
-        this.revertedEvents.forEach(item => {
+        this.revertedEvents.forEach((item) => {
             item.tsFormControl = new FormControl(new Date(item.ts)) as FormControl<Date>;
-        })
-        this.roundsOnly = this.revertedEvents.filter(item => item.round);
+        });
+        this.roundsOnly = this.revertedEvents.filter((item) => item.round);
     }
 
     calcTimeSpan(skipArchive: boolean = false) {
@@ -141,11 +156,9 @@ export class StopwatchComponent implements OnChanges, OnInit {
                 const t = last.timeDiff + (end - this.cacheLastItemTs);
                 const ret = UtilsService.getTimeDiff(t);
                 this.roundsTimeStr[last.id] = `[${ret}]`;
-            }
-            else if (this.cacheLastRoundItem) {
+            } else if (this.cacheLastRoundItem) {
                 return;
-            }
-            else {
+            } else {
                 this.roundsTimeStr[item.events[0]._id] = `[${this.titleTime}]`;
             }
             return;
@@ -178,14 +191,12 @@ export class StopwatchComponent implements OnChanges, OnInit {
                         id: ev[0]._id,
                         timeDiff: timeDiff,
                     });
-                }
-                else if (this.roundsTime.length) {
+                } else if (this.roundsTime.length) {
                     const last = this.roundsTime[this.roundsTime.length - 1];
                     last.timeDiff += timeDiff;
                 }
                 return timeDiff;
-            }
-            else if (ev[0].round) {
+            } else if (ev[0].round) {
                 this.roundsTime.push({
                     id: ev[0]._id,
                     timeDiff: 0,
@@ -208,8 +219,8 @@ export class StopwatchComponent implements OnChanges, OnInit {
             const ret = UtilsService.getTimeDiff(r.timeDiff);
             this.roundsTimeStr[r.id] = `[${ret}]`;
         }
-        this.cacheLastRoundItem = this.item().events.length > 1 ?
-            this.roundsTime[this.roundsTime.length - 1] : null;
+        this.cacheLastRoundItem =
+            this.item().events.length > 1 ? this.roundsTime[this.roundsTime.length - 1] : null;
     }
 
     startStopStopwatch() {
@@ -219,8 +230,7 @@ export class StopwatchComponent implements OnChanges, OnInit {
     addEvent(newRound: boolean = false) {
         const lastEventItem: StopwatchEvent = this.item().events[this.item().events.length - 1];
         const isStart: boolean = lastEventItem.ss;
-        this.stopwatchStore.addStopwatchEvent(
-            {stopwatchId: this.item()._id, newRound, isStart});
+        this.stopwatchStore.addStopwatchEvent({ stopwatchId: this.item()._id, newRound, isStart });
     }
 
     removeEvent(event: StopwatchEvent, idx: number): void {
@@ -234,17 +244,27 @@ export class StopwatchComponent implements OnChanges, OnInit {
     editEvent(event: StopwatchEvent, idx: number): void {
         const label = prompt('Label #' + (idx + 1), event.name);
         if (label !== null) {
-            this.stopwatchStore.updateStopwatchEventLabel({event, label});
+            this.stopwatchStore.updateStopwatchEventLabel({ event, label });
             this.cacheLastNumberOfItems = 0;
         }
     }
 
-    modifyEvent(datePickerEvent: MtxDatetimepickerInputEvent<Date>,
-        event: StopwatchEvent, idx: number): void {
+    modifyEvent(
+        datePickerEvent: MtxDatetimepickerInputEvent<Date>,
+        event: StopwatchEvent,
+        idx: number,
+    ): void {
         const ts = datePickerEvent.value?.valueOf() ?? 0;
-        if (confirm('Do you want to change event #' + (idx + 1) +
-            ' to ' + UtilsService.toDate(ts) + '?')) {
-            this.stopwatchStore.updateStopwatchEvent({event, ts});
+        if (
+            confirm(
+                'Do you want to change event #' +
+                    (idx + 1) +
+                    ' to ' +
+                    UtilsService.toDate(ts) +
+                    '?',
+            )
+        ) {
+            this.stopwatchStore.updateStopwatchEvent({ event, ts });
             this.cacheLastNumberOfItems = 0;
         }
     }
@@ -269,21 +289,21 @@ export class StopwatchComponent implements OnChanges, OnInit {
     }
 
     finishEditTitle() {
-        this.stopwatchStore.updateStopwatchTitle(
-            {stopwatch: this.item(), title: this.editedTitle});
+        this.stopwatchStore.updateStopwatchTitle({
+            stopwatch: this.item(),
+            title: this.editedTitle,
+        });
         this.isEditTitle = false;
     }
 
     toggleArchiveItem() {
-        this.stopwatchStore.toggleArchiveStopwatch(
-            {stopwatch: this.item(), tsArch: this.tsArch});
+        this.stopwatchStore.toggleArchiveStopwatch({ stopwatch: this.item(), tsArch: this.tsArch });
     }
 
     switchDisplayRoundsEvents() {
         const item = this.item();
         if (!item.events.length) {
-            this.stopwatchStore.loadStopwatch(
-                {id: item._id, ignoreTsArch: true});
+            this.stopwatchStore.loadStopwatch({ id: item._id, ignoreTsArch: true });
         }
         this.displayEvents = !this.displayEvents;
     }
@@ -303,14 +323,13 @@ export class StopwatchComponent implements OnChanges, OnInit {
         }
         const itemValue = this.item();
         if (!itemValue.events.length) {
-            this.stopwatchStore.loadStopwatch(
-                {id: itemValue._id, ignoreTsArch: true});
+            this.stopwatchStore.loadStopwatch({ id: itemValue._id, ignoreTsArch: true });
             await this.sleep(200);
         }
         let events = this.stopwatchService.markNonStarters(itemValue.events);
         events = this.stopwatchService.removeDupes(events);
 
-        this.statsFreq = UtilsService.getStatsFreq(events.map(item => item.ts));
+        this.statsFreq = UtilsService.getStatsFreq(events.map((item) => item.ts));
         this.statsContent = [];
 
         this.statsAvgDay = this.calcStatsAvgDay(events);
@@ -323,17 +342,17 @@ export class StopwatchComponent implements OnChanges, OnInit {
                     {
                         data: tmpSecs.map((item: number) => Math.round(item / 60)),
                         backgroundColor: 'rgb(255, 99, 132, 0.6)',
-                    }
-                ]
-            }
+                    },
+                ],
+            },
         });
 
         const s = ['day', 'hour', 'month', 'year'];
         for (const x of s) {
             this.statsContent.push({
                 name: x,
-                data: UtilsService.getStats<StopwatchEvent>(events, x)
-            })
+                data: UtilsService.getStats<StopwatchEvent>(events, x),
+            });
         }
     }
 
@@ -363,35 +382,40 @@ export class StopwatchComponent implements OnChanges, OnInit {
 
             if (startDay === stopDay && startMonth === stopMonth && startYear === stopYear) {
                 const timeDiffInSeconds = (stopEvent.ts - startEvent.ts) / 1000;
-                combinedTimeByDay[startIndex] = (combinedTimeByDay[startIndex] || 0) + timeDiffInSeconds;
-            }
-            else {
+                combinedTimeByDay[startIndex] =
+                    (combinedTimeByDay[startIndex] || 0) + timeDiffInSeconds;
+            } else {
                 // If the event spans across multiple days, calculate the time taken for each day
                 const firstDayEnd = new Date(startDate);
                 firstDayEnd.setUTCHours(23, 59, 59, 999);
                 const timeDiffInSeconds1 = (firstDayEnd.getTime() - startEvent.ts) / 1000;
-                combinedTimeByDay[startIndex] = (combinedTimeByDay[startIndex] || 0) + timeDiffInSeconds1;
+                combinedTimeByDay[startIndex] =
+                    (combinedTimeByDay[startIndex] || 0) + timeDiffInSeconds1;
 
                 const lastDayStart = new Date(stopDate);
                 lastDayStart.setUTCHours(0, 0, 0, 0);
                 const timeDiffInSeconds2 = (stopEvent.ts - lastDayStart.getTime()) / 1000;
-                combinedTimeByDay[stopIndex] = (combinedTimeByDay[stopIndex] || 0) + timeDiffInSeconds2;
+                combinedTimeByDay[stopIndex] =
+                    (combinedTimeByDay[stopIndex] || 0) + timeDiffInSeconds2;
 
                 // Calculate the time taken for each day in between the first and last day
-                const daysInBetween = (stopDay - startDay) + 1;
+                const daysInBetween = stopDay - startDay + 1;
                 for (let j = 1; j < daysInBetween - 1; j++) {
                     const currentDate = new Date(startDate);
                     currentDate.setUTCDate(startDay + j);
                     const timeDiffInSeconds = 24 * 60 * 60;
                     combinedTimeByDay[`${startYear}-${startMonth}-${currentDate.getUTCDate()}`] =
-                        (combinedTimeByDay[`${startYear}-${startMonth}-${currentDate.getUTCDate()}`] || 0) +
-                        timeDiffInSeconds;
+                        (combinedTimeByDay[
+                            `${startYear}-${startMonth}-${currentDate.getUTCDate()}`
+                        ] || 0) + timeDiffInSeconds;
                 }
             }
         }
         const combinedTimeByDayValues = Object.values(combinedTimeByDay);
-        const sumTimeByDay: number = combinedTimeByDayValues
-            .reduce((acc: number, v: number) => acc + v, 0) as number;
+        const sumTimeByDay: number = combinedTimeByDayValues.reduce(
+            (acc: number, v: number) => acc + v,
+            0,
+        ) as number;
         const avgTimeByDay = sumTimeByDay / combinedTimeByDayValues.length;
         const avgTimeByDayMinutes = Math.round(avgTimeByDay / 60);
         return {

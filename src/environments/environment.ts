@@ -9,7 +9,7 @@ export const environment = {
     production: false,
     version: {
         commit: 'HEAD',
-        commit_date: ''
+        commit_date: '',
     },
     storeWithDevTools: withDevtools,
 };

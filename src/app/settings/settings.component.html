@@ -5,9 +5,7 @@
         <mat-card-title>Settings</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-
         <form id="settingsForm" [formGroup]="form" (ngSubmit)="save()">
-
           <div class="mat-form-field">
             <div class="mat-form-field-wrapper">
               <mat-checkbox class="mat-form-field-flex" formControlName="redirectToHttps">
@@ -40,22 +38,23 @@
           @if (form.get('dbEngine')?.value === 'firestore') {
             <mat-form-field>
               <mat-label>Firestore Collection Name</mat-label>
-              <input matInput formControlName="dbName">
+              <input matInput formControlName="dbName" />
             </mat-form-field>
 
             <mat-form-field>
               <mat-label>Firebase JSON Config</mat-label>
-              <textarea matInput
-                        formControlName="firebaseConfig"
-                        rows="12"
-                        [placeholder]="firebaseConfigPlaceholder">
+              <textarea
+                matInput
+                formControlName="firebaseConfig"
+                rows="12"
+                [placeholder]="firebaseConfigPlaceholder"
+              >
               </textarea>
             </mat-form-field>
-          }
-          @else {
+          } @else {
             <mat-form-field>
               <mat-label>Database Name (local)</mat-label>
-              <input matInput formControlName="dbName">
+              <input matInput formControlName="dbName" />
             </mat-form-field>
 
             <h3>Remote Sync with CouchDB</h3>
@@ -70,24 +69,39 @@
 
             <mat-form-field>
               <mat-label>User</mat-label>
-              <input matInput formControlName="user"
-                     autocomplete="username"
-                     [required]="form.controls['enableRemoteSync'].value">
+              <input
+                matInput
+                formControlName="user"
+                autocomplete="username"
+                [required]="form.controls['enableRemoteSync'].value"
+              />
             </mat-form-field>
 
             <mat-form-field>
               <mat-label>Password</mat-label>
-              <input matInput formControlName="password" type="password"
-                     autocomplete="current-password"
-                     [required]="form.controls['enableRemoteSync'].value">
+              <input
+                matInput
+                formControlName="password"
+                type="password"
+                autocomplete="current-password"
+                [required]="form.controls['enableRemoteSync'].value"
+              />
             </mat-form-field>
 
             <mat-form-field>
               <mat-label>Remote database endpoint</mat-label>
-              <input matInput placeholder="CouchDB URL" formControlName="endpoint"
-                     [required]="form.controls['enableRemoteSync'].value">
-              <button matSuffix mat-icon-button aria-label="Add default"
-                      (click)="fillDefaultEndpoint($event)">
+              <input
+                matInput
+                placeholder="CouchDB URL"
+                formControlName="endpoint"
+                [required]="form.controls['enableRemoteSync'].value"
+              />
+              <button
+                matSuffix
+                mat-icon-button
+                aria-label="Add default"
+                (click)="fillDefaultEndpoint($event)"
+              >
                 <mat-icon>add</mat-icon>
               </button>
             </mat-form-field>
@@ -97,13 +111,15 @@
 
           <div>
             <button mat-raised-button (click)="cancel($event)">Cancel</button>
-            <button mat-raised-button color="primary"
-                    type="submit"
-                    [disabled]="!form.valid || !form.dirty">
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="!form.valid || !form.dirty"
+            >
               Save
             </button>
           </div>
-
         </form>
       </mat-card-content>
     </mat-card>
@@ -118,19 +134,18 @@
         <p>{{ storageInfo$ | async }}</p>
         <div style="margin-top: 2em">
           <p>
-            <button mat-raised-button color="primary"
-                    (click)="dbExport($event)">
-              DB Export
-            </button>
+            <button mat-raised-button color="primary" (click)="dbExport($event)">DB Export</button>
           </p>
           <p>
-            <button mat-raised-button color="warn"
-                    [disabled]="!importFileReady"
-                    (click)="dbImport($event)">
+            <button
+              mat-raised-button
+              color="warn"
+              [disabled]="!importFileReady"
+              (click)="dbImport($event)"
+            >
               DB Import
             </button>
-            <input id="fileSelector" type="file"
-                   (change)="importFileChange($event)">
+            <input id="fileSelector" type="file" (change)="importFileChange($event)" />
           </p>
         </div>
       </mat-card-content>
@@ -149,9 +164,13 @@
       </mat-card-content>
       <mat-card-actions>
         <p>
-          <button mat-stroked-button color="primary"
-                  (click)="checkForUpdate($event)"
-                  [disabled]="!isOnline()">check for update
+          <button
+            mat-stroked-button
+            color="primary"
+            (click)="checkForUpdate($event)"
+            [disabled]="!isOnline()"
+          >
+            check for update
           </button>
         </p>
       </mat-card-actions>

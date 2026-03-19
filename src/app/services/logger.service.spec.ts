@@ -34,7 +34,7 @@ describe('LoggerService', () => {
     it('stores formatted log messages, emits them, and forwards the original arguments to console', () => {
         const emitSpy = spyOn(service.onLog, 'emit');
         const consoleSpy = spyOn(console, 'log');
-        const payload = {status: 'ok'};
+        const payload = { status: 'ok' };
 
         service.log('prefix', payload, 123);
 

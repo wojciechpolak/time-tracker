@@ -18,8 +18,14 @@
  */
 
 import { MatButton, MatFabButton, MatIconButton } from '@angular/material/button';
-import { MatCard, MatCardSubtitle, MatCardHeader, MatCardTitle,
-    MatCardContent, MatCardActions } from '@angular/material/card';
+import {
+    MatCard,
+    MatCardSubtitle,
+    MatCardHeader,
+    MatCardTitle,
+    MatCardContent,
+    MatCardActions,
+} from '@angular/material/card';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatDialogActions, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
 import { MatDivider } from '@angular/material/divider';
@@ -32,9 +38,11 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatTabGroup, MatTab, MatTabLink, MatTabNav, MatTabNavPanel } from '@angular/material/tabs';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatTooltip } from '@angular/material/tooltip';
-import { MtxDatetimepickerInput, MtxDatetimepicker,
-    MtxDatetimepickerToggle } from '@ng-matero/extensions/datetimepicker';
-
+import {
+    MtxDatetimepickerInput,
+    MtxDatetimepicker,
+    MtxDatetimepickerToggle,
+} from '@ng-matero/extensions/datetimepicker';
 
 export const AppMaterialModules = [
     MatButton,

@@ -19,9 +19,9 @@
  */
 
 declare global {
-  interface Window {
-    global: Window;
-  }
+    interface Window {
+        global: Window;
+    }
 }
 
 window.global = window;

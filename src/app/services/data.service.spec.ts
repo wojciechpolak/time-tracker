@@ -74,7 +74,7 @@ describe('DataService', () => {
                     name: 'Last time',
                     timestamps: [],
                     hasMoreTs: false,
-                }
+                },
             ]),
             loadLastTimeList: jasmine.createSpy('loadLastTimeList'),
         };
@@ -87,7 +87,7 @@ describe('DataService', () => {
                     type: Types.STOPWATCH,
                     name: 'Stopwatch',
                     events: [],
-                }
+                },
             ]),
             loadStopwatches: jasmine.createSpy('loadStopwatches'),
         };
@@ -95,10 +95,10 @@ describe('DataService', () => {
         TestBed.configureTestingModule({
             providers: [
                 DataService,
-                {provide: DbService, useValue: dbService},
-                {provide: MatSnackBar, useValue: snackBar},
-                {provide: LastTimeStore, useValue: lastTimeStore},
-                {provide: StopwatchStore, useValue: stopwatchStore},
+                { provide: DbService, useValue: dbService },
+                { provide: MatSnackBar, useValue: snackBar },
+                { provide: LastTimeStore, useValue: lastTimeStore },
+                { provide: StopwatchStore, useValue: stopwatchStore },
             ],
         });
 
@@ -115,7 +115,7 @@ describe('DataService', () => {
 
     it('emits db readiness from false to true', async () => {
         const values: boolean[] = [];
-        const subscription = service.dbLoaded$.subscribe(value => values.push(value));
+        const subscription = service.dbLoaded$.subscribe((value) => values.push(value));
 
         await service.dbLoaded;
 
@@ -156,8 +156,8 @@ describe('DataService', () => {
     it('disables remote sync, shows a snack bar, and refetches on debounced remote errors', async () => {
         const fetchAllSpy = spyOn(service, 'fetchAll');
 
-        onRemoteDbError.next({status: 401, message: 'Unauthorized'});
-        await new Promise(resolve => window.setTimeout(resolve, 550));
+        onRemoteDbError.next({ status: 401, message: 'Unauthorized' });
+        await new Promise((resolve) => window.setTimeout(resolve, 550));
 
         expect(dbService.remoteSyncDisable).toHaveBeenCalled();
         expect(snackBar.open).toHaveBeenCalledWith('Remote DB: 401 - Unauthorized', 'Dismiss');

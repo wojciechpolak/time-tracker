@@ -42,8 +42,9 @@ describe('UtilsService', () => {
     });
 
     it('converts timestamps into a local date string while stripping decimals', () => {
-        const isoSpy = spyOn(UtilsService, 'toISOLocalString')
-            .and.returnValue('2025-01-02T03:04:05.678Z');
+        const isoSpy = spyOn(UtilsService, 'toISOLocalString').and.returnValue(
+            '2025-01-02T03:04:05.678Z',
+        );
 
         expect(UtilsService.toDate(1_735_787_045.999, false)).toBe('2025-01-02 03:04:05');
         expect(isoSpy.calls.mostRecent().args[0] instanceof Date).toBeTrue();
@@ -63,14 +64,14 @@ describe('UtilsService', () => {
             jasmine.clock().mockDate(new Date('2026-03-18T12:00:00.000Z'));
             const rtf = new Intl.RelativeTimeFormat('en', {
                 style: 'long',
-                numeric: 'always'
+                numeric: 'always',
             });
 
             expect(UtilsService.formatFromNow(Date.now() - 30_000)).toBe(rtf.format(-30, 'second'));
-            expect(UtilsService.formatFromNow(Math.floor(Date.now() / 1000) - 7200, false))
-                .toBe(rtf.format(-2, 'hour'));
-        }
-        finally {
+            expect(UtilsService.formatFromNow(Math.floor(Date.now() / 1000) - 7200, false)).toBe(
+                rtf.format(-2, 'hour'),
+            );
+        } finally {
             jasmine.clock().uninstall();
         }
     });
@@ -81,16 +82,16 @@ describe('UtilsService', () => {
             jasmine.clock().mockDate(new Date('2026-03-18T12:00:00.000Z'));
             const rtf = new Intl.RelativeTimeFormat('en', {
                 style: 'long',
-                numeric: 'always'
+                numeric: 'always',
             });
             const parts = rtf.formatToParts(-2, 'day');
             const daysAgo = `${parts[0]?.value} days`;
             const hoursAgo = rtf.format(-3, 'hour');
 
-            expect(UtilsService.formatFromNow(Date.now() - ((2 * 86_400_000) + (3 * 3_600_000))))
-                .toBe(`${daysAgo} ${hoursAgo}`);
-        }
-        finally {
+            expect(UtilsService.formatFromNow(Date.now() - (2 * 86_400_000 + 3 * 3_600_000))).toBe(
+                `${daysAgo} ${hoursAgo}`,
+            );
+        } finally {
             jasmine.clock().uninstall();
         }
     });
@@ -112,19 +113,19 @@ describe('UtilsService', () => {
 
     it('formats relative timestamps across units', () => {
         spyOn(Date, 'now').and.returnValue(new Date('2026-03-18T12:00:00.000Z').getTime());
-        const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'});
+        const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 
-        expect(UtilsService.formatRelativeTime(Date.now() + 90_000))
-            .toBe(rtf.format(2, 'minute'));
-        expect(UtilsService.formatRelativeTime(Date.now() - (40 * 86_400_000)))
-            .toBe(rtf.format(-1, 'month'));
+        expect(UtilsService.formatRelativeTime(Date.now() + 90_000)).toBe(rtf.format(2, 'minute'));
+        expect(UtilsService.formatRelativeTime(Date.now() - 40 * 86_400_000)).toBe(
+            rtf.format(-1, 'month'),
+        );
     });
 
     it('builds chart stats grouped by different periods', () => {
         const events = [
-            {ts: new Date(2025, 0, 6, 8, 0, 0).getTime()},
-            {ts: new Date(2025, 0, 6, 8, 30, 0).getTime()},
-            {ts: new Date(2025, 1, 7, 9, 0, 0).getTime()},
+            { ts: new Date(2025, 0, 6, 8, 0, 0).getTime() },
+            { ts: new Date(2025, 0, 6, 8, 30, 0).getTime() },
+            { ts: new Date(2025, 1, 7, 9, 0, 0).getTime() },
         ];
 
         const hourStats = UtilsService.getStats(events, 'hour');
@@ -142,10 +143,10 @@ describe('UtilsService', () => {
     it('logs when getStats is called without a valid period', () => {
         const consoleSpy = spyOn(console, 'log');
 
-        UtilsService.getStats([{ts: Date.now()}], 'invalid');
+        UtilsService.getStats([{ ts: Date.now() }], 'invalid');
 
         expect(consoleSpy).toHaveBeenCalledWith(
-            'groupByTimePeriod: You have to set a period! day | hours | week | month | year'
+            'groupByTimePeriod: You have to set a period! day | hours | week | month | year',
         );
     });
 

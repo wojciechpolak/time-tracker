@@ -30,10 +30,9 @@ type TimeStampUpdate = Partial<Pick<TimeStamp, 'label' | 'ts'>>;
 const LT_TS_MAX_ITEMS = 10;
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class LastTimeService {
-
     private dbService = inject(DbService);
     private loggerService = inject(LoggerService);
 
@@ -45,8 +44,7 @@ export class LastTimeService {
             }
             await this.fetchTimestamps(lastTime, limit);
             return lastTime;
-        }
-        catch (err) {
+        } catch (err) {
             this.loggerService.log('fetchLastTime error', err);
             throw err;
         }
@@ -60,7 +58,7 @@ export class LastTimeService {
                 selector: {
                     type: Types.LAST_TIME,
                     // _id: {$nin: [null]},
-                    ref: {$exists: false},
+                    ref: { $exists: false },
                 },
                 // sort: [{_id: 'desc'}]
             });
@@ -69,24 +67,21 @@ export class LastTimeService {
             }
             lastTime = this.sortLastTimeByTs(lastTime);
             return lastTime;
-        }
-        catch (err) {
+        } catch (err) {
             this.loggerService.log('fetchLastTimeList error', err);
             return [];
-        }
-        finally {
+        } finally {
             console.timeEnd('find-LT');
         }
     }
 
     sortLastTimeByTs(lastTime: LastTime[]): LastTime[] {
-        return lastTime.sort(
-            (a: LastTime, b: LastTime) => {
-                if (a.timestamps.length && b.timestamps.length) {
-                    return b.timestamps[0].ts - a.timestamps[0].ts
-                }
-                return 0;
-            });
+        return lastTime.sort((a: LastTime, b: LastTime) => {
+            if (a.timestamps.length && b.timestamps.length) {
+                return b.timestamps[0].ts - a.timestamps[0].ts;
+            }
+            return 0;
+        });
     }
 
     async fetchTimeStamp(id: string): Promise<TimeStamp> {
@@ -96,8 +91,7 @@ export class LastTimeService {
                 throw new Error(`TimeStamp with id ${id} not found`);
             }
             return timestamp;
-        }
-        catch (err) {
+        } catch (err) {
             this.loggerService.log('fetchTimeStamp error', err);
             throw err;
         }
@@ -115,8 +109,8 @@ export class LastTimeService {
                 type: Types.LAST_TIME_TS,
                 ref: item._id,
             },
-            sort: [{_id: 'desc'}],
-            ...(limit ? {limit: limit + 1} : {}),
+            sort: [{ _id: 'desc' }],
+            ...(limit ? { limit: limit + 1 } : {}),
         });
         timestamps.sort((a: TimeStamp, b: TimeStamp) => b.ts - a.ts);
         // console.timeEnd('find-LTT');
@@ -124,8 +118,7 @@ export class LastTimeService {
         if (limit && item.timestamps.length > limit) {
             item.timestamps = item.timestamps.slice(0, limit);
             item.hasMoreTs = true;
-        }
-        else {
+        } else {
             item.hasMoreTs = false;
         }
     }
@@ -135,7 +128,7 @@ export class LastTimeService {
         const lastTime = {
             _id: Types.LAST_TIME + '-' + ts.toString(),
             type: Types.LAST_TIME,
-            name: 'Last #' + (UtilsService.toISOLocalString(new Date(ts))),
+            name: 'Last #' + UtilsService.toISOLocalString(new Date(ts)),
         } as LastTime;
         const doc = await this.dbService.putItem(lastTime);
         const timestamp: TimeStamp = {
@@ -184,7 +177,7 @@ export class LastTimeService {
         const items: Deleted[] = item.timestamps.map((r: TimeStamp): Deleted => {
             return {
                 _id: r._id,
-                _rev: r._rev as string ?? null,
+                _rev: (r._rev as string) ?? null,
                 _deleted: true,
             };
         });

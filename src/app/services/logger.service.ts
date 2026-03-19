@@ -21,14 +21,15 @@ import { EventEmitter, Injectable } from '@angular/core';
 
 @Injectable()
 export class LoggerService {
-
     buf: string[] = [];
     onLog: EventEmitter<string> = new EventEmitter();
 
     log(...messages: unknown[]) {
-        const msg = messages.map(m => {
-            return typeof m === 'string' ? m : JSON.stringify(m);
-        }).join(' ');
+        const msg = messages
+            .map((m) => {
+                return typeof m === 'string' ? m : JSON.stringify(m);
+            })
+            .join(' ');
         this.buf.push(msg);
         this.onLog.emit(msg);
         console.log(...messages);

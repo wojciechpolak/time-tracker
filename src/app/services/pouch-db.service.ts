@@ -38,10 +38,9 @@ export interface PouchDbResponses extends DbServiceResponses {
 }
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class PouchDbService extends DbService<PouchDbResponses> {
-
     private loggerService = inject(LoggerService);
     private settingsService = inject(SettingsService);
     private snackBar = inject(MatSnackBar);
@@ -74,8 +73,7 @@ export class PouchDbService extends DbService<PouchDbResponses> {
     }
 
     openDb() {
-        this.db = new PouchDB<Db>(this.settingsService.getDbName,
-            {auto_compaction: true});
+        this.db = new PouchDB<Db>(this.settingsService.getDbName, { auto_compaction: true });
         this.db.on('error', (err: unknown) => {
             this.loggerService.log('DB error', err);
         });
@@ -92,11 +90,10 @@ export class PouchDbService extends DbService<PouchDbResponses> {
             this.db.createIndex({
                 index: {
                     name: 'index1',
-                    fields: ['_id', 'ref', 'type']
-                }
+                    fields: ['_id', 'ref', 'type'],
+                },
             });
-        }
-        catch (err: unknown) {
+        } catch (err: unknown) {
             if (err) {
                 this.loggerService.log('createIndex', err);
             }
@@ -106,11 +103,10 @@ export class PouchDbService extends DbService<PouchDbResponses> {
             this.db.createIndex({
                 index: {
                     name: 'index2',
-                    fields: ['ref', 'type']
-                }
+                    fields: ['ref', 'type'],
+                },
             });
-        }
-        catch (err: unknown) {
+        } catch (err: unknown) {
             if (err) {
                 this.loggerService.log('createIndex', err);
             }
@@ -122,8 +118,8 @@ export class PouchDbService extends DbService<PouchDbResponses> {
         this.isSyncActive = false;
         this.isSyncPullActive = false;
 
-        const remoteCouch = this.settingsService.hasEndpoint() &&
-            this.settingsService.getEndpoint();
+        const remoteCouch =
+            this.settingsService.hasEndpoint() && this.settingsService.getEndpoint();
         if (!remoteCouch || !this.settingsService.hasEnabledRemoteSync()) {
             return;
         }
@@ -194,8 +190,7 @@ export class PouchDbService extends DbService<PouchDbResponses> {
                 const state = document.visibilityState;
                 if (state === 'hidden') {
                     this.remoteSyncDisable();
-                }
-                else if (state === 'visible') {
+                } else if (state === 'visible') {
                     this.remoteSyncEnable();
                 }
             });
@@ -206,13 +201,12 @@ export class PouchDbService extends DbService<PouchDbResponses> {
         return await this.db.get<T>(id);
     }
 
-    async putItem<T extends {_id: string}>(doc: T): Promise<T> {
+    async putItem<T extends { _id: string }>(doc: T): Promise<T> {
         try {
             // @ts-expect-error  put() signature mismatch
             const dbResp: PouchDB.Core.Response = await this.db.put<T>(doc);
             return await this.getItem<T>(dbResp.id);
-        }
-        catch (err: unknown) {
+        } catch (err: unknown) {
             this.loggerService.log('putItem error', err);
             // @ts-expect-error  PouchDB.Core.Error
             const msg = `DB putItem: ${err.status} - ${err.message}`;
@@ -221,9 +215,9 @@ export class PouchDbService extends DbService<PouchDbResponses> {
         }
     }
 
-    async updateItem<T extends {_id: string}>(
+    async updateItem<T extends { _id: string }>(
         item: T,
-        updateFn: (doc: T) => void
+        updateFn: (doc: T) => void,
     ): Promise<PouchDB.Core.Response> {
         const doc = await this.db.get<T>(item._id);
         if (updateFn) {
@@ -238,12 +232,13 @@ export class PouchDbService extends DbService<PouchDbResponses> {
         return res.docs as T[];
     }
 
-    bulkDocs<T>(items: PouchDB.Core.PutDocument<Db & T>[]):
-        Promise<(PouchDB.Core.Response | PouchDB.Core.Error)[]> {
+    bulkDocs<T>(
+        items: PouchDB.Core.PutDocument<Db & T>[],
+    ): Promise<(PouchDB.Core.Response | PouchDB.Core.Error)[]> {
         return this.db.bulkDocs(items);
     }
 
-    async deleteItem<T extends {_id: string}>(item: T): Promise<PouchDB.Core.Response> {
+    async deleteItem<T extends { _id: string }>(item: T): Promise<PouchDB.Core.Response> {
         const doc = await this.db.get<T>(item._id);
         this.loggerService.log('Removing item', doc._id);
         return this.db.remove(doc);
@@ -255,7 +250,7 @@ export class PouchDbService extends DbService<PouchDbResponses> {
 
     async deleteAll() {
         try {
-            const doc = await this.db.allDocs({include_docs: true});
+            const doc = await this.db.allDocs({ include_docs: true });
             if (doc) {
                 for (const d of doc.rows) {
                     if (d.doc) {
@@ -264,8 +259,7 @@ export class PouchDbService extends DbService<PouchDbResponses> {
                     }
                 }
             }
-        }
-        catch (err) {
+        } catch (err) {
             this.loggerService.log('deleteAll error', err);
         }
     }
@@ -273,25 +267,27 @@ export class PouchDbService extends DbService<PouchDbResponses> {
     async clearLocalDB(): Promise<void> {
         this.remoteSyncDisable();
         await this.closeDb();
-        window.indexedDB.databases().then((r) => {
-            for (let i = 0; i < r.length; i++) {
-                const dbName = r[i].name;
-                if (dbName) {
-                    this.loggerService.log('Clearing DB ' + dbName);
-                    window.indexedDB.deleteDatabase(dbName);
+        window.indexedDB
+            .databases()
+            .then((r) => {
+                for (let i = 0; i < r.length; i++) {
+                    const dbName = r[i].name;
+                    if (dbName) {
+                        this.loggerService.log('Clearing DB ' + dbName);
+                        window.indexedDB.deleteDatabase(dbName);
+                    }
                 }
-            }
-        }).then(() => {
-            this.loggerService.log('All DB data cleared.');
-        });
+            })
+            .then(() => {
+                this.loggerService.log('All DB data cleared.');
+            });
     }
 
     async getStorageEstimated(): Promise<string> {
         let estimated: StorageEstimate;
         if (navigator.storage?.estimate) {
             estimated = await navigator.storage.estimate();
-        }
-        else {
+        } else {
             return 'Unknown';
         }
         const usage = estimated.usage ?? 0;
@@ -299,21 +295,24 @@ export class PouchDbService extends DbService<PouchDbResponses> {
         let ret = 'PouchDB:';
         ret += ' Usage: ' + UtilsService.size2human(usage);
         ret += ', Quota: ' + UtilsService.size2human(quota);
-        ret += ', ' + (usage / quota * 100).toFixed(2) + '%';
+        ret += ', ' + ((usage / quota) * 100).toFixed(2) + '%';
         return ret;
     }
 
     async exportDb() {
         try {
-            const doc = await this.db.allDocs({include_docs: true});
+            const doc = await this.db.allDocs({ include_docs: true });
             const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
             this.download(
-                JSON.stringify(doc.rows.map((doc) => doc.doc), undefined, 4),
+                JSON.stringify(
+                    doc.rows.map((doc) => doc.doc),
+                    undefined,
+                    4,
+                ),
                 `time-tracker-${date}.json`,
-                'text/plain'
+                'text/plain',
             );
-        }
-        catch (err) {
+        } catch (err) {
             this.loggerService.log('export error', err);
         }
     }
@@ -325,20 +324,20 @@ export class PouchDbService extends DbService<PouchDbResponses> {
         const result = await file.text();
         if (result) {
             let parsed = JSON.parse(result);
-            parsed = parsed.map((doc: {ref: unknown}) => {
+            parsed = parsed.map((doc: { ref: unknown }) => {
                 if (doc.ref === null) {
                     delete doc.ref;
                 }
                 return doc;
             });
-            await this.db.bulkDocs(parsed, {new_edits: false});
+            await this.db.bulkDocs(parsed, { new_edits: false });
             this.loggerService.log('import done');
         }
     }
 
     private download(data: string, name: string, type: string) {
         const a = document.createElement('a');
-        const file = new Blob([data], {type: type});
+        const file = new Blob([data], { type: type });
         a.href = URL.createObjectURL(file);
         a.download = name;
         a.click();

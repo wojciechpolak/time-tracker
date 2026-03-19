@@ -19,11 +19,7 @@
 
 import { TestBed } from '@angular/core/testing';
 
-import {
-    LocalStorageService,
-    SessionStorageService,
-    StorageService
-} from './storage.service';
+import { LocalStorageService, SessionStorageService, StorageService } from './storage.service';
 import { WINDOW_TOKEN } from '../core/core';
 
 class FakeStorage implements Storage {
@@ -86,10 +82,10 @@ describe('StorageService', () => {
     });
 
     it('serializes and deserializes JSON values by default', () => {
-        service.set('settings', {theme: 'light'});
+        service.set('settings', { theme: 'light' });
 
         expect(storage.getItem('settings')).toBe('{"theme":"light"}');
-        expect(service.get('settings')).toEqual({theme: 'light'});
+        expect(service.get('settings')).toEqual({ theme: 'light' });
     });
 
     it('stores plain strings when JSON handling is disabled', () => {
@@ -99,15 +95,15 @@ describe('StorageService', () => {
     });
 
     it('removes matching keys by prefix only', () => {
-        service.set('sw-1', {value: 1});
-        service.set('sw-2', {value: 2});
-        service.set('lt-1', {value: 3});
+        service.set('sw-1', { value: 1 });
+        service.set('sw-2', { value: 2 });
+        service.set('lt-1', { value: 3 });
 
         service.removeByKeyPrefix('sw-');
 
         expect(storage.getItem('sw-1')).toBeNull();
         expect(storage.getItem('sw-2')).toBeNull();
-        expect(service.get('lt-1')).toEqual({value: 3});
+        expect(service.get('lt-1')).toEqual({ value: 3 });
     });
 
     it('removes individual keys and clears the whole storage', () => {
@@ -132,14 +128,14 @@ describe('Browser storage services', () => {
         TestBed.configureTestingModule({
             providers: [
                 LocalStorageService,
-                {provide: WINDOW_TOKEN, useValue: {localStorage} as Partial<Window>},
+                { provide: WINDOW_TOKEN, useValue: { localStorage } as Partial<Window> },
             ],
         });
 
         const service = TestBed.inject(LocalStorageService);
-        service.set('key', {value: true});
+        service.set('key', { value: true });
 
-        expect(service.get('key')).toEqual({value: true});
+        expect(service.get('key')).toEqual({ value: true });
     });
 
     it('uses window.sessionStorage when session storage is available', () => {
@@ -147,7 +143,7 @@ describe('Browser storage services', () => {
         TestBed.configureTestingModule({
             providers: [
                 SessionStorageService,
-                {provide: WINDOW_TOKEN, useValue: {sessionStorage} as Partial<Window>},
+                { provide: WINDOW_TOKEN, useValue: { sessionStorage } as Partial<Window> },
             ],
         });
 
@@ -163,11 +159,10 @@ describe('Browser storage services', () => {
         TestBed.configureTestingModule({
             providers: [
                 LocalStorageService,
-                {provide: WINDOW_TOKEN, useValue: {localStorage} as Partial<Window>},
+                { provide: WINDOW_TOKEN, useValue: { localStorage } as Partial<Window> },
             ],
         });
 
-        expect(() => TestBed.inject(LocalStorageService))
-            .toThrow('Storage Not Available!');
+        expect(() => TestBed.inject(LocalStorageService)).toThrow('Storage Not Available!');
     });
 });

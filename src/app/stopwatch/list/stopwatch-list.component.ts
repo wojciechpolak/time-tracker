@@ -32,14 +32,9 @@ import { StopwatchStore } from '../../store/stopwatch.store';
     selector: 'app-stopwatch-list',
     templateUrl: './stopwatch-list.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [
-        ...AppMaterialModules,
-        StopwatchComponent,
-        AsyncPipe,
-    ]
+    imports: [...AppMaterialModules, StopwatchComponent, AsyncPipe],
 })
 export class StopwatchListComponent implements OnInit {
-
     private settingsService = inject(SettingsService);
     private stopwatchStore = inject(StopwatchStore);
     protected dataService = inject(DataService);
@@ -48,21 +43,20 @@ export class StopwatchListComponent implements OnInit {
         effect(() => {
             const stopwatches = this.dataService.stopwatches();
             // signal if at least one stopwatch is running...
-            const swIsRunning = stopwatches.find(item => {
+            const swIsRunning = stopwatches.find((item) => {
                 const lastEventItem = item.events[item.events.length - 1] ?? {};
                 return lastEventItem.ss;
             });
             if (swIsRunning) {
                 document.title = '🟢 ' + AppTitle;
-            }
-            else {
+            } else {
                 document.title = AppTitle;
             }
         });
     }
 
     ngOnInit() {
-        this.settingsService.update({lastPage: `/${PATHS.Main}/${PATHS.Stopwatch}`});
+        this.settingsService.update({ lastPage: `/${PATHS.Main}/${PATHS.Stopwatch}` });
     }
 
     addStopwatch() {

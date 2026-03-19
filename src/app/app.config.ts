@@ -35,7 +35,6 @@ import { environment } from '../environments/environment';
 import { provideCore } from './core/core';
 import { routes } from './app.routes';
 
-
 export const appConfig: ApplicationConfig = {
     providers: [
         DataService,
@@ -43,18 +42,18 @@ export const appConfig: ApplicationConfig = {
         SettingsService,
         StopwatchService,
         TimerService,
-        {provide: DbService, useClass: DynamicDbService},
+        { provide: DbService, useClass: DynamicDbService },
         provideCore(),
         provideRouter(routes),
         provideServiceWorker('ngsw-worker.js', {
             enabled: environment.production,
             // Register the ServiceWorker as soon as the app is stable
             // or after 30 seconds (whichever comes first).
-            registrationStrategy: 'registerWhenStable:30000'
+            registrationStrategy: 'registerWhenStable:30000',
         }),
         provideZonelessChangeDetection(),
         provideMomentDatetimeAdapter(DATE_FORMAT),
         provideCharts(withDefaultRegisterables()),
-        {provide: APP_BASE_HREF, useValue: environment.baseHref},
-    ]
+        { provide: APP_BASE_HREF, useValue: environment.baseHref },
+    ],
 };

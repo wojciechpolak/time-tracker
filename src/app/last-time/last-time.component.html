@@ -4,15 +4,13 @@
       <div class="edit">
         <mat-form-field appearance="fill">
           <mat-label>Name</mat-label>
-          <input matInput [(ngModel)]="editedTitle">
+          <input matInput [(ngModel)]="editedTitle" />
         </mat-form-field>
         <div>
-          <button mat-raised-button color="basic"
-                  aria-label="Cancel" (click)="cancelEditTitle()">
+          <button mat-raised-button color="basic" aria-label="Cancel" (click)="cancelEditTitle()">
             <mat-icon>cancel</mat-icon>
           </button>
-          <button mat-raised-button color="primary"
-                  aria-label="Done" (click)="finishEditTitle()">
+          <button mat-raised-button color="primary" aria-label="Done" (click)="finishEditTitle()">
             <mat-icon>done</mat-icon>
           </button>
         </div>
@@ -20,65 +18,77 @@
     }
     <mat-card-title (dblclick)="editTitle($event)">
       @if (!isEditTitle) {
-        <span class="title"
-              title="Double click to edit">
+        <span class="title" title="Double click to edit">
           {{ item().name }}
         </span>
-        <mat-icon class="edit-icon" aria-hidden="true"
-                  (click)="editTitle($event)">edit</mat-icon>
+        <mat-icon class="edit-icon" aria-hidden="true" (click)="editTitle($event)">edit</mat-icon>
       }
     </mat-card-title>
     <mat-card-subtitle class="time">
-      <span matTooltip="{{ UtilsService.toDate(lastTimestamp) }}"
-            matTooltipPosition="right">
+      <span matTooltip="{{ UtilsService.toDate(lastTimestamp) }}" matTooltipPosition="right">
         {{ tsDate$ | async }}
       </span>
     </mat-card-subtitle>
-    @if (item().timestamps && (item().timestamps.length > 1) || false) {
+    @if ((item().timestamps && item().timestamps.length > 1) || false) {
       <mat-card-content>
-        <button (click)="expandTimestamps = !expandTimestamps"
-              class="more-timestamps">
+        <button (click)="expandTimestamps = !expandTimestamps" class="more-timestamps">
           Recent entries
-          <mat-icon class="toggle">
-            unfold_more
-          </mat-icon>
+          <mat-icon class="toggle"> unfold_more </mat-icon>
         </button>
         @if (expandTimestamps) {
           <ol reversed class="timestamps">
             <p class="intro">
-              First time: {{ UtilsService.formatFromNow(item().timestamps[(item().timestamps.length - 1)].ts) }}
-              <br>Last time: {{ UtilsService.formatFromNow(item().timestamps[0].ts) }}
-              <br>Next prediction: {{ getNextPredictedTime() }}
+              First time:
+              {{ UtilsService.formatFromNow(item().timestamps[item().timestamps.length - 1].ts) }}
+              <br />Last time: {{ UtilsService.formatFromNow(item().timestamps[0].ts) }} <br />Next
+              prediction:
+              {{ getNextPredictedTime() }}
             </p>
             @for (ts of item().timestamps; track ts._id; let i = $index) {
               <li class="lt-ts">
                 <mat-form-field class="lastTime-ts-input">
-                  <input matInput
-                         [formControl]="tsFormControls[ts._id]"
-                         [mtxDatetimepicker]="datePicker"
-                         (dateChange)="modifyTimestamp($event, ts, item().timestamps.length - i - 1)"
-                         matTooltip="{{ UtilsService.formatFromNow(ts.ts) }}"
-                         matTooltipPosition="above">
-                  <mtx-datetimepicker #datePicker
-                                      [type]="'datetime'"
-                                      [mode]="'auto'"
-                                      [touchUi]="UtilsService.isMobile()"
-                                      [timeInput]="true">
+                  <input
+                    matInput
+                    [formControl]="tsFormControls[ts._id]"
+                    [mtxDatetimepicker]="datePicker"
+                    (dateChange)="modifyTimestamp($event, ts, item().timestamps.length - i - 1)"
+                    matTooltip="{{ UtilsService.formatFromNow(ts.ts) }}"
+                    matTooltipPosition="above"
+                  />
+                  <mtx-datetimepicker
+                    #datePicker
+                    [type]="'datetime'"
+                    [mode]="'auto'"
+                    [touchUi]="UtilsService.isMobile()"
+                    [timeInput]="true"
+                  >
                   </mtx-datetimepicker>
-                  <mtx-datetimepicker-toggle
-                    [for]="$any(datePicker)"
-                    matSuffix>
+                  <mtx-datetimepicker-toggle [for]="$any(datePicker)" matSuffix>
                   </mtx-datetimepicker-toggle>
                 </mat-form-field>
                 <span class="ts-label">{{ ts.label }}</span>
                 <span class="ts-actions">
                   <mat-card-actions>
-                    <button mat-icon-button matTooltip="Actions" aria-label="Actions" [matMenuTriggerFor]="menu">
+                    <button
+                      mat-icon-button
+                      matTooltip="Actions"
+                      aria-label="Actions"
+                      [matMenuTriggerFor]="menu"
+                    >
                       <mat-icon>more_vert</mat-icon>
                       <mat-menu [overlapTrigger]="false" #menu="matMenu">
-                        <button mat-menu-item
-                                (click)="editTimestampLabel(ts, item().timestamps.length - i - 1)">Label Timestamp</button>
-                        <button mat-menu-item (click)="removeTimestamp(ts, item().timestamps.length - i - 1)">Remove Timestamp</button>
+                        <button
+                          mat-menu-item
+                          (click)="editTimestampLabel(ts, item().timestamps.length - i - 1)"
+                        >
+                          Label Timestamp
+                        </button>
+                        <button
+                          mat-menu-item
+                          (click)="removeTimestamp(ts, item().timestamps.length - i - 1)"
+                        >
+                          Remove Timestamp
+                        </button>
                       </mat-menu>
                     </button>
                   </mat-card-actions>
@@ -87,9 +97,7 @@
             }
             @if (item().hasMoreTs) {
               <nav>
-                <button mat-stroked-button (click)="showOlderTimestamps(item())">
-                  show older
-                </button>
+                <button mat-stroked-button (click)="showOlderTimestamps(item())">show older</button>
               </nav>
             }
           </ol>
@@ -100,17 +108,20 @@
       <mat-card-content class="stats">
         @if (statsFreq) {
           <p>
-            Frequency of events: every {{ statsFreq.avgDays.toFixed(2) }} days
-            (or {{ statsFreq.avgHours.toFixed(2) }} hours)
+            Frequency of events: every {{ statsFreq.avgDays.toFixed(2) }} days (or
+            {{ statsFreq.avgHours.toFixed(2) }} hours)
           </p>
         }
         @for (stats of statsContent; track stats) {
           <div>
             <h4>{{ stats['name'] }}</h4>
-            <canvas baseChart class="chart"
-                    [data]="stats['data']"
-                    [options]="barChartOptions"
-                    [type]="'bar'">
+            <canvas
+              baseChart
+              class="chart"
+              [data]="stats['data']"
+              [options]="barChartOptions"
+              [type]="'bar'"
+            >
             </canvas>
           </div>
         }

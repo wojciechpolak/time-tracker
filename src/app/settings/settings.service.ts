@@ -26,10 +26,9 @@ import { SettingsStore } from '../store/settings.store';
 export { Databases, DbEngine, Settings };
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class SettingsService {
-
     private loggerService = inject(LoggerService);
     private settingsStore = inject(SettingsStore);
 
@@ -68,8 +67,7 @@ export class SettingsService {
 
     getEndpoint(creds: boolean = true): string | undefined {
         const defaultPort = '5984';
-        let ret = this.get().endpoint ||
-            `${window.location.protocol}//${window.location.hostname}`;
+        let ret = this.get().endpoint || `${window.location.protocol}//${window.location.hostname}`;
         if (!ret.startsWith('http')) {
             ret = 'http://' + ret;
         }
@@ -81,8 +79,7 @@ export class SettingsService {
         if (creds && this.getUser && this.getPassword) {
             url.username = this.getUser;
             url.password = this.getPassword;
-        }
-        else if (creds) {
+        } else if (creds) {
             return undefined;
         }
         ret = url.toString();

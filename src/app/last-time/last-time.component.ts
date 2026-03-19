@@ -23,7 +23,8 @@ import {
     OnChanges,
     OnInit,
     SimpleChanges,
-    input, inject
+    input,
+    inject,
 } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -39,7 +40,6 @@ import { TimerService } from '../services/timer.service';
 import { UtilsService } from '../services/utils.service';
 import { LastTimeStore } from '../store/last-time.store';
 
-
 @Component({
     selector: 'app-last-time',
     templateUrl: './last-time.component.html',
@@ -50,10 +50,9 @@ import { LastTimeStore } from '../store/last-time.store';
         BaseChartDirective,
         FormsModule,
         ReactiveFormsModule,
-    ]
+    ],
 })
 export class LastTimeComponent implements OnInit, OnChanges {
-
     private lastTimeStore = inject(LastTimeStore);
     private timerService = inject(TimerService);
 
@@ -79,7 +78,7 @@ export class LastTimeComponent implements OnInit, OnChanges {
             legend: {
                 display: false,
             },
-        }
+        },
     };
 
     ngOnInit() {
@@ -92,13 +91,13 @@ export class LastTimeComponent implements OnInit, OnChanges {
     ngOnChanges(changes: SimpleChanges) {
         changes['item'].currentValue.timestamps.forEach((item: TimeStamp) => {
             this.tsFormControls[item._id] = new FormControl(new Date(item.ts));
-        })
+        });
     }
 
     updateTimestamps() {
         this.item().timestamps.forEach((item: TimeStamp) => {
             this.tsFormControls[item._id] = new FormControl(new Date(item.ts));
-        })
+        });
     }
 
     get lastTimestamp(): number {
@@ -127,25 +126,33 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     finishEditTitle() {
-        this.lastTimeStore.updateLastTimeTitle(
-            {lastTime: this.item(), title: this.editedTitle});
+        this.lastTimeStore.updateLastTimeTitle({ lastTime: this.item(), title: this.editedTitle });
         this.isEditTitle = false;
     }
 
     editTimestampLabel(ts: TimeStamp, idx: number) {
         const label = prompt('Label #' + (idx + 1));
         if (label !== null) {
-            this.lastTimeStore.updateTimeStampLabel(
-                {timestamp: ts, label});
+            this.lastTimeStore.updateTimeStampLabel({ timestamp: ts, label });
         }
     }
 
-    modifyTimestamp(datePickerEvent: MtxDatetimepickerInputEvent<Date>, ts: TimeStamp, idx: number): void {
+    modifyTimestamp(
+        datePickerEvent: MtxDatetimepickerInputEvent<Date>,
+        ts: TimeStamp,
+        idx: number,
+    ): void {
         const newTs = datePickerEvent.value?.valueOf() ?? 0;
-        if (confirm('Do you want to change timestamp #' + (idx + 1) +
-            ' to ' + UtilsService.toDate(newTs) + '?')) {
-            this.lastTimeStore.updateTimeStamp(
-                {timestamp: ts, newTs});
+        if (
+            confirm(
+                'Do you want to change timestamp #' +
+                    (idx + 1) +
+                    ' to ' +
+                    UtilsService.toDate(newTs) +
+                    '?',
+            )
+        ) {
+            this.lastTimeStore.updateTimeStamp({ timestamp: ts, newTs });
         }
     }
 
@@ -156,7 +163,7 @@ export class LastTimeComponent implements OnInit, OnChanges {
     }
 
     showOlderTimestamps(item: LastTime) {
-        this.lastTimeStore.loadLastTime({id: item._id, limit: 0});
+        this.lastTimeStore.loadLastTime({ id: item._id, limit: 0 });
     }
 
     toggleStats() {
@@ -169,33 +176,29 @@ export class LastTimeComponent implements OnInit, OnChanges {
         for (const x of s) {
             this.statsContent.push({
                 name: x,
-                data: UtilsService.getStats<TimeStamp>(this.item().timestamps, x)
-            })
+                data: UtilsService.getStats<TimeStamp>(this.item().timestamps, x),
+            });
         }
-        this.statsFreq = UtilsService.getStatsFreq(this.item().timestamps.map(item => item.ts));
+        this.statsFreq = UtilsService.getStatsFreq(this.item().timestamps.map((item) => item.ts));
     }
 
     protected getAgeCssClass(): string {
         const day = 86400000;
         const now = new Date().getTime();
-        const timestamps = this.item().timestamps
+        const timestamps = this.item().timestamps;
         const ts = timestamps.length ? timestamps[0].ts : 0;
         const diff = now - ts;
         let name = 'default';
         if (diff <= day) {
             name = '1d';
-        }
-        else if (diff < 7 * day) {
+        } else if (diff < 7 * day) {
             name = '1w';
-        }
-        else if (diff < 30 * day) {
+        } else if (diff < 30 * day) {
             name = '1m';
-        }
-        else if (diff < 90 * day) {
+        } else if (diff < 90 * day) {
             name = '3m';
-        }
-        else if (diff > 365 * day) {
-            name = '1y'
+        } else if (diff > 365 * day) {
+            name = '1y';
         }
         return 'age-' + name;
     }

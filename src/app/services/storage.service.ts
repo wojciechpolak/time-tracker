@@ -20,18 +20,16 @@
 import { inject, Injectable } from '@angular/core';
 import { WINDOW_TOKEN } from '../core/core';
 
-
 export abstract class StorageService {
-
     protected abstract $s: Storage;
 
     get(key: string, isJson: boolean = true) {
         const item = this.$s.getItem(key);
-        return isJson ? item && this._deserialize(item):item;
+        return isJson ? item && this._deserialize(item) : item;
     }
 
     set(key: string, value: unknown, isJson: boolean = true) {
-        this.$s.setItem(key, isJson ? this._serialize(value) : value as string);
+        this.$s.setItem(key, isJson ? this._serialize(value) : (value as string));
     }
 
     remove(key: string) {
@@ -56,8 +54,7 @@ export abstract class StorageService {
             this.$s.setItem(x, x);
             this.$s.removeItem(x);
             return true;
-        }
-        catch {
+        } catch {
             return false;
         }
     }
@@ -71,7 +68,6 @@ export abstract class StorageService {
     }
 }
 
-
 @Injectable()
 export class LocalStorageService extends StorageService {
     protected $window: Window = inject(WINDOW_TOKEN);
@@ -84,7 +80,6 @@ export class LocalStorageService extends StorageService {
         }
     }
 }
-
 
 @Injectable()
 export class SessionStorageService extends StorageService {

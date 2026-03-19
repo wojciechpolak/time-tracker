@@ -28,10 +28,9 @@ type StopwatchUpdate = Partial<Pick<Stopwatch, 'name' | 'tsArch'>>;
 type StopwatchEventUpdate = Partial<Pick<StopwatchEvent, 'name' | 'ts'>>;
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class StopwatchService {
-
     private dbService = inject(DbService);
     private loggerService = inject(LoggerService);
 
@@ -43,13 +42,11 @@ export class StopwatchService {
             }
             if (stopwatch.tsArch && !ignoreTsArch) {
                 stopwatch.events = [];
-            }
-            else {
+            } else {
                 await this.fetchStopwatchEvents(stopwatch);
             }
             return stopwatch;
-        }
-        catch (err) {
+        } catch (err) {
             this.loggerService.log('fetchStopwatch error', err);
             throw err;
         }
@@ -63,9 +60,9 @@ export class StopwatchService {
                 selector: {
                     type: Types.STOPWATCH,
                     // _id: {$nin: [null]},
-                    ref: {$exists: false},
+                    ref: { $exists: false },
                 },
-                sort: [{_id: 'desc'}]
+                sort: [{ _id: 'desc' }],
             });
             for (const item of stopwatches) {
                 if (item.tsArch) {
@@ -75,35 +72,30 @@ export class StopwatchService {
                 await this.fetchStopwatchEvents(item);
             }
             stopwatches = this.sortStopwatchesByEvents(stopwatches);
-        }
-        catch (err) {
+        } catch (err) {
             this.loggerService.log('fetchStopwatchList error', err);
             return [];
-        }
-        finally {
+        } finally {
             console.timeEnd('find-SW');
         }
         return stopwatches;
     }
 
     sortStopwatchesByEvents(stopwatches: Stopwatch[]): Stopwatch[] {
-        return stopwatches
-            .sort((a: Stopwatch, b: Stopwatch) => {
-                let tsA, tsB;
-                if (a.events.length) {
-                    tsA = a.events[a.events.length - 1].ts;
-                }
-                else {
-                    tsA = Number(a._id.split('-')[1]);
-                }
-                if (b.events.length) {
-                    tsB = b.events[b.events.length - 1].ts;
-                }
-                else {
-                    tsB = Number(b._id.split('-')[1]);
-                }
-                return tsB - tsA;
-            });
+        return stopwatches.sort((a: Stopwatch, b: Stopwatch) => {
+            let tsA, tsB;
+            if (a.events.length) {
+                tsA = a.events[a.events.length - 1].ts;
+            } else {
+                tsA = Number(a._id.split('-')[1]);
+            }
+            if (b.events.length) {
+                tsB = b.events[b.events.length - 1].ts;
+            } else {
+                tsB = Number(b._id.split('-')[1]);
+            }
+            return tsB - tsA;
+        });
     }
 
     async fetchStopwatchEvent(id: string): Promise<StopwatchEvent> {
@@ -113,8 +105,7 @@ export class StopwatchService {
                 throw new Error(`Stopwatch Event with id ${id} not found`);
             }
             return ev;
-        }
-        catch (err) {
+        } catch (err) {
             this.loggerService.log('fetchStopwatchEvent error', err);
             throw err;
         }
@@ -138,7 +129,7 @@ export class StopwatchService {
         const stopwatch = {
             _id: Types.STOPWATCH + '-' + ts.toString(),
             type: Types.STOPWATCH,
-            name: 'Stopwatch #' + (UtilsService.toISOLocalString(new Date(ts))),
+            name: 'Stopwatch #' + UtilsService.toISOLocalString(new Date(ts)),
         } as Stopwatch;
         const doc = await this.dbService.putItem(stopwatch);
         const timestamp: StopwatchEvent = {
@@ -161,9 +152,14 @@ export class StopwatchService {
         return this.fetchStopwatch(updated.id);
     }
 
-    async addEvent(id: string, newRound: boolean = false, isStart: boolean): Promise<StopwatchEvent[]> {
+    async addEvent(
+        id: string,
+        newRound: boolean = false,
+        isStart: boolean,
+    ): Promise<StopwatchEvent[]> {
         let ts = UtilsService.getTimestamp();
-        if (newRound && isStart) { // let's stop the previous round first
+        if (newRound && isStart) {
+            // let's stop the previous round first
             const event: StopwatchEvent = {
                 _id: Types.STOPWATCH_TS + '-' + ts.toString(),
                 ref: id,
@@ -187,8 +183,7 @@ export class StopwatchService {
             eventObj2.inUse = true;
             this.loggerService.log('Successfully posted a new Stopwatch Event!');
             return [eventObj1, eventObj2];
-        }
-        else {
+        } else {
             const event: StopwatchEvent = {
                 _id: Types.STOPWATCH_TS + '-' + ts.toString(),
                 ref: id,
@@ -204,7 +199,10 @@ export class StopwatchService {
         }
     }
 
-    async updateEvent(event: StopwatchEvent, changes: StopwatchEventUpdate): Promise<StopwatchEvent> {
+    async updateEvent(
+        event: StopwatchEvent,
+        changes: StopwatchEventUpdate,
+    ): Promise<StopwatchEvent> {
         const updated = await this.dbService.updateItem(event, (doc: StopwatchEvent) => {
             Object.assign(doc, changes);
         });
@@ -219,8 +217,7 @@ export class StopwatchService {
         const resp = await this.dbService.updateItem(item, (doc: Stopwatch) => {
             if (doc.tsArch) {
                 doc.tsArch = 0;
-            }
-            else {
+            } else {
                 doc.tsArch = tsArch;
             }
         });
@@ -231,7 +228,7 @@ export class StopwatchService {
         const items: Deleted[] = item.events.map((r: StopwatchEvent): Deleted => {
             return {
                 _id: r._id,
-                _rev: r._rev as string ?? null,
+                _rev: (r._rev as string) ?? null,
                 _deleted: true,
             };
         });
@@ -258,11 +255,9 @@ export class StopwatchService {
             const ev: StopwatchEvent = events[i];
             if (i > 0 && ev.ss && ev.ss === events[i - 1].ss) {
                 // do not push
-            }
-            else if (i > 0 && !ev.ss && ev.ss === events[i + 1]?.ss) {
+            } else if (i > 0 && !ev.ss && ev.ss === events[i + 1]?.ss) {
                 // do not push
-            }
-            else {
+            } else {
                 if (ev.inUse === undefined) {
                     ev.inUse = true;
                 }
@@ -273,12 +268,15 @@ export class StopwatchService {
     }
 
     createStartEndPairs(arr: StopwatchEvent[]): StopwatchEvent[][] {
-        return arr.reduce((result: StopwatchEvent[][], _value, index: number, array: StopwatchEvent[]) => {
-            if (index % 2 === 0) {
-                result.push(array.slice(index, index + 2));
-            }
-            return result;
-        }, []);
+        return arr.reduce(
+            (result: StopwatchEvent[][], _value, index: number, array: StopwatchEvent[]) => {
+                if (index % 2 === 0) {
+                    result.push(array.slice(index, index + 2));
+                }
+                return result;
+            },
+            [],
+        );
     }
 
     preprocessEvents(item: Stopwatch) {

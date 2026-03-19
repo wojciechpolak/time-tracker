@@ -23,17 +23,18 @@ import { SettingsService } from '../settings/settings.service';
 import { PATHS } from '../app.routes';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
-export class AuthGuard  {
-
+export class AuthGuard {
     private router = inject(Router);
     private settingsService = inject(SettingsService);
 
     canActivate(): MaybeAsync<GuardResult> {
-        if (this.settingsService.hasEnabledRemoteSync() &&
+        if (
+            this.settingsService.hasEnabledRemoteSync() &&
             !this.settingsService.getUser &&
-            !this.settingsService.getPassword) {
+            !this.settingsService.getPassword
+        ) {
             return this.router.parseUrl(`/${PATHS.Settings}`);
         }
         return true;

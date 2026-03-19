@@ -12,6 +12,7 @@ via your favorite web browser or as a PWA from your phone's main
 screen.
 
 Learn more about the databases used:
+
 - [PouchDB](https://pouchdb.com/)
 - [CouchDB](https://couchdb.apache.org/)
 

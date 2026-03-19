@@ -21,7 +21,6 @@ import { StatsData, StatsFreq } from '../models';
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class UtilsService {
-
     static size2human(size: number): string {
         const i = Math.floor(Math.log(size) / Math.log(1000));
         const num = parseFloat((size / Math.pow(1000, i)).toFixed(2));
@@ -44,9 +43,12 @@ export class UtilsService {
         const hours = d.getUTCHours();
         const minutes = d.getUTCMinutes();
         const seconds = d.getSeconds();
-        let timeString = hours.toString().padStart(2, '0')
-            + ':' + minutes.toString().padStart(2, '0')
-            + ':' + seconds.toString().padStart(2, '0');
+        let timeString =
+            hours.toString().padStart(2, '0') +
+            ':' +
+            minutes.toString().padStart(2, '0') +
+            ':' +
+            seconds.toString().padStart(2, '0');
         if (ms) {
             timeString += '.' + d.getMilliseconds().toString().padStart(3, '0');
         }
@@ -73,40 +75,34 @@ export class UtilsService {
         if (Intl && Intl.RelativeTimeFormat) {
             const rtf = new Intl.RelativeTimeFormat(lang, {
                 style: 'long',
-                numeric: 'always'
+                numeric: 'always',
             });
             let secDiff;
             if (fromMs) {
                 secDiff = Math.floor((new Date().getTime() - value) / 1000);
-            }
-            else {
+            } else {
                 secDiff = Math.floor((new Date().getTime() - value * 1000) / 1000);
             }
             let ret;
             if (secDiff < 60) {
                 ret = rtf.format(-secDiff, 'second');
-            }
-            else if (secDiff < 3600) {
+            } else if (secDiff < 3600) {
                 ret = rtf.format(-Math.floor(secDiff / 60), 'minute');
-            }
-            else if (secDiff < 86400) {
+            } else if (secDiff < 86400) {
                 ret = rtf.format(-Math.floor(secDiff / 3600), 'hour');
-            }
-            else if (secDiff > 86400 && secDiff < (7 * 86400)) {
+            } else if (secDiff > 86400 && secDiff < 7 * 86400) {
                 const days = Math.floor(secDiff / 86400);
-                const remainingHours = (secDiff - (days * 86400)) / 3600;
+                const remainingHours = (secDiff - days * 86400) / 3600;
                 if (remainingHours > 1) {
                     const p1 = rtf.formatToParts(-Math.floor(secDiff / 86400), 'day');
                     let daysAgo = p1[0].value;
                     daysAgo = daysAgo + ' ' + (daysAgo === '1' ? 'day' : 'days');
                     const hours = rtf.format(-Math.floor(remainingHours), 'hour');
                     ret = `${daysAgo} ${hours}`;
-                }
-                else {
+                } else {
                     ret = rtf.format(-Math.floor(secDiff / 86400), 'day');
                 }
-            }
-            else {
+            } else {
                 ret = rtf.format(-Math.floor(secDiff / 86400), 'day');
             }
             return ret;
@@ -118,18 +114,18 @@ export class UtilsService {
         const currentTime = Date.now();
         const timeDifference = ts - currentTime;
         const secondsDifference = Math.round(timeDifference / 1000);
-        const rtf = new Intl.RelativeTimeFormat(lang, {numeric: 'auto'});
+        const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' });
         const thresholds = [
-            {unit: 'second', threshold: 60},
-            {unit: 'minute', threshold: 60},
-            {unit: 'hour', threshold: 24},
-            {unit: 'day', threshold: 30},
-            {unit: 'month', threshold: 12},
-            {unit: 'year', threshold: Number.POSITIVE_INFINITY}
+            { unit: 'second', threshold: 60 },
+            { unit: 'minute', threshold: 60 },
+            { unit: 'hour', threshold: 24 },
+            { unit: 'day', threshold: 30 },
+            { unit: 'month', threshold: 12 },
+            { unit: 'year', threshold: Number.POSITIVE_INFINITY },
         ];
         function _formatTimestamp(timestamp: number) {
             let remainingTime = timestamp;
-            for (const {unit, threshold} of thresholds) {
+            for (const { unit, threshold } of thresholds) {
                 if (Math.abs(remainingTime) < threshold) {
                     const value = Math.round(remainingTime);
                     return rtf.format(Math.round(value), unit as Intl.RelativeTimeFormatUnit);
@@ -141,7 +137,7 @@ export class UtilsService {
         return _formatTimestamp(secondsDifference);
     }
 
-    static getStats<T extends {ts: number}>(events: T[], period: string): StatsData {
+    static getStats<T extends { ts: number }>(events: T[], period: string): StatsData {
         type Res = Record<string | number, number>;
         type Ret = {
             key: string;
@@ -153,44 +149,50 @@ export class UtilsService {
             const date = new Date(item.ts);
             let d: string | number = '';
             if (period === 'day') {
-                d = date.toLocaleString('en-us', {weekday: 'long'});
-            }
-            else if (period === 'hour') {
-                d = Math.floor(date.getHours())
-            }
-            else if (period === 'week') {
+                d = date.toLocaleString('en-us', { weekday: 'long' });
+            } else if (period === 'hour') {
+                d = Math.floor(date.getHours());
+            } else if (period === 'week') {
                 d = Math.floor(date.getTime() / (oneDay * 7));
-            }
-            else if (period === 'month') {
+            } else if (period === 'month') {
                 const months = [
-                    'January', 'February', 'March', 'April',
-                    'May', 'June', 'July', 'August',
-                    'September', 'October', 'November', 'December'
+                    'January',
+                    'February',
+                    'March',
+                    'April',
+                    'May',
+                    'June',
+                    'July',
+                    'August',
+                    'September',
+                    'October',
+                    'November',
+                    'December',
                 ];
-                d = months[(((date.getFullYear() - 1970) * 12 + date.getMonth()) % 12)];
-            }
-            else if (period === 'year') {
+                d = months[((date.getFullYear() - 1970) * 12 + date.getMonth()) % 12];
+            } else if (period === 'year') {
                 d = date.getFullYear();
-            }
-            else {
-                console.log('groupByTimePeriod: You have to set a period! day | hours | week | month | year');
+            } else {
+                console.log(
+                    'groupByTimePeriod: You have to set a period! day | hours | week | month | year',
+                );
             }
             res[d] = res[d] || 0;
             res[d]++;
         }
         const ret: Ret[] = [];
         for (const k in res) {
-            ret.push({key: k, value: res[k]});
+            ret.push({ key: k, value: res[k] });
         }
         // ret.sort((a, b) => b.value - a.value);
         return {
-            labels: ret.map(item => item.key),
+            labels: ret.map((item) => item.key),
             datasets: [
                 {
-                    data: ret.map(item => item.value),
+                    data: ret.map((item) => item.value),
                     backgroundColor: 'rgb(255, 99, 132, 0.6)',
-                }
-            ]
+                },
+            ],
         };
     }
 
@@ -204,8 +206,7 @@ export class UtilsService {
                 const diff = ts[i + 1] - ts[i];
                 diffs.push(diff);
             }
-        }
-        else {
+        } else {
             diffs.push(0);
         }
 
@@ -224,7 +225,7 @@ export class UtilsService {
         }
         return {
             avgDays: avgDays,
-            avgHours: avgHours
+            avgHours: avgHours,
         };
     }
 

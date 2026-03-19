@@ -28,7 +28,6 @@ import { DbEngine, SettingsService } from '../settings/settings.service';
     providedIn: 'root',
 })
 export class DynamicDbService extends DbService {
-
     private injector = inject(Injector);
     private settings = inject(SettingsService);
 
@@ -41,7 +40,7 @@ export class DynamicDbService extends DbService {
 
     // Promise to track DB load readiness
     private dbLoadedResolver!: () => void;
-    public dbLoaded = new Promise<void>(resolve => {
+    public dbLoaded = new Promise<void>((resolve) => {
         this.dbLoadedResolver = resolve;
     });
 
@@ -63,12 +62,10 @@ export class DynamicDbService extends DbService {
         if (engine === 'firestore') {
             const module = await import('./firestore-db.service');
             this.dbService = this.injector.get(module.FirestoreDbService);
-        }
-        else if (engine === 'pouchdb') {
+        } else if (engine === 'pouchdb') {
             const module = await import('./pouch-db.service');
             this.dbService = this.injector.get(module.PouchDbService);
-        }
-        else {
+        } else {
             throw new Error(`Unsupported DB engine: ${engine}`);
         }
 
@@ -118,12 +115,13 @@ export class DynamicDbService extends DbService {
         this.dbService.deleteAll();
     }
 
-    override deleteItem<T extends {_id: string}>(item: T):
-        Promise<DbServiceResponses['deleteItem']> {
+    override deleteItem<T extends { _id: string }>(
+        item: T,
+    ): Promise<DbServiceResponses['deleteItem']> {
         return this.dbService.deleteItem(item);
     }
 
-    override deleteItems<T extends {_id: string}>(items: T[]): Promise<void> {
+    override deleteItems<T extends { _id: string }>(items: T[]): Promise<void> {
         return this.dbService.deleteItems(items);
     }
 
@@ -143,7 +141,7 @@ export class DynamicDbService extends DbService {
         return this.dbService.importDb(file);
     }
 
-    override putItem<T extends {_id: string}>(doc: T): Promise<T> {
+    override putItem<T extends { _id: string }>(doc: T): Promise<T> {
         return this.dbService.putItem(doc);
     }
 
@@ -159,8 +157,10 @@ export class DynamicDbService extends DbService {
         return this.dbService.getStorageEstimated();
     }
 
-    override updateItem<T extends {_id: string}>(item: T, updateFn: (doc: T) => void):
-        Promise<DbServiceResponses['updateItem']> {
+    override updateItem<T extends { _id: string }>(
+        item: T,
+        updateFn: (doc: T) => void,
+    ): Promise<DbServiceResponses['updateItem']> {
         return this.dbService.updateItem(item, updateFn);
     }
 }
