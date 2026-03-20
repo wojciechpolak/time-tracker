@@ -18,6 +18,7 @@
  */
 
 import { TestBed } from '@angular/core/testing';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LoggerService } from '../services/logger.service';
 import { DbService } from '../services/db.service';
@@ -28,14 +29,16 @@ import { LastTimeService } from './last-time.service';
 describe('LastTimeService', () => {
     let service: LastTimeService;
     let dbService: {
-        getItem: jasmine.Spy;
-        find: jasmine.Spy;
-        putItem: jasmine.Spy;
-        updateItem: jasmine.Spy;
-        deleteItem: jasmine.Spy;
-        deleteItems: jasmine.Spy;
+        getItem: ReturnType<typeof vi.fn>;
+        find: ReturnType<typeof vi.fn>;
+        putItem: ReturnType<typeof vi.fn>;
+        updateItem: ReturnType<typeof vi.fn>;
+        deleteItem: ReturnType<typeof vi.fn>;
+        deleteItems: ReturnType<typeof vi.fn>;
     };
-    let loggerService: jasmine.SpyObj<LoggerService>;
+    let loggerService: {
+        log: ReturnType<typeof vi.fn>;
+    };
 
     const createLastTime = (id: string, timestamps: TimeStamp[] = []): LastTime => ({
         _id: id,
@@ -53,16 +56,22 @@ describe('LastTimeService', () => {
         ts,
     });
 
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     beforeEach(() => {
         dbService = {
-            getItem: jasmine.createSpy('getItem'),
-            find: jasmine.createSpy('find').and.resolveTo([]),
-            putItem: jasmine.createSpy('putItem').and.callFake(async <T>(doc: T) => doc),
-            updateItem: jasmine.createSpy('updateItem'),
-            deleteItem: jasmine.createSpy('deleteItem'),
-            deleteItems: jasmine.createSpy('deleteItems').and.resolveTo(undefined),
+            getItem: vi.fn(),
+            find: vi.fn().mockResolvedValue([]),
+            putItem: vi.fn().mockImplementation(async <T>(doc: T) => doc),
+            updateItem: vi.fn(),
+            deleteItem: vi.fn(),
+            deleteItems: vi.fn().mockResolvedValue(undefined),
         };
-        loggerService = jasmine.createSpyObj<LoggerService>('LoggerService', ['log']);
+        loggerService = {
+            log: vi.fn(),
+        };
 
         TestBed.configureTestingModule({
             providers: [
@@ -77,29 +86,31 @@ describe('LastTimeService', () => {
 
     it('fetches a single last-time item and its timestamps', async () => {
         const item = createLastTime('LT-1');
-        const fetchTimestampsSpy = spyOn(service, 'fetchTimestamps').and.resolveTo();
-        dbService.getItem.and.resolveTo(item);
+        const fetchTimestampsSpy = vi
+            .spyOn(service, 'fetchTimestamps')
+            .mockResolvedValue(undefined);
+        dbService.getItem.mockResolvedValue(item);
 
-        await expectAsync(service.fetchLastTime('LT-1', 5)).toBeResolvedTo(item);
+        await expect(service.fetchLastTime('LT-1', 5)).resolves.toBe(item);
         expect(fetchTimestampsSpy).toHaveBeenCalledWith(item, 5);
     });
 
     it('logs and rethrows when fetching a missing last-time item', async () => {
-        dbService.getItem.and.resolveTo(null);
+        dbService.getItem.mockResolvedValue(null);
 
-        await expectAsync(service.fetchLastTime('LT-404')).toBeRejectedWithError(
+        await expect(service.fetchLastTime('LT-404')).rejects.toThrowError(
             'LastTime with id LT-404 not found',
         );
-        expect(loggerService.log).toHaveBeenCalledWith('fetchLastTime error', jasmine.any(Error));
+        expect(loggerService.log).toHaveBeenCalledWith('fetchLastTime error', expect.any(Error));
     });
 
     it('fetches, hydrates, and sorts the last-time list', async () => {
         const older = createLastTime('LT-older');
         const newer = createLastTime('LT-newer');
-        dbService.find.and.resolveTo([older, newer]);
-        spyOn(console, 'time');
-        spyOn(console, 'timeEnd');
-        spyOn(service, 'fetchTimestamps').and.callFake(async (item: LastTime) => {
+        dbService.find.mockResolvedValue([older, newer]);
+        vi.spyOn(console, 'time').mockImplementation(() => undefined);
+        vi.spyOn(console, 'timeEnd').mockImplementation(() => undefined);
+        vi.spyOn(service, 'fetchTimestamps').mockImplementation(async (item: LastTime) => {
             item.timestamps = [
                 createTimestamp(`TS-${item._id}`, item._id, item._id === 'LT-older' ? 100 : 200),
             ];
@@ -115,20 +126,20 @@ describe('LastTimeService', () => {
     });
 
     it('returns an empty list when fetchLastTimeList fails', async () => {
-        spyOn(console, 'time');
-        spyOn(console, 'timeEnd');
-        dbService.find.and.rejectWith(new Error('db failed'));
+        vi.spyOn(console, 'time').mockImplementation(() => undefined);
+        vi.spyOn(console, 'timeEnd').mockImplementation(() => undefined);
+        dbService.find.mockRejectedValue(new Error('db failed'));
 
-        await expectAsync(service.fetchLastTimeList()).toBeResolvedTo([]);
+        await expect(service.fetchLastTimeList()).resolves.toEqual([]);
         expect(loggerService.log).toHaveBeenCalledWith(
             'fetchLastTimeList error',
-            jasmine.any(Error),
+            expect.any(Error),
         );
     });
 
     it('sorts timestamps descending and flags when more timestamps are available', async () => {
         const item = createLastTime('LT-1');
-        dbService.find.and.resolveTo([
+        dbService.find.mockResolvedValue([
             createTimestamp('LT-TS-1', 'LT-1', 200),
             createTimestamp('LT-TS-2', 'LT-1', 300),
             createTimestamp('LT-TS-3', 'LT-1', 100),
@@ -145,19 +156,19 @@ describe('LastTimeService', () => {
             limit: 3,
         });
         expect(item.timestamps.map((ts) => ts.ts)).toEqual([300, 200]);
-        expect(item.hasMoreTs).toBeTrue();
+        expect(item.hasMoreTs).toBe(true);
     });
 
     it('fetches all timestamps when the limit is disabled', async () => {
         const item = createLastTime('LT-1');
-        dbService.find.and.resolveTo([
+        dbService.find.mockResolvedValue([
             createTimestamp('LT-TS-1', 'LT-1', 200),
             createTimestamp('LT-TS-2', 'LT-1', 100),
         ]);
 
         await service.fetchTimestamps(item, 0);
 
-        expect(dbService.find.calls.mostRecent().args[0]).toEqual({
+        expect(dbService.find.mock.calls.at(-1)?.[0]).toEqual({
             selector: {
                 type: Types.LAST_TIME_TS,
                 ref: item._id,
@@ -165,39 +176,39 @@ describe('LastTimeService', () => {
             sort: [{ _id: 'desc' }],
         });
         expect(item.timestamps.map((ts) => ts.ts)).toEqual([200, 100]);
-        expect(item.hasMoreTs).toBeFalse();
+        expect(item.hasMoreTs).toBe(false);
     });
 
     it('fetches a single timestamp and logs failures', async () => {
         const timestamp = createTimestamp('LT-TS-1', 'LT-1', 100);
-        dbService.getItem.and.resolveTo(timestamp);
-        await expectAsync(service.fetchTimeStamp('LT-TS-1')).toBeResolvedTo(timestamp);
+        dbService.getItem.mockResolvedValue(timestamp);
+        await expect(service.fetchTimeStamp('LT-TS-1')).resolves.toBe(timestamp);
 
-        dbService.getItem.and.resolveTo(null);
-        await expectAsync(service.fetchTimeStamp('LT-TS-404')).toBeRejectedWithError(
+        dbService.getItem.mockResolvedValue(null);
+        await expect(service.fetchTimeStamp('LT-TS-404')).rejects.toThrowError(
             'TimeStamp with id LT-TS-404 not found',
         );
-        expect(loggerService.log).toHaveBeenCalledWith('fetchTimeStamp error', jasmine.any(Error));
+        expect(loggerService.log).toHaveBeenCalledWith('fetchTimeStamp error', expect.any(Error));
     });
 
     it('creates a new last-time item with an initial timestamp', async () => {
         const created = createLastTime('LT-123456', [
             createTimestamp('LT-TS-123456', 'LT-123456', 123456),
         ]);
-        spyOn(UtilsService, 'getTimestamp').and.returnValue(123456);
-        spyOn(UtilsService, 'toISOLocalString').and.returnValue('2025-01-02T03:04:05.000Z');
-        spyOn(service, 'fetchLastTime').and.resolveTo(created);
+        vi.spyOn(UtilsService, 'getTimestamp').mockReturnValue(123456);
+        vi.spyOn(UtilsService, 'toISOLocalString').mockReturnValue('2025-01-02T03:04:05.000Z');
+        vi.spyOn(service, 'fetchLastTime').mockResolvedValue(created);
 
         const result = await service.addLastTime();
 
-        expect(dbService.putItem.calls.argsFor(0)[0]).toEqual(
-            jasmine.objectContaining({
+        expect(dbService.putItem.mock.calls[0]?.[0]).toEqual(
+            expect.objectContaining({
                 _id: 'LT-123456',
                 type: Types.LAST_TIME,
                 name: 'Last #2025-01-02T03:04:05.000Z',
             }),
         );
-        expect(dbService.putItem.calls.argsFor(1)[0]).toEqual({
+        expect(dbService.putItem.mock.calls[1]?.[0]).toEqual({
             _id: 'LT-TS-123456',
             ref: 'LT-123456',
             type: Types.LAST_TIME_TS,
@@ -210,10 +221,10 @@ describe('LastTimeService', () => {
     it('touches a last-time item by creating a timestamp', async () => {
         const item = createLastTime('LT-1');
         const timestamp = createTimestamp('LT-TS-999', 'LT-1', 999);
-        spyOn(UtilsService, 'getTimestamp').and.returnValue(999);
-        dbService.putItem.and.resolveTo(timestamp);
+        vi.spyOn(UtilsService, 'getTimestamp').mockReturnValue(999);
+        dbService.putItem.mockResolvedValue(timestamp);
 
-        await expectAsync(service.touch(item)).toBeResolvedTo(timestamp);
+        await expect(service.touch(item)).resolves.toBe(timestamp);
         expect(dbService.putItem).toHaveBeenCalledWith({
             _id: 'LT-TS-999',
             ref: 'LT-1',
@@ -229,9 +240,9 @@ describe('LastTimeService', () => {
         const updatedItem = createLastTime('LT-1');
         updatedItem.name = 'Updated title';
         const updatedTimestamp = createTimestamp('LT-TS-1', 'LT-1', 999);
-        spyOn(service, 'fetchLastTime').and.resolveTo(updatedItem);
-        spyOn(service, 'fetchTimeStamp').and.resolveTo(updatedTimestamp);
-        dbService.updateItem.and.callFake(
+        vi.spyOn(service, 'fetchLastTime').mockResolvedValue(updatedItem);
+        vi.spyOn(service, 'fetchTimeStamp').mockResolvedValue(updatedTimestamp);
+        dbService.updateItem.mockImplementation(
             async <T extends { _id: string }>(doc: T, updateFn: (itemToUpdate: T) => void) => {
                 const clone = structuredClone(doc);
                 updateFn(clone);
@@ -239,10 +250,10 @@ describe('LastTimeService', () => {
             },
         );
 
-        await expectAsync(service.updateLastTime(item, { name: 'Updated title' })).toBeResolvedTo(
+        await expect(service.updateLastTime(item, { name: 'Updated title' })).resolves.toBe(
             updatedItem,
         );
-        await expectAsync(service.updateTimestamp(timestamp, { ts: 999 })).toBeResolvedTo(
+        await expect(service.updateTimestamp(timestamp, { ts: 999 })).resolves.toBe(
             updatedTimestamp,
         );
 
@@ -261,18 +272,18 @@ describe('LastTimeService', () => {
             },
         ]);
         const deleteResponse = { ok: true, id: 'LT-1', rev: '2' };
-        dbService.deleteItem.and.resolveTo(deleteResponse);
-        dbService.deleteItems.and.resolveTo(undefined);
+        dbService.deleteItem.mockResolvedValue(deleteResponse);
+        dbService.deleteItems.mockResolvedValue(undefined);
 
-        dbService.deleteItem.and.resolveTo({ ok: true, id: 'LT-TS-1', rev: '2' });
-        await expectAsync(service.removeTimestamp(timestamp)).toBeResolvedTo({
+        dbService.deleteItem.mockResolvedValue({ ok: true, id: 'LT-TS-1', rev: '2' });
+        await expect(service.removeTimestamp(timestamp)).resolves.toEqual({
             ok: true,
             id: 'LT-TS-1',
             rev: '2',
         });
 
-        dbService.deleteItem.and.resolveTo(deleteResponse);
-        await expectAsync(service.deleteLastTime(item)).toBeResolvedTo(deleteResponse);
+        dbService.deleteItem.mockResolvedValue(deleteResponse);
+        await expect(service.deleteLastTime(item)).resolves.toBe(deleteResponse);
         expect(dbService.deleteItems).toHaveBeenCalledWith([
             {
                 _id: 'LT-TS-1',

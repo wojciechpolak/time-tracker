@@ -21,6 +21,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LastTime, Stopwatch, Types } from '../models';
 import { LastTimeStore } from '../store/last-time.store';
@@ -37,20 +38,22 @@ describe('DataService', () => {
         onDbChange: Subject<void>;
         onRemoteDbError: Subject<unknown>;
         isSyncActive: boolean;
-        remoteSyncDisable: jasmine.Spy;
+        remoteSyncDisable: ReturnType<typeof vi.fn>;
     };
-    let snackBar: jasmine.SpyObj<MatSnackBar>;
+    let snackBar: {
+        open: ReturnType<typeof vi.fn>;
+    };
     let lastTimeStore: {
         loading: ReturnType<typeof signal<boolean>>;
         loadingAll: ReturnType<typeof signal<boolean>>;
         lastTimeList: ReturnType<typeof signal<LastTime[]>>;
-        loadLastTimeList: jasmine.Spy;
+        loadLastTimeList: ReturnType<typeof vi.fn>;
     };
     let stopwatchStore: {
         loading: ReturnType<typeof signal<boolean>>;
         loadingAll: ReturnType<typeof signal<boolean>>;
         stopwatches: ReturnType<typeof signal<Stopwatch[]>>;
-        loadStopwatches: jasmine.Spy;
+        loadStopwatches: ReturnType<typeof vi.fn>;
     };
 
     beforeEach(() => {
@@ -61,9 +64,11 @@ describe('DataService', () => {
             onDbChange,
             onRemoteDbError,
             isSyncActive: false,
-            remoteSyncDisable: jasmine.createSpy('remoteSyncDisable'),
+            remoteSyncDisable: vi.fn(),
         };
-        snackBar = jasmine.createSpyObj<MatSnackBar>('MatSnackBar', ['open']);
+        snackBar = {
+            open: vi.fn(),
+        };
         lastTimeStore = {
             loading: signal(false),
             loadingAll: signal(false),
@@ -76,7 +81,7 @@ describe('DataService', () => {
                     hasMoreTs: false,
                 },
             ]),
-            loadLastTimeList: jasmine.createSpy('loadLastTimeList'),
+            loadLastTimeList: vi.fn(),
         };
         stopwatchStore = {
             loading: signal(false),
@@ -89,7 +94,7 @@ describe('DataService', () => {
                     events: [],
                 },
             ]),
-            loadStopwatches: jasmine.createSpy('loadStopwatches'),
+            loadStopwatches: vi.fn(),
         };
 
         TestBed.configureTestingModule({
@@ -106,8 +111,8 @@ describe('DataService', () => {
     });
 
     it('exposes loading signals from the stores and tracks the online flag', () => {
-        expect(service.lastTimeLoading()).toBeFalse();
-        expect(service.stopwatchesLoading()).toBeFalse();
+        expect(service.lastTimeLoading()).toBe(false);
+        expect(service.stopwatchesLoading()).toBe(false);
         expect(service.lastTimeList()[0]?._id).toBe('LT-1');
         expect(service.stopwatches()[0]?._id).toBe('SW-1');
         expect(service.isOnline).toBe(window.navigator.onLine);
@@ -133,12 +138,12 @@ describe('DataService', () => {
     });
 
     it('refreshes data on database changes only when sync is inactive', () => {
-        const fetchAllSpy = spyOn(service, 'fetchAll');
+        const fetchAllSpy = vi.spyOn(service, 'fetchAll');
 
         service.syncChanges();
         expect(fetchAllSpy).toHaveBeenCalledTimes(1);
 
-        fetchAllSpy.calls.reset();
+        fetchAllSpy.mockClear();
         dbService.isSyncActive = true;
         service.syncChanges();
 
@@ -146,7 +151,7 @@ describe('DataService', () => {
     });
 
     it('subscribes to database change notifications', () => {
-        const syncSpy = spyOn(service, 'syncChanges');
+        const syncSpy = vi.spyOn(service, 'syncChanges');
 
         onDbChange.next();
 
@@ -154,7 +159,7 @@ describe('DataService', () => {
     });
 
     it('disables remote sync, shows a snack bar, and refetches on debounced remote errors', async () => {
-        const fetchAllSpy = spyOn(service, 'fetchAll');
+        const fetchAllSpy = vi.spyOn(service, 'fetchAll');
 
         onRemoteDbError.next({ status: 401, message: 'Unauthorized' });
         await new Promise((resolve) => window.setTimeout(resolve, 550));

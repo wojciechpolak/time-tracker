@@ -19,6 +19,7 @@
 
 import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Settings } from '../models';
 import { LoggerService } from '../services/logger.service';
@@ -30,11 +31,13 @@ describe('SettingsService', () => {
     let settingsSignal: WritableSignal<Settings>;
     let settingsStore: {
         settings: WritableSignal<Settings>;
-        load: jasmine.Spy;
-        save: jasmine.Spy;
-        update: jasmine.Spy;
+        load: ReturnType<typeof vi.fn>;
+        save: ReturnType<typeof vi.fn>;
+        update: ReturnType<typeof vi.fn>;
     };
-    let loggerService: jasmine.SpyObj<LoggerService>;
+    let loggerService: {
+        log: ReturnType<typeof vi.fn>;
+    };
 
     const baseSettings: Settings = {
         dbEngine: 'pouchdb',
@@ -53,11 +56,13 @@ describe('SettingsService', () => {
         settingsSignal = signal({ ...baseSettings });
         settingsStore = {
             settings: settingsSignal,
-            load: jasmine.createSpy('load'),
-            save: jasmine.createSpy('save'),
-            update: jasmine.createSpy('update'),
+            load: vi.fn(),
+            save: vi.fn(),
+            update: vi.fn(),
         };
-        loggerService = jasmine.createSpyObj<LoggerService>('LoggerService', ['log']);
+        loggerService = {
+            log: vi.fn(),
+        };
 
         TestBed.configureTestingModule({
             providers: [
@@ -84,7 +89,7 @@ describe('SettingsService', () => {
     });
 
     it('emits settings changes when the signal store updates', () => {
-        const emitSpy = spyOn(service.settingsChanged, 'emit');
+        const emitSpy = vi.spyOn(service.settingsChanged, 'emit');
 
         settingsSignal.set({
             ...baseSettings,
@@ -93,15 +98,15 @@ describe('SettingsService', () => {
         TestBed.flushEffects();
 
         expect(emitSpy).toHaveBeenCalledWith(
-            jasmine.objectContaining({
+            expect.objectContaining({
                 endpoint: 'next.example.com',
             }),
         );
     });
 
     it('reports whether endpoint and remote sync are enabled', () => {
-        expect(service.hasEndpoint()).toBeTrue();
-        expect(service.hasEnabledRemoteSync()).toBeTrue();
+        expect(service.hasEndpoint()).toBe(true);
+        expect(service.hasEnabledRemoteSync()).toBe(true);
 
         settingsSignal.set({
             ...baseSettings,
@@ -109,8 +114,8 @@ describe('SettingsService', () => {
             enableRemoteSync: false,
         });
 
-        expect(service.hasEndpoint()).toBeFalse();
-        expect(service.hasEnabledRemoteSync()).toBeFalse();
+        expect(service.hasEndpoint()).toBe(false);
+        expect(service.hasEnabledRemoteSync()).toBe(false);
     });
 
     it('builds an authenticated endpoint, defaults the port, and logs a redacted URL', () => {

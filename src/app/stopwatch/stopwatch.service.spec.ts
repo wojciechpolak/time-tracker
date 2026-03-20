@@ -18,6 +18,7 @@
  */
 
 import { TestBed } from '@angular/core/testing';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Deleted, Stopwatch, StopwatchEvent, Types } from '../models';
 import { DbService } from '../services/db.service';
@@ -28,14 +29,16 @@ import { StopwatchService } from './stopwatch.service';
 describe('StopwatchService', () => {
     let service: StopwatchService;
     let dbService: {
-        getItem: jasmine.Spy;
-        find: jasmine.Spy;
-        putItem: jasmine.Spy;
-        updateItem: jasmine.Spy;
-        deleteItem: jasmine.Spy;
-        deleteItems: jasmine.Spy;
+        getItem: ReturnType<typeof vi.fn>;
+        find: ReturnType<typeof vi.fn>;
+        putItem: ReturnType<typeof vi.fn>;
+        updateItem: ReturnType<typeof vi.fn>;
+        deleteItem: ReturnType<typeof vi.fn>;
+        deleteItems: ReturnType<typeof vi.fn>;
     };
-    let loggerService: jasmine.SpyObj<LoggerService>;
+    let loggerService: {
+        log: ReturnType<typeof vi.fn>;
+    };
 
     const createEvent = (
         id: string,
@@ -60,16 +63,22 @@ describe('StopwatchService', () => {
         events,
     });
 
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     beforeEach(() => {
         dbService = {
-            getItem: jasmine.createSpy('getItem'),
-            find: jasmine.createSpy('find').and.resolveTo([]),
-            putItem: jasmine.createSpy('putItem').and.callFake(async <T>(doc: T) => doc),
-            updateItem: jasmine.createSpy('updateItem'),
-            deleteItem: jasmine.createSpy('deleteItem'),
-            deleteItems: jasmine.createSpy('deleteItems').and.resolveTo(undefined),
+            getItem: vi.fn(),
+            find: vi.fn().mockResolvedValue([]),
+            putItem: vi.fn().mockImplementation(async <T>(doc: T) => doc),
+            updateItem: vi.fn(),
+            deleteItem: vi.fn(),
+            deleteItems: vi.fn().mockResolvedValue(undefined),
         };
-        loggerService = jasmine.createSpyObj<LoggerService>('LoggerService', ['log']);
+        loggerService = {
+            log: vi.fn(),
+        };
 
         TestBed.configureTestingModule({
             providers: [
@@ -88,16 +97,16 @@ describe('StopwatchService', () => {
             ...createStopwatch('SW-2'),
             tsArch: 999,
         };
-        spyOn(service, 'fetchStopwatchEvents').and.callFake(async (item: Stopwatch) => {
+        vi.spyOn(service, 'fetchStopwatchEvents').mockImplementation(async (item: Stopwatch) => {
             item.events = [createEvent(`EV-${item._id}`, item._id, 100, true)];
         });
 
-        dbService.getItem.and.resolveTo(active);
-        await expectAsync(service.fetchStopwatch('SW-1')).toBeResolvedTo(active);
+        dbService.getItem.mockResolvedValue(active);
+        await expect(service.fetchStopwatch('SW-1')).resolves.toBe(active);
         expect(service.fetchStopwatchEvents).toHaveBeenCalledWith(active);
 
-        dbService.getItem.and.resolveTo(archived);
-        await expectAsync(service.fetchStopwatch('SW-2')).toBeResolvedTo(archived);
+        dbService.getItem.mockResolvedValue(archived);
+        await expect(service.fetchStopwatch('SW-2')).resolves.toBe(archived);
         expect(archived.events).toEqual([]);
     });
 
@@ -106,20 +115,22 @@ describe('StopwatchService', () => {
             ...createStopwatch('SW-2'),
             tsArch: 999,
         };
-        const fetchEventsSpy = spyOn(service, 'fetchStopwatchEvents').and.resolveTo();
-        dbService.getItem.and.resolveTo(archived);
+        const fetchEventsSpy = vi
+            .spyOn(service, 'fetchStopwatchEvents')
+            .mockResolvedValue(undefined);
+        dbService.getItem.mockResolvedValue(archived);
 
-        await expectAsync(service.fetchStopwatch('SW-2', true)).toBeResolvedTo(archived);
+        await expect(service.fetchStopwatch('SW-2', true)).resolves.toBe(archived);
         expect(fetchEventsSpy).toHaveBeenCalledWith(archived);
     });
 
     it('logs and rethrows when a stopwatch cannot be fetched', async () => {
-        dbService.getItem.and.resolveTo(null);
+        dbService.getItem.mockResolvedValue(null);
 
-        await expectAsync(service.fetchStopwatch('SW-404')).toBeRejectedWithError(
+        await expect(service.fetchStopwatch('SW-404')).rejects.toThrowError(
             'Stopwatch with id SW-404 not found',
         );
-        expect(loggerService.log).toHaveBeenCalledWith('fetchStopwatch error', jasmine.any(Error));
+        expect(loggerService.log).toHaveBeenCalledWith('fetchStopwatch error', expect.any(Error));
     });
 
     it('fetches and sorts the stopwatch list while skipping archived event hydration', async () => {
@@ -128,10 +139,10 @@ describe('StopwatchService', () => {
             ...createStopwatch('SW-050'),
             tsArch: 500,
         };
-        dbService.find.and.resolveTo([archived, active]);
-        spyOn(console, 'time');
-        spyOn(console, 'timeEnd');
-        spyOn(service, 'fetchStopwatchEvents').and.callFake(async (item: Stopwatch) => {
+        dbService.find.mockResolvedValue([archived, active]);
+        vi.spyOn(console, 'time').mockImplementation(() => undefined);
+        vi.spyOn(console, 'timeEnd').mockImplementation(() => undefined);
+        vi.spyOn(service, 'fetchStopwatchEvents').mockImplementation(async (item: Stopwatch) => {
             item.events = [createEvent(`EV-${item._id}`, item._id, 300, true)];
         });
 
@@ -145,14 +156,14 @@ describe('StopwatchService', () => {
     });
 
     it('returns an empty list when fetchStopwatchList fails', async () => {
-        spyOn(console, 'time');
-        spyOn(console, 'timeEnd');
-        dbService.find.and.rejectWith(new Error('db failed'));
+        vi.spyOn(console, 'time').mockImplementation(() => undefined);
+        vi.spyOn(console, 'timeEnd').mockImplementation(() => undefined);
+        dbService.find.mockRejectedValue(new Error('db failed'));
 
-        await expectAsync(service.fetchStopwatchList()).toBeResolvedTo([]);
+        await expect(service.fetchStopwatchList()).resolves.toEqual([]);
         expect(loggerService.log).toHaveBeenCalledWith(
             'fetchStopwatchList error',
-            jasmine.any(Error),
+            expect.any(Error),
         );
     });
 
@@ -167,24 +178,24 @@ describe('StopwatchService', () => {
 
     it('fetches a single event and logs failures', async () => {
         const event = createEvent('EV-1', 'SW-1', 100, true);
-        dbService.getItem.and.resolveTo(event);
-        await expectAsync(service.fetchStopwatchEvent('EV-1')).toBeResolvedTo(event);
+        dbService.getItem.mockResolvedValue(event);
+        await expect(service.fetchStopwatchEvent('EV-1')).resolves.toBe(event);
 
-        dbService.getItem.and.resolveTo(null);
-        await expectAsync(service.fetchStopwatchEvent('EV-404')).toBeRejectedWithError(
+        dbService.getItem.mockResolvedValue(null);
+        await expect(service.fetchStopwatchEvent('EV-404')).rejects.toThrowError(
             'Stopwatch Event with id EV-404 not found',
         );
         expect(loggerService.log).toHaveBeenCalledWith(
             'fetchStopwatchEvent error',
-            jasmine.any(Error),
+            expect.any(Error),
         );
     });
 
     it('hydrates stopwatch events and preprocesses them', async () => {
         const item = createStopwatch('SW-1');
         const events = [createEvent('EV-1', 'SW-1', 100, true)];
-        const preprocessSpy = spyOn(service, 'preprocessEvents');
-        dbService.find.and.resolveTo(events);
+        const preprocessSpy = vi.spyOn(service, 'preprocessEvents');
+        dbService.find.mockResolvedValue(events);
 
         await service.fetchStopwatchEvents(item);
 
@@ -202,20 +213,20 @@ describe('StopwatchService', () => {
         const created = createStopwatch('SW-123456', [
             createEvent('SW-TS-123456', 'SW-123456', 123456, true),
         ]);
-        spyOn(UtilsService, 'getTimestamp').and.returnValue(123456);
-        spyOn(UtilsService, 'toISOLocalString').and.returnValue('2025-01-02T03:04:05.000Z');
-        spyOn(service, 'fetchStopwatch').and.resolveTo(created);
+        vi.spyOn(UtilsService, 'getTimestamp').mockReturnValue(123456);
+        vi.spyOn(UtilsService, 'toISOLocalString').mockReturnValue('2025-01-02T03:04:05.000Z');
+        vi.spyOn(service, 'fetchStopwatch').mockResolvedValue(created);
 
         const result = await service.addStopwatch();
 
-        expect(dbService.putItem.calls.argsFor(0)[0]).toEqual(
-            jasmine.objectContaining({
+        expect(dbService.putItem.mock.calls[0]?.[0]).toEqual(
+            expect.objectContaining({
                 _id: 'SW-123456',
                 type: Types.STOPWATCH,
                 name: 'Stopwatch #2025-01-02T03:04:05.000Z',
             }),
         );
-        expect(dbService.putItem.calls.argsFor(1)[0]).toEqual({
+        expect(dbService.putItem.mock.calls[1]?.[0]).toEqual({
             _id: 'SW-TS-123456',
             ref: 'SW-123456',
             type: Types.STOPWATCH_TS,
@@ -233,9 +244,9 @@ describe('StopwatchService', () => {
         const updatedStopwatch = createStopwatch('SW-1');
         updatedStopwatch.name = 'Updated';
         const updatedEvent = createEvent('EV-1', 'SW-1', 999, true);
-        spyOn(service, 'fetchStopwatch').and.resolveTo(updatedStopwatch);
-        spyOn(service, 'fetchStopwatchEvent').and.resolveTo(updatedEvent);
-        dbService.updateItem.and.callFake(
+        vi.spyOn(service, 'fetchStopwatch').mockResolvedValue(updatedStopwatch);
+        vi.spyOn(service, 'fetchStopwatchEvent').mockResolvedValue(updatedEvent);
+        dbService.updateItem.mockImplementation(
             async <T extends { _id: string }>(doc: T, updateFn: (itemToUpdate: T) => void) => {
                 const clone = structuredClone(doc);
                 updateFn(clone);
@@ -243,10 +254,10 @@ describe('StopwatchService', () => {
             },
         );
 
-        await expectAsync(service.updateStopwatch(stopwatch, { name: 'Updated' })).toBeResolvedTo(
+        await expect(service.updateStopwatch(stopwatch, { name: 'Updated' })).resolves.toBe(
             updatedStopwatch,
         );
-        await expectAsync(service.updateEvent(event, { ts: 999 })).toBeResolvedTo(updatedEvent);
+        await expect(service.updateEvent(event, { ts: 999 })).resolves.toBe(updatedEvent);
 
         expect(dbService.updateItem).toHaveBeenCalledTimes(2);
         expect(service.fetchStopwatch).toHaveBeenCalledWith('SW-1');
@@ -254,8 +265,8 @@ describe('StopwatchService', () => {
     });
 
     it('adds single stopwatch events and marks them as in use', async () => {
-        spyOn(UtilsService, 'getTimestamp').and.returnValue(456);
-        dbService.putItem.and.callFake(async (event: StopwatchEvent) => ({ ...event }));
+        vi.spyOn(UtilsService, 'getTimestamp').mockReturnValue(456);
+        dbService.putItem.mockImplementation(async (event: StopwatchEvent) => ({ ...event }));
 
         const [event] = await service.addEvent('SW-1', false, false);
 
@@ -274,8 +285,8 @@ describe('StopwatchService', () => {
     });
 
     it('creates stop-and-start pairs when beginning a new round', async () => {
-        spyOn(UtilsService, 'getTimestamp').and.returnValues(1000, 1001);
-        dbService.putItem.and.callFake(async (event: StopwatchEvent) => ({ ...event }));
+        vi.spyOn(UtilsService, 'getTimestamp').mockReturnValueOnce(1000).mockReturnValueOnce(1001);
+        dbService.putItem.mockImplementation(async (event: StopwatchEvent) => ({ ...event }));
 
         const events = await service.addEvent('SW-1', true, true);
 
@@ -313,27 +324,27 @@ describe('StopwatchService', () => {
             ...stopwatch,
             tsArch: 555,
         };
-        spyOn(service, 'fetchStopwatch').and.resolveTo(archivedStopwatch);
-        dbService.updateItem.and.callFake(
+        vi.spyOn(service, 'fetchStopwatch').mockResolvedValue(archivedStopwatch);
+        dbService.updateItem.mockImplementation(
             async <T extends Stopwatch>(doc: T, updateFn: (itemToUpdate: T) => void) => {
                 const clone = structuredClone(doc);
                 updateFn(clone);
                 return { ok: true, id: clone._id, rev: '2' };
             },
         );
-        dbService.deleteItem.and.resolveTo({ ok: true, id: 'EV-1', rev: '2' });
+        dbService.deleteItem.mockResolvedValue({ ok: true, id: 'EV-1', rev: '2' });
         const firstEvent = stopwatch.events[0];
 
         expect(firstEvent).toBeDefined();
 
-        await expectAsync(service.removeEvent(firstEvent as StopwatchEvent)).toBeResolvedTo({
+        await expect(service.removeEvent(firstEvent as StopwatchEvent)).resolves.toEqual({
             ok: true,
             id: 'EV-1',
             rev: '2',
         });
 
-        dbService.deleteItem.and.resolveTo(deleteResponse);
-        await expectAsync(service.deleteStopwatch(stopwatch)).toBeResolvedTo(deleteResponse);
+        dbService.deleteItem.mockResolvedValue(deleteResponse);
+        await expect(service.deleteStopwatch(stopwatch)).resolves.toBe(deleteResponse);
         expect(dbService.deleteItems).toHaveBeenCalledWith([
             {
                 _id: 'EV-1',
@@ -347,9 +358,7 @@ describe('StopwatchService', () => {
             } as unknown as Deleted,
         ]);
 
-        await expectAsync(service.toggleArchiveItem(stopwatch, 555)).toBeResolvedTo(
-            archivedStopwatch,
-        );
+        await expect(service.toggleArchiveItem(stopwatch, 555)).resolves.toBe(archivedStopwatch);
         expect(service.fetchStopwatch).toHaveBeenCalledWith('SW-1');
     });
 
@@ -381,16 +390,16 @@ describe('StopwatchService', () => {
         ]);
         service.preprocessEvents(item);
 
-        expect(markEvents[0]?.inUse).toBeFalse();
-        expect(markEvents[1]?.inUse).toBeFalse();
+        expect(markEvents[0]?.inUse).toBe(false);
+        expect(markEvents[1]?.inUse).toBe(false);
         expect(trimmed.map((event) => event._id)).toEqual(['EV-3', 'EV-4']);
         expect(deduped.map((event) => event._id)).toEqual(['EV-1', 'EV-4', 'EV-5']);
-        expect(deduped.every((event) => event.inUse)).toBeTrue();
+        expect(deduped.every((event) => event.inUse)).toBe(true);
         expect(pairs.map((pair) => pair.map((event) => event._id))).toEqual([
             ['EV-1', 'EV-2'],
             ['EV-3'],
         ]);
-        expect(item.finished).toBeTrue();
-        expect(item.events[0]?.inUse).toBeFalse();
+        expect(item.finished).toBe(true);
+        expect(item.events[0]?.inUse).toBe(false);
     });
 });

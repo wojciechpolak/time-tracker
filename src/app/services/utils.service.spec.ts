@@ -18,15 +18,21 @@
  */
 
 import { UtilsService } from './utils.service';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 describe('UtilsService', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.useRealTimers();
+    });
+
     it('formats sizes in a human readable form', () => {
         expect(UtilsService.size2human(1)).toBe('1 B');
         expect(UtilsService.size2human(1_500_000)).toBe('1.5 MB');
     });
 
     it('returns timestamps in milliseconds or seconds', () => {
-        spyOn(Date.prototype, 'getTime').and.returnValue(1_700_000_123_456);
+        vi.spyOn(Date.prototype, 'getTime').mockReturnValue(1_700_000_123_456);
 
         expect(UtilsService.getTimestamp()).toBe(1_700_000_123_456);
         expect(UtilsService.getTimestamp(false)).toBe(1_700_000_123);
@@ -42,13 +48,14 @@ describe('UtilsService', () => {
     });
 
     it('converts timestamps into a local date string while stripping decimals', () => {
-        const isoSpy = spyOn(UtilsService, 'toISOLocalString').and.returnValue(
-            '2025-01-02T03:04:05.678Z',
-        );
+        const isoSpy = vi
+            .spyOn(UtilsService, 'toISOLocalString')
+            .mockReturnValue('2025-01-02T03:04:05.678Z');
 
         expect(UtilsService.toDate(1_735_787_045.999, false)).toBe('2025-01-02 03:04:05');
-        expect(isoSpy.calls.mostRecent().args[0] instanceof Date).toBeTrue();
-        expect(isoSpy.calls.mostRecent().args[0].getTime()).toBe(1_735_787_045_000);
+        const [dateArg] = isoSpy.mock.calls.at(-1) ?? [];
+        expect(dateArg).toBeInstanceOf(Date);
+        expect(dateArg?.getTime()).toBe(1_735_787_045_000);
     });
 
     it('creates ISO strings from local time', () => {
@@ -59,41 +66,33 @@ describe('UtilsService', () => {
     });
 
     it('formats relative times from milliseconds and seconds', () => {
-        jasmine.clock().install();
-        try {
-            jasmine.clock().mockDate(new Date('2026-03-18T12:00:00.000Z'));
-            const rtf = new Intl.RelativeTimeFormat('en', {
-                style: 'long',
-                numeric: 'always',
-            });
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-18T12:00:00.000Z'));
+        const rtf = new Intl.RelativeTimeFormat('en', {
+            style: 'long',
+            numeric: 'always',
+        });
 
-            expect(UtilsService.formatFromNow(Date.now() - 30_000)).toBe(rtf.format(-30, 'second'));
-            expect(UtilsService.formatFromNow(Math.floor(Date.now() / 1000) - 7200, false)).toBe(
-                rtf.format(-2, 'hour'),
-            );
-        } finally {
-            jasmine.clock().uninstall();
-        }
+        expect(UtilsService.formatFromNow(Date.now() - 30_000)).toBe(rtf.format(-30, 'second'));
+        expect(UtilsService.formatFromNow(Math.floor(Date.now() / 1000) - 7200, false)).toBe(
+            rtf.format(-2, 'hour'),
+        );
     });
 
     it('includes days and hours for recent multi-day intervals', () => {
-        jasmine.clock().install();
-        try {
-            jasmine.clock().mockDate(new Date('2026-03-18T12:00:00.000Z'));
-            const rtf = new Intl.RelativeTimeFormat('en', {
-                style: 'long',
-                numeric: 'always',
-            });
-            const parts = rtf.formatToParts(-2, 'day');
-            const daysAgo = `${parts[0]?.value} days`;
-            const hoursAgo = rtf.format(-3, 'hour');
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-18T12:00:00.000Z'));
+        const rtf = new Intl.RelativeTimeFormat('en', {
+            style: 'long',
+            numeric: 'always',
+        });
+        const parts = rtf.formatToParts(-2, 'day');
+        const daysAgo = `${parts[0]?.value} days`;
+        const hoursAgo = rtf.format(-3, 'hour');
 
-            expect(UtilsService.formatFromNow(Date.now() - (2 * 86_400_000 + 3 * 3_600_000))).toBe(
-                `${daysAgo} ${hoursAgo}`,
-            );
-        } finally {
-            jasmine.clock().uninstall();
-        }
+        expect(UtilsService.formatFromNow(Date.now() - (2 * 86_400_000 + 3 * 3_600_000))).toBe(
+            `${daysAgo} ${hoursAgo}`,
+        );
     });
 
     it('returns an empty string when Intl.RelativeTimeFormat is unavailable', () => {
@@ -112,7 +111,7 @@ describe('UtilsService', () => {
     });
 
     it('formats relative timestamps across units', () => {
-        spyOn(Date, 'now').and.returnValue(new Date('2026-03-18T12:00:00.000Z').getTime());
+        vi.spyOn(Date, 'now').mockReturnValue(new Date('2026-03-18T12:00:00.000Z').getTime());
         const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 
         expect(UtilsService.formatRelativeTime(Date.now() + 90_000)).toBe(rtf.format(2, 'minute'));
@@ -141,7 +140,7 @@ describe('UtilsService', () => {
     });
 
     it('logs when getStats is called without a valid period', () => {
-        const consoleSpy = spyOn(console, 'log');
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
         UtilsService.getStats([{ ts: Date.now() }], 'invalid');
 
@@ -160,10 +159,20 @@ describe('UtilsService', () => {
     });
 
     it('detects touch devices through maxTouchPoints', () => {
-        const touchPointsSpy = spyOnProperty(navigator, 'maxTouchPoints', 'get').and.returnValue(2);
+        const original = Object.getOwnPropertyDescriptor(navigator, 'maxTouchPoints');
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            configurable: true,
+            value: 2,
+        });
 
-        expect(UtilsService.isMobile()).toBeTrue();
-
-        touchPointsSpy.and.returnValue(0);
+        try {
+            expect(UtilsService.isMobile()).toBe(true);
+        } finally {
+            if (original) {
+                Object.defineProperty(navigator, 'maxTouchPoints', original);
+            } else {
+                Reflect.deleteProperty(navigator, 'maxTouchPoints');
+            }
+        }
     });
 });

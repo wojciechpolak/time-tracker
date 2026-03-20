@@ -18,11 +18,16 @@
  */
 
 import { TestBed } from '@angular/core/testing';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LoggerService } from './logger.service';
 
 describe('LoggerService', () => {
     let service: LoggerService;
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -32,8 +37,8 @@ describe('LoggerService', () => {
     });
 
     it('stores formatted log messages, emits them, and forwards the original arguments to console', () => {
-        const emitSpy = spyOn(service.onLog, 'emit');
-        const consoleSpy = spyOn(console, 'log');
+        const emitSpy = vi.spyOn(service.onLog, 'emit').mockImplementation(() => undefined);
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
         const payload = { status: 'ok' };
 
         service.log('prefix', payload, 123);

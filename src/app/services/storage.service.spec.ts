@@ -18,6 +18,7 @@
  */
 
 import { TestBed } from '@angular/core/testing';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LocalStorageService, SessionStorageService, StorageService } from './storage.service';
 import { WINDOW_TOKEN } from '../core/core';
@@ -155,7 +156,9 @@ describe('Browser storage services', () => {
 
     it('throws when the provided storage backend is unavailable', () => {
         const localStorage = new FakeStorage();
-        spyOn(localStorage, 'setItem').and.throwError('denied');
+        vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+            throw new Error('denied');
+        });
         TestBed.configureTestingModule({
             providers: [
                 LocalStorageService,

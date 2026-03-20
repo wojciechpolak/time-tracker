@@ -20,12 +20,11 @@
 import { Component, NO_ERRORS_SCHEMA, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-import { LastTimeComponent } from './last-time.component';
 import { LastTime, Types } from '../models';
-import { provideCore } from '../core/core';
 import { LastTimeStore } from '../store/last-time.store';
-import { LastTimeService } from './last-time.service';
+import { LastTimeComponent } from './last-time.component';
 
 @Component({
     imports: [LastTimeComponent],
@@ -64,18 +63,12 @@ describe('LastTimeComponent', () => {
         loadLastTime: () => {},
     };
 
-    const mockLastTimeService = {
-        // Add methods if needed by LastTimeComponent
-    };
-
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [LastTimeComponent],
             providers: [
                 provideZonelessChangeDetection(),
-                provideCore(),
                 { provide: LastTimeStore, useValue: mockLastTimeStore },
-                { provide: LastTimeService, useValue: mockLastTimeService },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();

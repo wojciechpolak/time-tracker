@@ -18,41 +18,92 @@
  */
 
 import { NO_ERRORS_SCHEMA, provideZonelessChangeDetection } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideServiceWorker, SwUpdate } from '@angular/service-worker';
-import { provideMockStore } from '@ngrx/store/testing';
+import { TestBed } from '@angular/core/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SwUpdate } from '@angular/service-worker';
+import { of } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DataService } from '../services/data.service';
 import { DbService } from '../services/db.service';
-import { PouchDbService } from '../services/pouch-db.service';
+import { LoggerService } from '../services/logger.service';
 import { SettingsComponent } from './settings.component';
 import { SettingsService } from './settings.service';
-import { provideCore } from '../core/core';
 
 describe('SettingsComponent', () => {
     let component: SettingsComponent;
-    let fixture: ComponentFixture<SettingsComponent>;
+
+    const dbServiceStub = {
+        dbLoaded: Promise.resolve(),
+        getStorageEstimated: vi.fn().mockResolvedValue('0 B'),
+    };
+    const dataServiceStub = {
+        fetchAll: vi.fn(),
+    };
+    const loggerServiceStub = {
+        log: vi.fn(),
+    };
+    const settingsServiceStub = {
+        get: vi.fn().mockReturnValue({
+            dbEngine: 'pouchdb',
+            dbName: 'time-tracker',
+            endpoint: '',
+            user: '',
+            password: '',
+            lastPage: '',
+            enableRemoteSync: false,
+            firebaseConfig: '',
+            redirectToHttps: false,
+            showDebug: false,
+        }),
+        getDbName: 'time-tracker',
+    };
+    const snackBarStub = {
+        open: vi.fn(),
+    };
+    const swUpdateStub = {
+        isEnabled: false,
+        checkForUpdate: vi.fn(),
+        versionUpdates: of(),
+        unrecoverable: of(),
+    };
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [SettingsComponent],
             providers: [
-                SwUpdate,
-                SettingsService,
+                provideZonelessChangeDetection(),
+                {
+                    provide: DataService,
+                    useValue: dataServiceStub,
+                },
                 {
                     provide: DbService,
-                    useClass: PouchDbService,
+                    useValue: dbServiceStub,
                 },
-                provideZonelessChangeDetection(),
-                provideCore(),
-                provideMockStore(),
-                provideServiceWorker('ngsw-worker.js', { enabled: false }),
+                {
+                    provide: LoggerService,
+                    useValue: loggerServiceStub,
+                },
+                {
+                    provide: SettingsService,
+                    useValue: settingsServiceStub,
+                },
+                {
+                    provide: SwUpdate,
+                    useValue: swUpdateStub,
+                },
+                {
+                    provide: MatSnackBar,
+                    useValue: snackBarStub,
+                },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(SettingsComponent);
+        const fixture = TestBed.createComponent(SettingsComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

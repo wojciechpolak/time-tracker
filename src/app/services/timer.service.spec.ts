@@ -18,26 +18,27 @@
  */
 
 import { TestBed } from '@angular/core/testing';
+import { describe, expect, it, vi } from 'vitest';
 
 import { TimerService } from './timer.service';
 
 describe('TimerService', () => {
     it('emits incrementing timer ticks starting immediately', () => {
-        jasmine.clock().install();
-        TestBed.configureTestingModule({
-            providers: [TimerService],
-        });
-        const service = TestBed.inject(TimerService);
-        const emissions: number[] = [];
-
+        vi.useFakeTimers();
         try {
+            TestBed.configureTestingModule({
+                providers: [TimerService],
+            });
+            const service = TestBed.inject(TimerService);
+            const emissions: number[] = [];
+
             const subscription = service.timer$.subscribe((value) => emissions.push(value));
-            jasmine.clock().tick(2_100);
+            vi.advanceTimersByTime(2_100);
 
             expect(emissions).toEqual([0, 1, 2]);
             subscription.unsubscribe();
         } finally {
-            jasmine.clock().uninstall();
+            vi.useRealTimers();
         }
     });
 });

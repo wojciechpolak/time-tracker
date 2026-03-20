@@ -18,25 +18,27 @@
  */
 
 import { NO_ERRORS_SCHEMA, provideZonelessChangeDetection } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { provideMockStore } from '@ngrx/store/testing';
-import { of, Subject } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DbService } from '../services/db.service';
 import { MainComponent } from './main.component';
-import { provideCore } from '../core/core';
+import { DataService } from '../services/data.service';
+import { SettingsService } from '../settings/settings.service';
 
 describe('MainComponent', () => {
     let component: MainComponent;
-    let fixture: ComponentFixture<MainComponent>;
 
-    const onDbChangeSubject = new Subject<void>();
-    const onRemoteDbErrorSubject = new Subject<void>();
-    const dbServiceStub = {
-        dbLoaded: of(true),
-        onDbChange: onDbChangeSubject.asObservable(),
-        onRemoteDbError: onRemoteDbErrorSubject.asObservable(),
+    const dataServiceStub = {
+        dbLoaded: Promise.resolve(),
+        fetchAll: vi.fn(),
+    };
+    const settingsServiceStub = {
+        get: vi.fn().mockReturnValue({
+            showDebug: false,
+            redirectToHttps: false,
+            lastPage: '',
+        }),
     };
 
     beforeEach(async () => {
@@ -44,17 +46,22 @@ describe('MainComponent', () => {
             imports: [MainComponent],
             providers: [
                 provideZonelessChangeDetection(),
-                provideCore(),
                 provideRouter([]),
-                provideMockStore(),
-                { provide: DbService, useValue: dbServiceStub },
+                {
+                    provide: DataService,
+                    useValue: dataServiceStub,
+                },
+                {
+                    provide: SettingsService,
+                    useValue: settingsServiceStub,
+                },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(MainComponent);
+        const fixture = TestBed.createComponent(MainComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

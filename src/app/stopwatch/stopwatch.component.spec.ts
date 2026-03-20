@@ -21,10 +21,11 @@ import { Component, NO_ERRORS_SCHEMA, signal, provideZonelessChangeDetection } f
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { Stopwatch, StopwatchEvent, Types } from '../models';
 import { StopwatchComponent } from './stopwatch.component';
-import { provideCore } from '../core/core';
+import { LoggerService } from '../services/logger.service';
 import { StopwatchStore } from '../store/stopwatch.store';
 import { StopwatchService } from './stopwatch.service';
 import { TimerService } from '../services/timer.service';
@@ -84,7 +85,12 @@ describe('StopwatchComponent', () => {
             imports: [StopwatchComponent],
             providers: [
                 provideZonelessChangeDetection(),
-                provideCore(),
+                {
+                    provide: LoggerService,
+                    useValue: {
+                        log: () => {},
+                    },
+                },
                 { provide: StopwatchStore, useValue: mockStopwatchStore },
                 { provide: StopwatchService, useValue: mockStopwatchService },
                 { provide: TimerService, useValue: mockTimerService },
