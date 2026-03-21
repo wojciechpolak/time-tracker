@@ -29,6 +29,34 @@ async function openCardActions(card: Locator) {
     await card.locator('.mat-card-actions-container button[aria-label="Actions"]').click();
 }
 
+async function screenshotIfVisual(target: Page | Locator, name: string, mask: Locator[] = []) {
+    if (!process.env.VRT) {
+        return;
+    }
+
+    await expect(target).toHaveScreenshot(name, {
+        animations: 'disabled',
+        caret: 'hide',
+        mask,
+    });
+}
+
+async function waitForPersistedLastPage(page: Page, expectedLastPage: string) {
+    await page.waitForFunction((expected: string) => {
+        const raw = window.localStorage.getItem('settings');
+        if (!raw) {
+            return false;
+        }
+
+        try {
+            const settings = JSON.parse(raw) as { lastPage?: string };
+            return settings.lastPage === expected;
+        } catch {
+            return false;
+        }
+    }, expectedLastPage);
+}
+
 test.describe('Time Tracker', () => {
     test('loads the main shell on the last-time view', async ({ page }) => {
         await page.goto('/');
@@ -39,6 +67,10 @@ test.describe('Time Tracker', () => {
         await expect(page.getByRole('tab', { name: 'Stopwatch' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Settings' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Add Last Time' })).toBeVisible();
+        await screenshotIfVisual(page, 'main-shell.png', [
+            page.locator('#connection-status'),
+            page.locator('.spinner'),
+        ]);
     });
 
     test('switches between the main tabs', async ({ page }) => {
@@ -58,6 +90,7 @@ test.describe('Time Tracker', () => {
 
         await page.getByRole('tab', { name: 'Stopwatch' }).click();
         await expect(page).toHaveURL(/\/main\/stopwatch/);
+        await waitForPersistedLastPage(page, '/main/stopwatch');
 
         await page.reload();
 
@@ -76,6 +109,7 @@ test.describe('Time Tracker', () => {
 
         await renameTitle(page, card, 'Client onboarding');
         await expect(card.locator('.title')).toHaveText('Client onboarding');
+        await screenshotIfVisual(card, 'last-time-card.png', [card.locator('.time')]);
 
         await card.getByRole('button', { name: 'Touch' }).click();
         await expect(card.getByRole('button', { name: 'Recent entries' })).toBeVisible();
@@ -122,6 +156,7 @@ test.describe('Time Tracker', () => {
 
         await renameTitle(page, card, 'Sprint tracking');
         await expect(card.locator('.title')).toHaveText('Sprint tracking');
+        await screenshotIfVisual(card, 'stopwatch-card.png', [card.locator('.time')]);
 
         await card.getByRole('button', { name: 'STOP' }).click();
         await expect(card.getByRole('button', { name: 'START' })).toBeVisible();
@@ -161,6 +196,10 @@ test.describe('Time Tracker', () => {
         await expect(page.getByRole('checkbox', { name: 'Redirect to HTTPS' })).toBeVisible();
         await expect(page.getByRole('checkbox', { name: 'Show DEBUG Tab' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
+        await screenshotIfVisual(page, 'settings-general.png', [
+            page.locator('#connection-status'),
+            page.locator('.spinner'),
+        ]);
 
         await page.getByRole('tab', { name: 'Database' }).click();
         await expect(page.getByRole('button', { name: 'DB Export' })).toBeVisible();
