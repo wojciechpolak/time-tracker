@@ -55,10 +55,8 @@ function firebaseConfigValidator(control: AbstractControl): ValidationErrors | n
     }
     try {
         const parsed = JSON.parse(control.value);
-        firebaseConfigSchema.parse(parsed);
-        return null;
-    } catch (error: unknown) {
-        console.error(error);
+        return firebaseConfigSchema.safeParse(parsed).success ? null : { invalidJson: true };
+    } catch {
         return { invalidJson: true };
     }
 }

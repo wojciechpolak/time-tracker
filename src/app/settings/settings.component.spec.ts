@@ -111,4 +111,24 @@ describe('SettingsComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+
+    it('validates Firebase config JSON when Firestore is selected', () => {
+        const form = component as unknown as { form: SettingsComponent['form'] };
+        form.form.controls['dbEngine'].setValue('firestore');
+        form.form.controls['firebaseConfig'].setValue('{"apiKey":"abc"}');
+
+        expect(form.form.controls['firebaseConfig'].errors).toEqual({
+            invalidJson: true,
+        });
+    });
+
+    it('accepts a complete Firebase config payload', () => {
+        const form = component as unknown as { form: SettingsComponent['form'] };
+        form.form.controls['dbEngine'].setValue('firestore');
+        form.form.controls['firebaseConfig'].setValue(
+            '{"apiKey":"abc","authDomain":"example.firebaseapp.com","projectId":"demo","storageBucket":"demo.appspot.com","messagingSenderId":"123","appId":"1:123:web:456"}',
+        );
+
+        expect(form.form.controls['firebaseConfig'].errors).toBeNull();
+    });
 });
