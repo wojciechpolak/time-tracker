@@ -16,6 +16,7 @@
       "files": ["**/*.ts"],
       "rules": {
         "constructor-super": "off",
+        "curly": ["error", "all"],
         "no-class-assign": "off",
         "no-const-assign": "off",
         "no-dupe-class-members": "off",
@@ -60,6 +61,7 @@
         "no-unused-expressions": "error",
         "no-unused-vars": "error",
         "no-useless-constructor": "error",
+        "semi": "error",
         "@typescript-eslint/no-wrapper-object-types": "error",
         "@typescript-eslint/prefer-as-const": "error",
         "@typescript-eslint/prefer-literal-enum-member": "error",
