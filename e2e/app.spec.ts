@@ -30,7 +30,7 @@ async function openCardActions(card: Locator) {
 }
 
 async function screenshotIfVisual(target: Page | Locator, name: string, mask: Locator[] = []) {
-    if (!process.env.VRT) {
+    if (!process.env['VRT']) {
         return;
     }
 
