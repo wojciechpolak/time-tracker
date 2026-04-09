@@ -79,6 +79,18 @@ describe('UtilsService', () => {
         );
     });
 
+    it('formats a timestamp in the 1-59 minute range', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-18T12:00:00.000Z'));
+        const rtf = new Intl.RelativeTimeFormat('en', {
+            style: 'long',
+            numeric: 'always',
+        });
+
+        // 5 minutes ago
+        expect(UtilsService.formatFromNow(Date.now() - 5 * 60_000)).toBe(rtf.format(-5, 'minute'));
+    });
+
     it('includes days and hours for recent multi-day intervals', () => {
         vi.useFakeTimers();
         vi.setSystemTime(new Date('2026-03-18T12:00:00.000Z'));
@@ -137,6 +149,16 @@ describe('UtilsService', () => {
         expect(monthStats.datasets[0]?.data).toEqual([2, 1]);
         expect(yearStats.labels).toEqual(['2025']);
         expect(yearStats.datasets[0]?.data).toEqual([3]);
+    });
+
+    it('builds chart stats grouped by week', () => {
+        const events = [
+            { ts: new Date(2025, 0, 6, 8, 0, 0).getTime() },
+            { ts: new Date(2025, 0, 13, 8, 0, 0).getTime() },
+        ];
+        const weekStats = UtilsService.getStats(events, 'week');
+        expect(weekStats.labels.length).toBeGreaterThanOrEqual(1);
+        expect(weekStats.datasets[0]?.data.length).toBe(weekStats.labels.length);
     });
 
     it('logs when getStats is called without a valid period', () => {
