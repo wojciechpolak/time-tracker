@@ -167,3 +167,11 @@ export interface Settings {
     redirectToHttps: boolean;
     showDebug: boolean;
 }
+
+export const PATHS = {
+    Main: 'main',
+    Last: 'last-time',
+    Stopwatch: 'stopwatch',
+    Settings: 'settings',
+    Debug: 'debug',
+};

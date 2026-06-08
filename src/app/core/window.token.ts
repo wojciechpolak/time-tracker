@@ -1,7 +1,7 @@
 /**
- * core
+ * window.token
  *
- * Time Tracker Copyright (C) 2023-2025 Wojciech Polak
+ * Time Tracker Copyright (C) 2026 Wojciech Polak
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,20 +17,6 @@
  * with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Provider } from '@angular/core';
-import { LocalStorageService, SessionStorageService } from '../services/storage.service';
-import { LoggerService } from '../services/logger.service';
-import { WINDOW_TOKEN } from './window.token';
+import { InjectionToken } from '@angular/core';
 
-export function provideCore(): Provider[] {
-    return [
-        LoggerService,
-        LocalStorageService,
-        SessionStorageService,
-        { provide: WINDOW_TOKEN, useFactory: getWindow },
-    ];
-}
-
-function getWindow() {
-    return window;
-}
+export const WINDOW_TOKEN = new InjectionToken<Window>('WINDOW_TOKEN');

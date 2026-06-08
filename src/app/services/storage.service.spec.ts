@@ -21,7 +21,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LocalStorageService, SessionStorageService, StorageService } from './storage.service';
-import { WINDOW_TOKEN } from '../core/core';
+import { WINDOW_TOKEN } from '../core/window.token';
 
 class FakeStorage implements Storage {
     [key: string]: unknown;

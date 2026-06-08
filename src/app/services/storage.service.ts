@@ -18,7 +18,7 @@
  */
 
 import { inject, Injectable } from '@angular/core';
-import { WINDOW_TOKEN } from '../core/core';
+import { WINDOW_TOKEN } from '../core/window.token';
 
 export abstract class StorageService {
     protected abstract $s: Storage;

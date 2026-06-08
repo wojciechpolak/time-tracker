@@ -20,10 +20,9 @@
 import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 
-import { AppTitle } from '../../models';
+import { AppTitle, PATHS } from '../../models';
 import { AppMaterialModules } from '../../app-modules';
 import { DataService } from '../../services/data.service';
-import { PATHS } from '../../app.routes';
 import { SettingsService } from '../../settings/settings.service';
 import { StopwatchComponent } from '../stopwatch.component';
 import { StopwatchStore } from '../../store/stopwatch.store';

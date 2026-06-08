@@ -25,14 +25,7 @@ import { LastTimeListComponent } from './last-time/list/last-time-list.component
 import { MainComponent } from './main/main.component';
 import { SettingsComponent } from './settings/settings.component';
 import { StopwatchListComponent } from './stopwatch/list/stopwatch-list.component';
-
-export const PATHS = {
-    Main: 'main',
-    Last: 'last-time',
-    Stopwatch: 'stopwatch',
-    Settings: 'settings',
-    Debug: 'debug',
-};
+import { PATHS } from './models';
 
 export const routes: Routes = [
     {

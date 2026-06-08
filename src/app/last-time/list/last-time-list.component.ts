@@ -23,9 +23,9 @@ import { AsyncPipe } from '@angular/common';
 import { AppMaterialModules } from '../../app-modules';
 import { DataService } from '../../services/data.service';
 import { LastTimeComponent } from '../last-time.component';
-import { PATHS } from '../../app.routes';
 import { SettingsService } from '../../settings/settings.service';
 import { LastTimeStore } from '../../store/last-time.store';
+import { PATHS } from '../../models';
 
 @Component({
     selector: 'app-last-time-list',

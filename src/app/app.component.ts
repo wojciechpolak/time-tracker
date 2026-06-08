@@ -29,8 +29,8 @@ import { AppMaterialModules } from './app-modules';
 import { DataService } from './services/data.service';
 import { DbService } from './services/db.service';
 import { LoggerService } from './services/logger.service';
-import { PATHS } from './app.routes';
 import { SettingsService } from './settings/settings.service';
+import { PATHS } from './models';
 
 @Component({
     selector: 'app-root',

@@ -19,6 +19,7 @@
         "curly": ["error", "all"],
         "no-class-assign": "off",
         "no-const-assign": "off",
+        "no-debugger": "error",
         "no-dupe-class-members": "off",
         "no-dupe-keys": "off",
         "no-func-assign": "off",

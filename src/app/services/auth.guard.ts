@@ -20,7 +20,8 @@
 import { inject, Injectable } from '@angular/core';
 import { GuardResult, MaybeAsync, Router } from '@angular/router';
 import { SettingsService } from '../settings/settings.service';
-import { PATHS } from '../app.routes';
+
+import { PATHS } from '../models';
 
 @Injectable({
     providedIn: 'root',

@@ -29,6 +29,7 @@ yarn-error.log
 .history/*
 
 # Miscellaneous
+.fallow/
 .nx/
 /.angular/cache
 .sass-cache/
