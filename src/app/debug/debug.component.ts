@@ -22,6 +22,7 @@ import { AsyncPipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 
 import { AppMaterialModules } from '../app-modules';
+import { ConfirmService } from '../services/confirm.service';
 import { DbService } from '../services/db.service';
 import { LoggerService } from '../services/logger.service';
 
@@ -31,6 +32,7 @@ import { LoggerService } from '../services/logger.service';
     imports: [...AppMaterialModules, AsyncPipe],
 })
 export class DebugComponent implements OnInit, OnDestroy {
+    private confirmService = inject(ConfirmService);
     private dbService = inject(DbService);
     private loggerService = inject(LoggerService);
 
@@ -58,14 +60,24 @@ export class DebugComponent implements OnInit, OnDestroy {
         return await this.dbService.getStorageEstimated();
     }
 
-    deleteAll() {
-        if (confirm('Confirm?')) {
+    async deleteAll() {
+        const confirmed = await this.confirmService.confirm({
+            title: 'Delete all data',
+            message: 'Are you sure you want to delete all data?',
+            confirmText: 'Delete',
+        });
+        if (confirmed) {
             this.dbService.deleteAll();
         }
     }
 
-    clearLocalDB() {
-        if (confirm('Confirm?')) {
+    async clearLocalDB() {
+        const confirmed = await this.confirmService.confirm({
+            title: 'Clear local database',
+            message: 'Are you sure you want to clear the local database?',
+            confirmText: 'Clear',
+        });
+        if (confirmed) {
             this.dbService.clearLocalDB();
         }
     }

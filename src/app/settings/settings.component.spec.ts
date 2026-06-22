@@ -26,6 +26,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DataService } from '../services/data.service';
 import { DbService } from '../services/db.service';
+import { ConfirmService } from '../services/confirm.service';
 import { LoggerService } from '../services/logger.service';
 import { SettingsComponent } from './settings.component';
 import { SettingsService } from './settings.service';
@@ -72,6 +73,9 @@ describe('SettingsComponent', () => {
     const snackBarStub = {
         open: vi.fn().mockReturnValue({ onAction: () => of(undefined) }),
     };
+    const confirmServiceStub = {
+        confirm: vi.fn().mockResolvedValue(true),
+    };
     const swUpdateStub = {
         isEnabled: false,
         checkForUpdate: vi.fn().mockResolvedValue(false),
@@ -90,6 +94,7 @@ describe('SettingsComponent', () => {
                 { provide: SettingsService, useValue: settingsServiceStub },
                 { provide: SwUpdate, useValue: swUpdateStub },
                 { provide: MatSnackBar, useValue: snackBarStub },
+                { provide: ConfirmService, useValue: confirmServiceStub },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
@@ -252,14 +257,14 @@ describe('SettingsComponent', () => {
     });
 
     it('dbImport calls dbService.importDb when confirmed', async () => {
-        vi.spyOn(window, 'confirm').mockReturnValue(true);
+        confirmServiceStub.confirm.mockResolvedValue(true);
         await component.dbImport(new Event('click'));
         expect(dbServiceStub.importDb).toHaveBeenCalled();
         expect(snackBarStub.open).toHaveBeenCalledWith('Database imported', 'OK');
     });
 
     it('dbImport does nothing when cancelled', async () => {
-        vi.spyOn(window, 'confirm').mockReturnValue(false);
+        confirmServiceStub.confirm.mockResolvedValue(false);
         await component.dbImport(new Event('click'));
         expect(dbServiceStub.importDb).not.toHaveBeenCalled();
     });

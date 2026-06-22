@@ -25,6 +25,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LastTime, TimeStamp, Types } from '../models';
 import { LastTimeStore } from '../store/last-time.store';
 import { TimerService } from '../services/timer.service';
+import { ConfirmService } from '../services/confirm.service';
 import { LastTimeComponent } from './last-time.component';
 
 const makeTS = (id: string, ref: string, ts: number): TimeStamp => ({
@@ -54,6 +55,10 @@ const mockLastTimeStore = {
 
 const mockTimerService = { timer$: of(0) };
 
+const mockConfirmService = {
+    confirm: vi.fn().mockResolvedValue(true),
+};
+
 async function createFixture(initialItem: LastTime): Promise<ComponentFixture<LastTimeComponent>> {
     await TestBed.configureTestingModule({
         imports: [LastTimeComponent],
@@ -61,6 +66,7 @@ async function createFixture(initialItem: LastTime): Promise<ComponentFixture<La
             provideZonelessChangeDetection(),
             { provide: LastTimeStore, useValue: mockLastTimeStore },
             { provide: TimerService, useValue: mockTimerService },
+            { provide: ConfirmService, useValue: mockConfirmService },
         ],
         schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -275,9 +281,16 @@ describe('LastTimeComponent', () => {
             expect(mockLastTimeStore.touchLastTime).toHaveBeenCalledOnce();
         });
 
-        it('deleteItem delegates to the store', () => {
-            component.deleteItem();
+        it('deleteItem delegates to the store when confirmed', async () => {
+            mockConfirmService.confirm.mockResolvedValue(true);
+            await component.deleteItem();
             expect(mockLastTimeStore.deleteLastTime).toHaveBeenCalledOnce();
+        });
+
+        it('deleteItem does nothing when cancelled', async () => {
+            mockConfirmService.confirm.mockResolvedValue(false);
+            await component.deleteItem();
+            expect(mockLastTimeStore.deleteLastTime).not.toHaveBeenCalled();
         });
     });
 
@@ -338,25 +351,33 @@ describe('LastTimeComponent', () => {
             component = fixture.componentInstance;
         });
 
-        it('calls updateTimeStamp when confirmed', () => {
-            vi.spyOn(window, 'confirm').mockReturnValue(true);
+        it('calls updateTimeStamp when confirmed', async () => {
+            mockConfirmService.confirm.mockResolvedValue(true);
             const comp = component as unknown as {
-                modifyTimestamp(evt: { value: Date | null }, ts: TimeStamp, idx: number): void;
+                modifyTimestamp(
+                    evt: { value: Date | null },
+                    ts: TimeStamp,
+                    idx: number,
+                ): Promise<void>;
             };
             const newDate = new Date('2024-01-15T12:00:00.000Z');
-            comp.modifyTimestamp({ value: newDate }, ts, 0);
+            await comp.modifyTimestamp({ value: newDate }, ts, 0);
             expect(mockLastTimeStore.updateTimeStamp).toHaveBeenCalledWith({
                 timestamp: ts,
                 newTs: newDate.valueOf(),
             });
         });
 
-        it('does nothing when confirm is cancelled', () => {
-            vi.spyOn(window, 'confirm').mockReturnValue(false);
+        it('does nothing when confirm is cancelled', async () => {
+            mockConfirmService.confirm.mockResolvedValue(false);
             const comp = component as unknown as {
-                modifyTimestamp(evt: { value: Date | null }, ts: TimeStamp, idx: number): void;
+                modifyTimestamp(
+                    evt: { value: Date | null },
+                    ts: TimeStamp,
+                    idx: number,
+                ): Promise<void>;
             };
-            comp.modifyTimestamp({ value: new Date() }, ts, 0);
+            await comp.modifyTimestamp({ value: new Date() }, ts, 0);
             expect(mockLastTimeStore.updateTimeStamp).not.toHaveBeenCalled();
         });
     });
@@ -370,21 +391,21 @@ describe('LastTimeComponent', () => {
             component = fixture.componentInstance;
         });
 
-        it('calls deleteTimeStamp when confirmed', () => {
-            vi.spyOn(window, 'confirm').mockReturnValue(true);
+        it('calls deleteTimeStamp when confirmed', async () => {
+            mockConfirmService.confirm.mockResolvedValue(true);
             const comp = component as unknown as {
-                removeTimestamp(ts: TimeStamp, idx: number): void;
+                removeTimestamp(ts: TimeStamp, idx: number): Promise<void>;
             };
-            comp.removeTimestamp(ts, 0);
+            await comp.removeTimestamp(ts, 0);
             expect(mockLastTimeStore.deleteTimeStamp).toHaveBeenCalledWith(ts);
         });
 
-        it('does nothing when confirm is cancelled', () => {
-            vi.spyOn(window, 'confirm').mockReturnValue(false);
+        it('does nothing when confirm is cancelled', async () => {
+            mockConfirmService.confirm.mockResolvedValue(false);
             const comp = component as unknown as {
-                removeTimestamp(ts: TimeStamp, idx: number): void;
+                removeTimestamp(ts: TimeStamp, idx: number): Promise<void>;
             };
-            comp.removeTimestamp(ts, 0);
+            await comp.removeTimestamp(ts, 0);
             expect(mockLastTimeStore.deleteTimeStamp).not.toHaveBeenCalled();
         });
     });

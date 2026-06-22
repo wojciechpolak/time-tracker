@@ -32,6 +32,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { z } from 'zod';
 
 import { AppMaterialModules } from '../app-modules';
+import { ConfirmService } from '../services/confirm.service';
 import { DataService } from '../services/data.service';
 import { DbService } from '../services/db.service';
 import { LoggerService } from '../services/logger.service';
@@ -67,6 +68,7 @@ function firebaseConfigValidator(control: AbstractControl): ValidationErrors | n
     imports: [...AppMaterialModules, ReactiveFormsModule, KeyValuePipe, AsyncPipe],
 })
 export class SettingsComponent implements OnInit {
+    private confirmService = inject(ConfirmService);
     private dataService = inject(DataService);
     private dbService = inject(DbService);
     private loggerService = inject(LoggerService);
@@ -181,7 +183,12 @@ export class SettingsComponent implements OnInit {
 
     async dbImport($event: Event) {
         $event.preventDefault();
-        if (confirm('Confirm?')) {
+        const confirmed = await this.confirmService.confirm({
+            title: 'Import database',
+            message: 'Are you sure you want to import the database?',
+            confirmText: 'Import',
+        });
+        if (confirmed) {
             await this.dbService.importDb(this.importFile);
             this.importFileReady = false;
             this.snackBar.open('Database imported', 'OK');

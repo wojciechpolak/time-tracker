@@ -35,6 +35,7 @@ import { map } from 'rxjs/operators';
 import { MtxDatetimepickerInputEvent } from '@ng-matero/extensions/datetimepicker';
 
 import { AppMaterialModules } from '../app-modules';
+import { ConfirmService } from '../services/confirm.service';
 import { LastTime, StatsContent, StatsFreq, TimeStamp } from '../models';
 import { TimerService } from '../services/timer.service';
 import { UtilsService } from '../services/utils.service';
@@ -53,6 +54,7 @@ import { LastTimeStore } from '../store/last-time.store';
     ],
 })
 export class LastTimeComponent implements OnInit, OnChanges {
+    private confirmService = inject(ConfirmService);
     private lastTimeStore = inject(LastTimeStore);
     private timerService = inject(TimerService);
 
@@ -115,7 +117,15 @@ export class LastTimeComponent implements OnInit, OnChanges {
         this.lastTimeStore.touchLastTime(this.item());
     }
 
-    deleteItem() {
+    async deleteItem(): Promise<void> {
+        const confirmed = await this.confirmService.confirm({
+            title: 'Remove item',
+            message: 'Do you confirm removing this item?',
+            confirmText: 'Remove',
+        });
+        if (!confirmed) {
+            return;
+        }
         this.isWaiting = true;
         this.lastTimeStore.deleteLastTime(this.item());
         this.isWaiting = false;
@@ -143,27 +153,34 @@ export class LastTimeComponent implements OnInit, OnChanges {
         }
     }
 
-    modifyTimestamp(
+    async modifyTimestamp(
         datePickerEvent: MtxDatetimepickerInputEvent<Date>,
         ts: TimeStamp,
         idx: number,
-    ): void {
+    ): Promise<void> {
         const newTs = datePickerEvent.value?.valueOf() ?? 0;
-        if (
-            confirm(
+        const confirmed = await this.confirmService.confirm({
+            title: 'Change timestamp',
+            message:
                 'Do you want to change timestamp #' +
-                    (idx + 1) +
-                    ' to ' +
-                    UtilsService.toDate(newTs) +
-                    '?',
-            )
-        ) {
+                (idx + 1) +
+                ' to ' +
+                UtilsService.toDate(newTs) +
+                '?',
+            confirmText: 'Change',
+        });
+        if (confirmed) {
             this.lastTimeStore.updateTimeStamp({ timestamp: ts, newTs });
         }
     }
 
-    removeTimestamp(ts: TimeStamp, idx: number) {
-        if (confirm('Do you confirm removing timestamp #' + (idx + 1))) {
+    async removeTimestamp(ts: TimeStamp, idx: number): Promise<void> {
+        const confirmed = await this.confirmService.confirm({
+            title: 'Remove timestamp',
+            message: 'Do you confirm removing timestamp #' + (idx + 1) + '?',
+            confirmText: 'Remove',
+        });
+        if (confirmed) {
             this.lastTimeStore.deleteTimeStamp(ts);
         }
     }

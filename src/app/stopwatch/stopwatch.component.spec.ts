@@ -24,6 +24,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Stopwatch, StopwatchEvent, Types } from '../models';
 import { StopwatchComponent } from './stopwatch.component';
+import { ConfirmService } from '../services/confirm.service';
 import { LoggerService } from '../services/logger.service';
 import { StopwatchStore } from '../store/stopwatch.store';
 import { StopwatchService } from './stopwatch.service';
@@ -80,6 +81,10 @@ const mockStopwatchService = {
 
 const mockTimerService = { timer$: of(0) };
 
+const mockConfirmService = {
+    confirm: vi.fn().mockResolvedValue(true),
+};
+
 async function createFixture(
     initialItem: Stopwatch,
 ): Promise<ComponentFixture<StopwatchComponent>> {
@@ -91,6 +96,7 @@ async function createFixture(
             { provide: StopwatchStore, useValue: mockStopwatchStore },
             { provide: StopwatchService, useValue: mockStopwatchService },
             { provide: TimerService, useValue: mockTimerService },
+            { provide: ConfirmService, useValue: mockConfirmService },
         ],
         schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -313,21 +319,21 @@ describe('StopwatchComponent', () => {
             component = fixture.componentInstance;
         });
 
-        it('calls deleteStopwatchEvent when confirmed', () => {
-            vi.spyOn(window, 'confirm').mockReturnValue(true);
+        it('calls deleteStopwatchEvent when confirmed', async () => {
+            mockConfirmService.confirm.mockResolvedValue(true);
             const comp = component as unknown as {
-                removeEvent(ev: StopwatchEvent, idx: number): void;
+                removeEvent(ev: StopwatchEvent, idx: number): Promise<void>;
             };
-            comp.removeEvent(event, 0);
+            await comp.removeEvent(event, 0);
             expect(mockStopwatchStore.deleteStopwatchEvent).toHaveBeenCalledWith(event);
         });
 
-        it('does nothing when confirm is cancelled', () => {
-            vi.spyOn(window, 'confirm').mockReturnValue(false);
+        it('does nothing when confirm is cancelled', async () => {
+            mockConfirmService.confirm.mockResolvedValue(false);
             const comp = component as unknown as {
-                removeEvent(ev: StopwatchEvent, idx: number): void;
+                removeEvent(ev: StopwatchEvent, idx: number): Promise<void>;
             };
-            comp.removeEvent(event, 0);
+            await comp.removeEvent(event, 0);
             expect(mockStopwatchStore.deleteStopwatchEvent).not.toHaveBeenCalled();
         });
     });
@@ -372,25 +378,33 @@ describe('StopwatchComponent', () => {
             component = fixture.componentInstance;
         });
 
-        it('calls updateStopwatchEvent when confirmed', () => {
-            vi.spyOn(window, 'confirm').mockReturnValue(true);
+        it('calls updateStopwatchEvent when confirmed', async () => {
+            mockConfirmService.confirm.mockResolvedValue(true);
             const comp = component as unknown as {
-                modifyEvent(evt: { value: Date | null }, ev: StopwatchEvent, idx: number): void;
+                modifyEvent(
+                    evt: { value: Date | null },
+                    ev: StopwatchEvent,
+                    idx: number,
+                ): Promise<void>;
             };
             const newDate = new Date('2024-01-15T12:00:00.000Z');
-            comp.modifyEvent({ value: newDate }, event, 0);
+            await comp.modifyEvent({ value: newDate }, event, 0);
             expect(mockStopwatchStore.updateStopwatchEvent).toHaveBeenCalledWith({
                 event,
                 ts: newDate.valueOf(),
             });
         });
 
-        it('does nothing when confirm is cancelled', () => {
-            vi.spyOn(window, 'confirm').mockReturnValue(false);
+        it('does nothing when confirm is cancelled', async () => {
+            mockConfirmService.confirm.mockResolvedValue(false);
             const comp = component as unknown as {
-                modifyEvent(evt: { value: Date | null }, ev: StopwatchEvent, idx: number): void;
+                modifyEvent(
+                    evt: { value: Date | null },
+                    ev: StopwatchEvent,
+                    idx: number,
+                ): Promise<void>;
             };
-            comp.modifyEvent({ value: new Date() }, event, 0);
+            await comp.modifyEvent({ value: new Date() }, event, 0);
             expect(mockStopwatchStore.updateStopwatchEvent).not.toHaveBeenCalled();
         });
     });
@@ -405,15 +419,15 @@ describe('StopwatchComponent', () => {
             component = fixture.componentInstance;
         });
 
-        it('calls deleteStopwatch when confirmed', () => {
-            vi.spyOn(window, 'confirm').mockReturnValue(true);
-            component.deleteItem();
+        it('calls deleteStopwatch when confirmed', async () => {
+            mockConfirmService.confirm.mockResolvedValue(true);
+            await component.deleteItem();
             expect(mockStopwatchStore.deleteStopwatch).toHaveBeenCalled();
         });
 
-        it('does nothing when confirm is cancelled', () => {
-            vi.spyOn(window, 'confirm').mockReturnValue(false);
-            component.deleteItem();
+        it('does nothing when confirm is cancelled', async () => {
+            mockConfirmService.confirm.mockResolvedValue(false);
+            await component.deleteItem();
             expect(mockStopwatchStore.deleteStopwatch).not.toHaveBeenCalled();
         });
     });

@@ -24,6 +24,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DbService } from '../services/db.service';
 import { LoggerService } from '../services/logger.service';
+import { ConfirmService } from '../services/confirm.service';
 import { DebugComponent } from './debug.component';
 
 describe('DebugComponent', () => {
@@ -34,6 +35,9 @@ describe('DebugComponent', () => {
         getStorageEstimated: ReturnType<typeof vi.fn>;
         deleteAll: ReturnType<typeof vi.fn>;
         clearLocalDB: ReturnType<typeof vi.fn>;
+    };
+    let mockConfirmService: {
+        confirm: ReturnType<typeof vi.fn>;
     };
     let mockLoggerService: {
         buf: string[];
@@ -55,6 +59,9 @@ describe('DebugComponent', () => {
             clear: vi.fn(),
             log: vi.fn(),
         };
+        mockConfirmService = {
+            confirm: vi.fn().mockResolvedValue(true),
+        };
 
         await TestBed.configureTestingModule({
             imports: [DebugComponent],
@@ -62,6 +69,7 @@ describe('DebugComponent', () => {
                 provideZonelessChangeDetection(),
                 { provide: DbService, useValue: mockDbService },
                 { provide: LoggerService, useValue: mockLoggerService },
+                { provide: ConfirmService, useValue: mockConfirmService },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
@@ -121,31 +129,31 @@ describe('DebugComponent', () => {
         expect(result).toBe('1 KB');
     });
 
-    it('deleteAll calls dbService.deleteAll when confirmed', () => {
+    it('deleteAll calls dbService.deleteAll when confirmed', async () => {
         fixture.detectChanges();
-        vi.spyOn(window, 'confirm').mockReturnValue(true);
-        component.deleteAll();
+        mockConfirmService.confirm.mockResolvedValue(true);
+        await component.deleteAll();
         expect(mockDbService.deleteAll).toHaveBeenCalled();
     });
 
-    it('deleteAll does nothing when cancelled', () => {
+    it('deleteAll does nothing when cancelled', async () => {
         fixture.detectChanges();
-        vi.spyOn(window, 'confirm').mockReturnValue(false);
-        component.deleteAll();
+        mockConfirmService.confirm.mockResolvedValue(false);
+        await component.deleteAll();
         expect(mockDbService.deleteAll).not.toHaveBeenCalled();
     });
 
-    it('clearLocalDB calls dbService.clearLocalDB when confirmed', () => {
+    it('clearLocalDB calls dbService.clearLocalDB when confirmed', async () => {
         fixture.detectChanges();
-        vi.spyOn(window, 'confirm').mockReturnValue(true);
-        component.clearLocalDB();
+        mockConfirmService.confirm.mockResolvedValue(true);
+        await component.clearLocalDB();
         expect(mockDbService.clearLocalDB).toHaveBeenCalled();
     });
 
-    it('clearLocalDB does nothing when cancelled', () => {
+    it('clearLocalDB does nothing when cancelled', async () => {
         fixture.detectChanges();
-        vi.spyOn(window, 'confirm').mockReturnValue(false);
-        component.clearLocalDB();
+        mockConfirmService.confirm.mockResolvedValue(false);
+        await component.clearLocalDB();
         expect(mockDbService.clearLocalDB).not.toHaveBeenCalled();
     });
 

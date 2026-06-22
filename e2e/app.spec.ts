@@ -119,6 +119,7 @@ test.describe('Time Tracker', () => {
 
         await openCardActions(card);
         await page.getByRole('menuitem', { name: 'Delete' }).click();
+        await page.getByRole('button', { name: 'Remove' }).click();
 
         await expect(page.getByText('Empty list')).toBeVisible();
     });
@@ -180,9 +181,9 @@ test.describe('Time Tracker', () => {
         await page.getByRole('menuitem', { name: 'Show Rounds' }).click();
         await expect(card.getByText('Round #2')).toBeVisible();
 
-        page.once('dialog', (dialog) => dialog.accept());
         await openCardActions(card);
         await page.getByRole('menuitem', { name: 'Delete' }).click();
+        await page.getByRole('button', { name: 'Remove' }).click();
 
         await expect(page.getByText('Empty list')).toBeVisible();
     });

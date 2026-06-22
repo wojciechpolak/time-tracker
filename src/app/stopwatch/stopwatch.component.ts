@@ -36,6 +36,7 @@ import { ChartConfiguration } from 'chart.js';
 import { MtxDatetimepickerInputEvent } from '@ng-matero/extensions/datetimepicker';
 
 import { AppMaterialModules } from '../app-modules';
+import { ConfirmService } from '../services/confirm.service';
 import { LoggerService } from '../services/logger.service';
 import {
     StatsAvgDay,
@@ -64,6 +65,7 @@ import { StopwatchStore } from '../store/stopwatch.store';
     ],
 })
 export class StopwatchComponent implements OnChanges, OnInit {
+    private confirmService = inject(ConfirmService);
     private loggerService = inject(LoggerService);
     private stopwatchService = inject(StopwatchService);
     private stopwatchStore = inject(StopwatchStore);
@@ -239,8 +241,13 @@ export class StopwatchComponent implements OnChanges, OnInit {
         this.stopwatchStore.addStopwatchEvent({ stopwatchId: this.item()._id, newRound, isStart });
     }
 
-    removeEvent(event: StopwatchEvent, idx: number): void {
-        if (!confirm('Do you confirm removing Stopwatch event #' + (idx + 1))) {
+    async removeEvent(event: StopwatchEvent, idx: number): Promise<void> {
+        const confirmed = await this.confirmService.confirm({
+            title: 'Remove event',
+            message: 'Do you confirm removing Stopwatch event #' + (idx + 1) + '?',
+            confirmText: 'Remove',
+        });
+        if (!confirmed) {
             return;
         }
         this.loggerService.log('Removing stopwatch event', idx);
@@ -255,28 +262,35 @@ export class StopwatchComponent implements OnChanges, OnInit {
         }
     }
 
-    modifyEvent(
+    async modifyEvent(
         datePickerEvent: MtxDatetimepickerInputEvent<Date>,
         event: StopwatchEvent,
         idx: number,
-    ): void {
+    ): Promise<void> {
         const ts = datePickerEvent.value?.valueOf() ?? 0;
-        if (
-            confirm(
+        const confirmed = await this.confirmService.confirm({
+            title: 'Change event',
+            message:
                 'Do you want to change event #' +
-                    (idx + 1) +
-                    ' to ' +
-                    UtilsService.toDate(ts) +
-                    '?',
-            )
-        ) {
+                (idx + 1) +
+                ' to ' +
+                UtilsService.toDate(ts) +
+                '?',
+            confirmText: 'Change',
+        });
+        if (confirmed) {
             this.stopwatchStore.updateStopwatchEvent({ event, ts });
             this.cacheLastNumberOfItems = 0;
         }
     }
 
-    deleteItem() {
-        if (!confirm('Do you confirm removing stopwatch')) {
+    async deleteItem(): Promise<void> {
+        const confirmed = await this.confirmService.confirm({
+            title: 'Remove stopwatch',
+            message: 'Do you confirm removing stopwatch?',
+            confirmText: 'Remove',
+        });
+        if (!confirmed) {
             return;
         }
         this.isWaiting = true;
