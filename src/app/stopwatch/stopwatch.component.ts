@@ -96,8 +96,14 @@ export class StopwatchComponent implements OnChanges, OnInit {
     protected barChartOptions: ChartConfiguration['options'] = {
         responsive: true,
         scales: {
-            x: {},
-            y: {},
+            x: {
+                ticks: { color: UtilsService.chartTheme().tick },
+                grid: { color: UtilsService.chartTheme().grid },
+            },
+            y: {
+                ticks: { color: UtilsService.chartTheme().tick },
+                grid: { color: UtilsService.chartTheme().grid },
+            },
         },
         plugins: {
             legend: {
@@ -341,7 +347,7 @@ export class StopwatchComponent implements OnChanges, OnInit {
                 datasets: [
                     {
                         data: tmpSecs.map((item: number) => Math.round(item / 60)),
-                        backgroundColor: 'rgb(255, 99, 132, 0.6)',
+                        backgroundColor: UtilsService.chartTheme().bar,
                     },
                 ],
             },

@@ -190,9 +190,27 @@ export class UtilsService {
             datasets: [
                 {
                     data: ret.map((item) => item.value),
-                    backgroundColor: 'rgb(255, 99, 132, 0.6)',
+                    backgroundColor: UtilsService.chartTheme().bar,
                 },
             ],
+        };
+    }
+
+    /** Whether the OS currently prefers a dark color scheme. */
+    static prefersDark(): boolean {
+        return (
+            typeof window !== 'undefined' &&
+            window.matchMedia?.('(prefers-color-scheme: dark)').matches === true
+        );
+    }
+
+    /** Warm "paper" chart colors that read well in both light and dark mode. */
+    static chartTheme(): { bar: string; tick: string; grid: string } {
+        const dark = UtilsService.prefersDark();
+        return {
+            bar: dark ? 'rgba(232, 154, 120, 0.85)' : 'rgba(166, 91, 60, 0.75)',
+            tick: dark ? '#b8a999' : '#8c7e6d',
+            grid: dark ? 'rgba(240, 224, 206, 0.1)' : 'rgba(74, 54, 38, 0.1)',
         };
     }
 

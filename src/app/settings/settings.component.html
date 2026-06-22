@@ -136,7 +136,8 @@
           <p>
             <button mat-raised-button color="primary" (click)="dbExport($event)">DB Export</button>
           </p>
-          <p>
+          <p class="import-row">
+            <input id="fileSelector" type="file" (change)="importFileChange($event)" />
             <button
               mat-raised-button
               color="warn"
@@ -145,7 +146,6 @@
             >
               DB Import
             </button>
-            <input id="fileSelector" type="file" (change)="importFileChange($event)" />
           </p>
         </div>
       </mat-card-content>

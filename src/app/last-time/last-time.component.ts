@@ -71,8 +71,14 @@ export class LastTimeComponent implements OnInit, OnChanges {
     protected barChartOptions: ChartConfiguration['options'] = {
         responsive: true,
         scales: {
-            x: {},
-            y: {},
+            x: {
+                ticks: { color: UtilsService.chartTheme().tick },
+                grid: { color: UtilsService.chartTheme().grid },
+            },
+            y: {
+                ticks: { color: UtilsService.chartTheme().tick },
+                grid: { color: UtilsService.chartTheme().grid },
+            },
         },
         plugins: {
             legend: {
