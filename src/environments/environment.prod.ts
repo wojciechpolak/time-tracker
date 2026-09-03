@@ -1,4 +1,4 @@
-import { withDevToolsStub } from '@angular-architects/ngrx-toolkit';
+import { withDevToolsStub } from '@ngrx-toolkit/core';
 import { gitVersion } from './git-version';
 
 export const environment = {

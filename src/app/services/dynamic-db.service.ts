@@ -38,7 +38,9 @@ export class DynamicDbService extends DbService {
     private dbChangeSubscription!: Subscription;
     private remoteDbErrorSubscription!: Subscription;
 
-    // Promise to track DB load readiness
+    // Promise to track DB load readiness. The engine is imported dynamically,
+    // so `dbService` stays undefined until that resolves; the delegating
+    // methods below await this before touching it.
     private dbLoadedResolver!: () => void;
     public dbLoaded = new Promise<void>((resolve) => {
         this.dbLoadedResolver = resolve;
@@ -91,11 +93,13 @@ export class DynamicDbService extends DbService {
         return this.dbService?.isSyncError || false;
     }
 
-    override bulkDocs<T>(items: T[]): Promise<DbServiceResponses['bulkDocs']> {
+    override async bulkDocs<T>(items: T[]): Promise<DbServiceResponses['bulkDocs']> {
+        await this.dbLoaded;
         return this.dbService.bulkDocs(items);
     }
 
-    override clearLocalDB(): Promise<void> {
+    override async clearLocalDB(): Promise<void> {
+        await this.dbLoaded;
         return this.dbService.clearLocalDB();
     }
 
@@ -107,7 +111,8 @@ export class DynamicDbService extends DbService {
         this.dbService.openDb();
     }
 
-    override closeDb(): Promise<void> {
+    override async closeDb(): Promise<void> {
+        await this.dbLoaded;
         return this.dbService.closeDb();
     }
 
@@ -115,13 +120,15 @@ export class DynamicDbService extends DbService {
         this.dbService.deleteAll();
     }
 
-    override deleteItem<T extends { _id: string }>(
+    override async deleteItem<T extends { _id: string }>(
         item: T,
     ): Promise<DbServiceResponses['deleteItem']> {
+        await this.dbLoaded;
         return this.dbService.deleteItem(item);
     }
 
-    override deleteItems<T extends { _id: string }>(items: T[]): Promise<void> {
+    override async deleteItems<T extends { _id: string }>(items: T[]): Promise<void> {
+        await this.dbLoaded;
         return this.dbService.deleteItems(items);
     }
 
@@ -129,19 +136,23 @@ export class DynamicDbService extends DbService {
         this.dbService.exportDb();
     }
 
-    override find<T>(props: DbFind): Promise<T[]> {
+    override async find<T>(props: DbFind): Promise<T[]> {
+        await this.dbLoaded;
         return this.dbService.find(props);
     }
 
-    override getItem<T>(id: string): Promise<T> {
+    override async getItem<T>(id: string): Promise<T> {
+        await this.dbLoaded;
         return this.dbService.getItem(id);
     }
 
-    override importDb(file: File | undefined): Promise<void> {
+    override async importDb(file: File | undefined): Promise<void> {
+        await this.dbLoaded;
         return this.dbService.importDb(file);
     }
 
-    override putItem<T extends { _id: string }>(doc: T): Promise<T> {
+    override async putItem<T extends { _id: string }>(doc: T): Promise<T> {
+        await this.dbLoaded;
         return this.dbService.putItem(doc);
     }
 
@@ -153,14 +164,16 @@ export class DynamicDbService extends DbService {
         this.dbService.remoteSyncEnable();
     }
 
-    override getStorageEstimated(): Promise<string> {
+    override async getStorageEstimated(): Promise<string> {
+        await this.dbLoaded;
         return this.dbService.getStorageEstimated();
     }
 
-    override updateItem<T extends { _id: string }>(
+    override async updateItem<T extends { _id: string }>(
         item: T,
         updateFn: (doc: T) => void,
     ): Promise<DbServiceResponses['updateItem']> {
+        await this.dbLoaded;
         return this.dbService.updateItem(item, updateFn);
     }
 }

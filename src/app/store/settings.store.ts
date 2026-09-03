@@ -18,7 +18,7 @@
  */
 
 import { inject } from '@angular/core';
-import { updateState } from '@angular-architects/ngrx-toolkit';
+import { updateState } from '@ngrx-toolkit/core';
 import { signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe } from 'rxjs';

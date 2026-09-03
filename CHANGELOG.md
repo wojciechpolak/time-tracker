@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Redesigned the UI with a warm, minimal "paper" Material 3 theme.
 - Migrated state management to NgRx Signal Store and adopted Angular Signals.
 - Switched to a zoneless application with `OnPush` change detection throughout.
-- Upgraded Angular to v21 and Node.js to v24.
+- Upgraded Angular to v22 and Node.js to v24.
 - Adopted strict TypeScript and upgraded Zod to v4.
 - Migrated linting from ESLint to Oxlint, formatting to Oxfmt, and the test
   runner to Vitest.
