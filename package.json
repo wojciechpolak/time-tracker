@@ -6,6 +6,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:pages": "node git-version-gen.js && ng build --configuration production,pages",
     "prepare": "node git-version-gen.js",
     "prebuild": "node git-version-gen.js",
     "postbuild": "gzipper compress --gzip-level=9 --include js,json,css,html ./dist",

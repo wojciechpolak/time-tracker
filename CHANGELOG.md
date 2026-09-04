@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Material confirm dialog replacing the native browser `confirm()`.
 - Unit test suite (Vitest), Playwright end-to-end tests, and visual
   regression testing.
+- GitHub Pages workflow publishing the app as a static site.
 
 ### Changed
 
