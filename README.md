@@ -11,6 +11,16 @@ so you can easily run it locally or on a server, and access it
 via your favorite web browser or as a PWA from your phone's main
 screen.
 
+> [!TIP]
+> You can use the automatically deployed app at
+> [wojciechpolak.github.io/time-tracker](https://wojciechpolak.github.io/time-tracker/).
+> To run it on your own server, see [Running (out of the box)](#running-out-of-the-box) below.
+
+> [!NOTE]
+> Install Time Tracker as a PWA to launch it from your phone or computer like a
+> native app. It also works offline, so you can keep tracking without an
+> internet connection.
+
 Learn more about the databases used:
 
 - [PouchDB](https://pouchdb.com/)
