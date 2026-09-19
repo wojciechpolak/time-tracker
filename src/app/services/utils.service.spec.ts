@@ -38,6 +38,29 @@ describe('UtilsService', () => {
         expect(UtilsService.getTimestamp(false)).toBe(1_700_000_123);
     });
 
+    it('never repeats a unique timestamp within the same millisecond', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-18T12:00:00.000Z'));
+
+        const first = UtilsService.getUniqueTimestamp();
+        const second = UtilsService.getUniqueTimestamp();
+        const third = UtilsService.getUniqueTimestamp();
+
+        expect(first).toBeGreaterThanOrEqual(Date.now());
+        expect(second).toBe(first + 1);
+        expect(third).toBe(first + 2);
+    });
+
+    it('lets unique timestamps catch up once the clock moves past them', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-18T12:00:00.000Z'));
+        const baseline = UtilsService.getUniqueTimestamp();
+
+        vi.setSystemTime(new Date(baseline + 10_000));
+
+        expect(UtilsService.getUniqueTimestamp()).toBe(Date.now());
+    });
+
     it('rounds timestamps down to the nearest second', () => {
         expect(UtilsService.roundTs(1_234_567)).toBe(1_234_000);
     });

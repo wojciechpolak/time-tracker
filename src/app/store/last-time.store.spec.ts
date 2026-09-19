@@ -153,6 +153,22 @@ describe('LastTimeStore', () => {
 
             expect(store.lastTimeList()).toHaveLength(2);
         });
+
+        it('does not duplicate an item a concurrent reload already loaded', async () => {
+            const newItem = makeLT('LT-new');
+            mockService.fetchLastTimeList.mockResolvedValue([newItem]);
+            mockService.addLastTime.mockImplementation(async () => {
+                // The database change fires while the item is being created.
+                store.loadLastTimeList();
+                await vi.waitFor(() => expect(store.loaded()).toBe(true));
+                return newItem;
+            });
+
+            store.addLastTime();
+            await vi.waitFor(() => expect(store.loading()).toBe(false));
+
+            expect(store.lastTimeList()).toEqual([newItem]);
+        });
     });
 
     describe('touchLastTime', () => {

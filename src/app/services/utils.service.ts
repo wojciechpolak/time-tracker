@@ -34,6 +34,28 @@ export class UtilsService {
         return Math.floor(new Date().getTime() / 1000);
     }
 
+    /** Last value handed out by {@link getUniqueTimestamp}. */
+    private static lastUniqueTs = 0;
+
+    /**
+     * A millisecond timestamp that never repeats within this browsing context.
+     *
+     * Document ids are built from a plain millisecond timestamp and are both
+     * indexed and sorted by the database, so they must stay bare, ascending
+     * numbers. Browsers offer no sub-millisecond wall clock (`performance.now`
+     * is clamped to 100us at best, and to 1ms on Firefox and Safari), so ties
+     * are broken by advancing the clock a millisecond at a time instead. Two
+     * documents created in the same millisecond therefore get consecutive ids
+     * rather than identical ones, at the cost of an id running a few
+     * milliseconds ahead of the wall clock during a burst.
+     */
+    static getUniqueTimestamp(): number {
+        const now = new Date().getTime();
+        const ts = now > UtilsService.lastUniqueTs ? now : UtilsService.lastUniqueTs + 1;
+        UtilsService.lastUniqueTs = ts;
+        return ts;
+    }
+
     static roundTs(ts: number): number {
         return ts - (ts % 1000);
     }

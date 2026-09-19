@@ -125,7 +125,7 @@ export class StopwatchService {
     }
 
     async addStopwatch(): Promise<Stopwatch> {
-        const ts = UtilsService.getTimestamp();
+        const ts = UtilsService.getUniqueTimestamp();
         const stopwatch = {
             _id: Types.STOPWATCH + '-' + ts.toString(),
             type: Types.STOPWATCH,
@@ -157,7 +157,7 @@ export class StopwatchService {
         newRound: boolean = false,
         isStart: boolean,
     ): Promise<StopwatchEvent[]> {
-        let ts = UtilsService.getTimestamp();
+        let ts = UtilsService.getUniqueTimestamp();
         if (newRound && isStart) {
             // let's stop the previous round first
             const event: StopwatchEvent = {
@@ -170,7 +170,7 @@ export class StopwatchService {
             const eventObj1 = await this.dbService.putItem(event);
             eventObj1.inUse = true;
 
-            ts = UtilsService.getTimestamp();
+            ts = UtilsService.getUniqueTimestamp();
             const event2: StopwatchEvent = {
                 _id: Types.STOPWATCH_TS + '-' + ts.toString(),
                 ref: id,

@@ -156,6 +156,22 @@ describe('StopwatchStore', () => {
             await vi.waitFor(() => expect(store.stopwatches()[0]).toEqual(newItem));
             expect(store.stopwatches()).toHaveLength(2);
         });
+
+        it('does not duplicate a stopwatch a concurrent reload already loaded', async () => {
+            const newItem = makeSW('SW-new');
+            mockService.fetchStopwatchList.mockResolvedValue([newItem]);
+            mockService.addStopwatch.mockImplementation(async () => {
+                // The database change fires while the item is being created.
+                store.loadStopwatches();
+                await vi.waitFor(() => expect(store.loaded()).toBe(true));
+                return newItem;
+            });
+
+            store.addStopwatch();
+            await vi.waitFor(() => expect(store.loading()).toBe(false));
+
+            expect(store.stopwatches()).toEqual([newItem]);
+        });
     });
 
     describe('addStopwatchEvent', () => {

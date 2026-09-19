@@ -58,6 +58,7 @@ describe('LastTimeService', () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
+        vi.useRealTimers();
     });
 
     beforeEach(() => {
@@ -195,7 +196,7 @@ describe('LastTimeService', () => {
         const created = createLastTime('LT-123456', [
             createTimestamp('LT-TS-123456', 'LT-123456', 123456),
         ]);
-        vi.spyOn(UtilsService, 'getTimestamp').mockReturnValue(123456);
+        vi.spyOn(UtilsService, 'getUniqueTimestamp').mockReturnValue(123456);
         vi.spyOn(UtilsService, 'toISOLocalString').mockReturnValue('2025-01-02T03:04:05.000Z');
         vi.spyOn(service, 'fetchLastTime').mockResolvedValue(created);
 
@@ -218,10 +219,30 @@ describe('LastTimeService', () => {
         expect(result).toBe(created);
     });
 
+    it('gives last-time items created in the same millisecond distinct ids', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-18T12:00:00.000Z'));
+        vi.spyOn(service, 'fetchLastTime').mockImplementation(async (id: string) =>
+            createLastTime(id),
+        );
+
+        await service.addLastTime();
+        await service.addLastTime();
+
+        const ids = dbService.putItem.mock.calls.map((call: { _id: string }[]) => call[0]._id);
+        expect(ids).toHaveLength(4);
+        expect(new Set(ids).size).toBe(ids.length);
+        const ts = Number(ids[0].slice(Types.LAST_TIME.length + 1));
+        expect(ts).toBeGreaterThanOrEqual(Date.now());
+        expect(ids[1]).toBe(`${Types.LAST_TIME_TS}-${ts}`);
+        expect(ids[2]).toBe(`${Types.LAST_TIME}-${ts + 1}`);
+        expect(ids[3]).toBe(`${Types.LAST_TIME_TS}-${ts + 1}`);
+    });
+
     it('touches a last-time item by creating a timestamp', async () => {
         const item = createLastTime('LT-1');
         const timestamp = createTimestamp('LT-TS-999', 'LT-1', 999);
-        vi.spyOn(UtilsService, 'getTimestamp').mockReturnValue(999);
+        vi.spyOn(UtilsService, 'getUniqueTimestamp').mockReturnValue(999);
         dbService.putItem.mockResolvedValue(timestamp);
 
         await expect(service.touch(item)).resolves.toBe(timestamp);

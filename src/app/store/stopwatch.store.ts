@@ -140,7 +140,12 @@ export const StopwatchStore = signalStore(
                         tap((stopwatch) =>
                             updateState(store, Actions.addStopwatch, (state) => ({
                                 loading: false,
-                                stopwatches: [stopwatch, ...state.stopwatches],
+                                // A reload triggered by the database change may
+                                // have already picked the new stopwatch up.
+                                stopwatches: [
+                                    stopwatch,
+                                    ...state.stopwatches.filter((sw) => sw._id !== stopwatch._id),
+                                ],
                             })),
                         ),
                         catchError((error) => {

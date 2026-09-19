@@ -139,7 +139,14 @@ export const LastTimeStore = signalStore(
                         tap((lastTime) =>
                             updateState(store, Actions.addLastTime, (state) => ({
                                 loading: false,
-                                lastTimeList: [lastTime, ...state.lastTimeList],
+                                // A reload triggered by the database change may
+                                // have already picked the new item up.
+                                lastTimeList: [
+                                    lastTime,
+                                    ...state.lastTimeList.filter(
+                                        (item) => item._id !== lastTime._id,
+                                    ),
+                                ],
                             })),
                         ),
                         catchError((error) => {

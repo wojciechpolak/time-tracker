@@ -65,6 +65,7 @@ describe('StopwatchService', () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
+        vi.useRealTimers();
     });
 
     beforeEach(() => {
@@ -213,7 +214,7 @@ describe('StopwatchService', () => {
         const created = createStopwatch('SW-123456', [
             createEvent('SW-TS-123456', 'SW-123456', 123456, true),
         ]);
-        vi.spyOn(UtilsService, 'getTimestamp').mockReturnValue(123456);
+        vi.spyOn(UtilsService, 'getUniqueTimestamp').mockReturnValue(123456);
         vi.spyOn(UtilsService, 'toISOLocalString').mockReturnValue('2025-01-02T03:04:05.000Z');
         vi.spyOn(service, 'fetchStopwatch').mockResolvedValue(created);
 
@@ -236,6 +237,28 @@ describe('StopwatchService', () => {
         });
         expect(loggerService.log).toHaveBeenCalledWith('Successfully posted a new Stopwatch!');
         expect(result).toBe(created);
+    });
+
+    it('gives stopwatches created in the same millisecond distinct ids', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-18T12:00:00.000Z'));
+        vi.spyOn(service, 'fetchStopwatch').mockImplementation(async (id: string) =>
+            createStopwatch(id),
+        );
+
+        await service.addStopwatch();
+        await service.addStopwatch();
+
+        const ids = dbService.putItem.mock.calls.map((call: { _id: string }[]) => call[0]._id);
+        expect(ids).toHaveLength(4);
+        expect(new Set(ids).size).toBe(ids.length);
+
+        const [firstSw, firstEvent, secondSw, secondEvent] = ids;
+        const ts = Number(firstSw.slice(Types.STOPWATCH.length + 1));
+        expect(ts).toBeGreaterThanOrEqual(Date.now());
+        expect(secondSw).toBe(`${Types.STOPWATCH}-${ts + 1}`);
+        expect(firstEvent).toBe(`${Types.STOPWATCH_TS}-${ts}`);
+        expect(secondEvent).toBe(`${Types.STOPWATCH_TS}-${ts + 1}`);
     });
 
     it('updates stopwatches and events through the database service', async () => {
@@ -265,7 +288,7 @@ describe('StopwatchService', () => {
     });
 
     it('adds single stopwatch events and marks them as in use', async () => {
-        vi.spyOn(UtilsService, 'getTimestamp').mockReturnValue(456);
+        vi.spyOn(UtilsService, 'getUniqueTimestamp').mockReturnValue(456);
         dbService.putItem.mockImplementation(async (event: StopwatchEvent) => ({ ...event }));
 
         const [event] = await service.addEvent('SW-1', false, false);
@@ -285,7 +308,9 @@ describe('StopwatchService', () => {
     });
 
     it('creates stop-and-start pairs when beginning a new round', async () => {
-        vi.spyOn(UtilsService, 'getTimestamp').mockReturnValueOnce(1000).mockReturnValueOnce(1001);
+        vi.spyOn(UtilsService, 'getUniqueTimestamp')
+            .mockReturnValueOnce(1000)
+            .mockReturnValueOnce(1001);
         dbService.putItem.mockImplementation(async (event: StopwatchEvent) => ({ ...event }));
 
         const events = await service.addEvent('SW-1', true, true);

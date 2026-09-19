@@ -124,7 +124,7 @@ export class LastTimeService {
     }
 
     async addLastTime(): Promise<LastTime> {
-        const ts = UtilsService.getTimestamp();
+        const ts = UtilsService.getUniqueTimestamp();
         const lastTime = {
             _id: Types.LAST_TIME + '-' + ts.toString(),
             type: Types.LAST_TIME,
@@ -143,7 +143,7 @@ export class LastTimeService {
     }
 
     async touch(item: LastTime): Promise<TimeStamp> {
-        const ts = UtilsService.getTimestamp();
+        const ts = UtilsService.getUniqueTimestamp();
         const timestamp: TimeStamp = {
             _id: Types.LAST_TIME_TS + '-' + ts.toString(),
             ref: item._id,
