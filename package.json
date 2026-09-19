@@ -47,7 +47,6 @@
     "@ngrx-toolkit/core": "^22.0.1",
     "@ngrx/signals": "^22.0.1",
     "@ngrx/store": "^22.0.1",
-    "@typescript-eslint/utils": "^8.69.0",
     "chart.js": "^4.5.1",
     "events": "^3.3.0",
     "firebase": "^12.18.0",

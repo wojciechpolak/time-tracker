@@ -20,7 +20,7 @@
 @use '@angular/material' as mat;
 @use '@ng-matero/extensions' as mtx;
 @use './theme-colors';
-@use '@fontsource/material-icons' as *;
+@use '@fontsource/material-icons/index.css' as *;
 @use '@fontsource/fraunces/400.css' as *;
 @use '@fontsource/fraunces/500.css' as *;
 @use '@fontsource/fraunces/600.css' as *;

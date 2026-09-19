@@ -25,6 +25,7 @@ import {
     signal,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AppTitle, Stopwatch, Types } from '../../models';
@@ -38,7 +39,7 @@ import { StopwatchListComponent } from './stopwatch-list.component';
 // all of StopwatchComponent's transitive dependencies.
 @Component({ selector: 'app-stopwatch', template: '' })
 class StubStopwatchComponent {
-    @Input() item: unknown;
+    @Input() item?: Stopwatch;
 }
 
 const makeSW = (id: string, ssLast: boolean = false): Stopwatch => ({
@@ -130,5 +131,23 @@ describe('StopwatchListComponent', () => {
         stopwatchesSignal.set([makeSW('SW-1', true)]);
         fixture.detectChanges();
         expect(document.title).toBe('🟢 ' + AppTitle);
+    });
+
+    it('renders one child per stopwatch and passes it through', () => {
+        stopwatchesSignal.set([makeSW('SW-1'), makeSW('SW-2')]);
+        fixture.detectChanges();
+        const items = fixture.debugElement
+            .queryAll(By.directive(StubStopwatchComponent))
+            .map((child) => (child.componentInstance as StubStopwatchComponent).item);
+        expect(items.map((item) => item?._id)).toEqual(['SW-1', 'SW-2']);
+    });
+
+    it('renders the empty placeholder when there are no stopwatches', () => {
+        stopwatchesSignal.set([]);
+        fixture.detectChanges();
+        expect(fixture.debugElement.query(By.directive(StubStopwatchComponent))).toBeNull();
+        expect(fixture.nativeElement.querySelector('.empty-list')?.textContent?.trim()).toBe(
+            'Empty list',
+        );
     });
 });
