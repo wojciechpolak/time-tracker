@@ -71,43 +71,50 @@ export class UtilsService {
         return new Date(time.getTime() - time.getTimezoneOffset() * 60000).toISOString();
     }
 
-    static formatFromNow(value: number, fromMs: boolean = true, lang: string = 'en') {
-        if (Intl && Intl.RelativeTimeFormat) {
-            const rtf = new Intl.RelativeTimeFormat(lang, {
-                style: 'long',
-                numeric: 'always',
-            });
-            let secDiff;
-            if (fromMs) {
-                secDiff = Math.floor((new Date().getTime() - value) / 1000);
-            } else {
-                secDiff = Math.floor((new Date().getTime() - value * 1000) / 1000);
-            }
-            let ret;
-            if (secDiff < 60) {
-                ret = rtf.format(-secDiff, 'second');
-            } else if (secDiff < 3600) {
-                ret = rtf.format(-Math.floor(secDiff / 60), 'minute');
-            } else if (secDiff < 86400) {
-                ret = rtf.format(-Math.floor(secDiff / 3600), 'hour');
-            } else if (secDiff > 86400 && secDiff < 7 * 86400) {
-                const days = Math.floor(secDiff / 86400);
-                const remainingHours = (secDiff - days * 86400) / 3600;
-                if (remainingHours > 1) {
-                    const p1 = rtf.formatToParts(-Math.floor(secDiff / 86400), 'day');
-                    let daysAgo = p1[0].value;
-                    daysAgo = daysAgo + ' ' + (daysAgo === '1' ? 'day' : 'days');
-                    const hours = rtf.format(-Math.floor(remainingHours), 'hour');
-                    ret = `${daysAgo} ${hours}`;
-                } else {
-                    ret = rtf.format(-Math.floor(secDiff / 86400), 'day');
-                }
-            } else {
-                ret = rtf.format(-Math.floor(secDiff / 86400), 'day');
-            }
-            return ret;
+    private static readonly SECONDS_PER_DAY = 86400;
+
+    /** Upper bound (exclusive) and divisor for each sub-day relative unit. */
+    private static readonly RELATIVE_SCALES: [number, number, Intl.RelativeTimeFormatUnit][] = [
+        [60, 1, 'second'],
+        [3600, 60, 'minute'],
+        [UtilsService.SECONDS_PER_DAY, 3600, 'hour'],
+    ];
+
+    /**
+     * Renders a span of a day or more. Spans inside the first week are given
+     * as "N days M hours" when there is more than a whole hour left over.
+     */
+    private static formatDaysFromNow(rtf: Intl.RelativeTimeFormat, secDiff: number): string {
+        const days = Math.floor(secDiff / UtilsService.SECONDS_PER_DAY);
+        const withinFirstWeek =
+            secDiff > UtilsService.SECONDS_PER_DAY && secDiff < 7 * UtilsService.SECONDS_PER_DAY;
+        const remainingHours = (secDiff - days * UtilsService.SECONDS_PER_DAY) / 3600;
+        if (withinFirstWeek && remainingHours > 1) {
+            const daysValue = rtf.formatToParts(-days, 'day')[0].value;
+            const daysAgo = daysValue + ' ' + (daysValue === '1' ? 'day' : 'days');
+            const hours = rtf.format(-Math.floor(remainingHours), 'hour');
+            return `${daysAgo} ${hours}`;
         }
-        return '';
+        return rtf.format(-days, 'day');
+    }
+
+    static formatFromNow(value: number, fromMs: boolean = true, lang: string = 'en') {
+        if (!Intl || !Intl.RelativeTimeFormat) {
+            return '';
+        }
+        const rtf = new Intl.RelativeTimeFormat(lang, {
+            style: 'long',
+            numeric: 'always',
+        });
+        const valueMs = fromMs ? value : value * 1000;
+        const secDiff = Math.floor((new Date().getTime() - valueMs) / 1000);
+
+        const scale = UtilsService.RELATIVE_SCALES.find(([limit]) => secDiff < limit);
+        if (scale) {
+            const [, divisor, unit] = scale;
+            return rtf.format(-Math.floor(secDiff / divisor), unit);
+        }
+        return UtilsService.formatDaysFromNow(rtf, secDiff);
     }
 
     static formatRelativeTime(ts: number, lang: string = 'en') {

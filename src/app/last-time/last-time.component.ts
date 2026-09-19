@@ -29,7 +29,6 @@ import {
 import { AsyncPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ChartConfiguration } from 'chart.js';
-import { BaseChartDirective } from 'ng2-charts';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MtxDatetimepickerInputEvent } from '@ng-matero/extensions/datetimepicker';
@@ -40,6 +39,8 @@ import { LastTime, StatsContent, StatsFreq, TimeStamp } from '../models';
 import { TimerService } from '../services/timer.service';
 import { UtilsService } from '../services/utils.service';
 import { LastTimeStore } from '../store/last-time.store';
+import { ItemActionsComponent } from '../shared/item-actions.component';
+import { StatsContentComponent } from '../shared/stats-content.component';
 
 @Component({
     selector: 'app-last-time',
@@ -48,9 +49,10 @@ import { LastTimeStore } from '../store/last-time.store';
     imports: [
         ...AppMaterialModules,
         AsyncPipe,
-        BaseChartDirective,
         FormsModule,
+        ItemActionsComponent,
         ReactiveFormsModule,
+        StatsContentComponent,
     ],
 })
 export class LastTimeComponent implements OnInit, OnChanges {
@@ -69,6 +71,12 @@ export class LastTimeComponent implements OnInit, OnChanges {
     protected statsFreq: StatsFreq | null = null;
     protected tsDate$!: Observable<string>;
     protected tsFormControls: Record<string, FormControl<Date | null>> = {};
+
+    /** True once there is more than a single recorded timestamp to look back on. */
+    protected hasTimestampHistory(): boolean {
+        const timestamps = this.item().timestamps;
+        return !!timestamps && timestamps.length > 1;
+    }
 
     protected barChartOptions: ChartConfiguration['options'] = {
         responsive: true,

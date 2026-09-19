@@ -19,7 +19,10 @@
 
 import { NO_ERRORS_SCHEMA, provideZonelessChangeDetection, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { By } from '@angular/platform-browser';
+import { MatTooltip } from '@angular/material/tooltip';
+import { provideMomentDatetimeAdapter } from '@ng-matero/extensions-moment-adapter';
+import { Subject, of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Stopwatch, StopwatchEvent, Types } from '../models';
@@ -505,5 +508,121 @@ describe('StopwatchComponent', () => {
                 ignoreTsArch: true,
             });
         });
+    });
+});
+
+describe('StopwatchComponent running round time', () => {
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.clearAllMocks();
+        TestBed.resetTestingModule();
+    });
+
+    /**
+     * The elapsed time of the round in progress is rendered by the rounds
+     * child component and has to keep ticking with the timer, not freeze at
+     * the value it had on first render.
+     */
+    it('keeps the in-progress round time ticking with the timer', async () => {
+        vi.useFakeTimers();
+        const now = new Date('2026-01-01T12:00:00.000Z').getTime();
+        vi.setSystemTime(now);
+
+        const timer$ = new Subject<number>();
+        const item = makeSW('SW-1', [
+            makeEV('EV-1', 'SW-1', now - 10_000, true, true),
+            makeEV('EV-2', 'SW-1', now - 5_000, false),
+            makeEV('EV-3', 'SW-1', now - 3_000, true, true),
+        ]);
+
+        await TestBed.configureTestingModule({
+            imports: [StopwatchComponent],
+            providers: [
+                provideZonelessChangeDetection(),
+                { provide: LoggerService, useValue: { log: vi.fn() } },
+                { provide: StopwatchStore, useValue: mockStopwatchStore },
+                { provide: StopwatchService, useValue: mockStopwatchService },
+                { provide: TimerService, useValue: { timer$ } },
+                { provide: ConfirmService, useValue: mockConfirmService },
+            ],
+        }).compileComponents();
+
+        const fixture = TestBed.createComponent(StopwatchComponent);
+        fixture.componentRef.setInput('item', item);
+        fixture.detectChanges();
+
+        const roundsText = () =>
+            Array.from(fixture.nativeElement.querySelectorAll('.round'))
+                .map((el) => (el as HTMLElement).textContent?.trim())
+                .join(' | ');
+
+        timer$.next(0);
+        fixture.detectChanges();
+        const before = roundsText();
+
+        vi.setSystemTime(now + 5_000);
+        timer$.next(1);
+        fixture.detectChanges();
+        const after = roundsText();
+
+        expect(before).not.toBe('');
+        expect(after).not.toBe(before);
+    });
+
+    /**
+     * Same hazard as the round time: the event list is OnPush, so its
+     * "N minutes ago" tooltips have to follow the timer rather than freeze at
+     * whatever they read on first render.
+     */
+    it('keeps the event timestamp tooltips following the timer', async () => {
+        vi.useFakeTimers();
+        const now = new Date('2026-01-01T12:00:00.000Z').getTime();
+        vi.setSystemTime(now);
+
+        const timer$ = new Subject<number>();
+        const item = makeSW('SW-1', [
+            makeEV('EV-1', 'SW-1', now - 10_000, true, true),
+            makeEV('EV-2', 'SW-1', now - 5_000, false),
+            makeEV('EV-3', 'SW-1', now - 3_000, true, true),
+        ]);
+
+        await TestBed.configureTestingModule({
+            imports: [StopwatchComponent],
+            providers: [
+                provideZonelessChangeDetection(),
+                provideMomentDatetimeAdapter(),
+                { provide: LoggerService, useValue: { log: vi.fn() } },
+                { provide: StopwatchStore, useValue: mockStopwatchStore },
+                { provide: StopwatchService, useValue: mockStopwatchService },
+                { provide: TimerService, useValue: { timer$ } },
+                { provide: ConfirmService, useValue: mockConfirmService },
+            ],
+        }).compileComponents();
+
+        const fixture = TestBed.createComponent(StopwatchComponent);
+        fixture.componentRef.setInput('item', item);
+        fixture.detectChanges();
+
+        const component = fixture.componentInstance as unknown as {
+            switchDisplayRoundsEvents(): void;
+        };
+        component.switchDisplayRoundsEvents();
+        timer$.next(0);
+        fixture.detectChanges();
+
+        const tooltips = () =>
+            fixture.debugElement
+                .queryAll(By.directive(MatTooltip))
+                .map((el) => el.injector.get(MatTooltip).message)
+                .filter((message) => message && message !== 'Actions');
+
+        const before = tooltips();
+        expect(before.length).toBeGreaterThan(0);
+
+        vi.setSystemTime(now + 600_000);
+        timer$.next(1);
+        fixture.detectChanges();
+
+        expect(tooltips()).not.toEqual(before);
     });
 });

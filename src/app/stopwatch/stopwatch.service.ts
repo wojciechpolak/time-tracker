@@ -249,20 +249,29 @@ export class StopwatchService {
         return events.slice(idx, events.length);
     }
 
+    /**
+     * A start event repeats the previous event's state; a stop event repeats
+     * the next one's. Either way the event carries no time span of its own.
+     */
+    private isRedundantEvent(events: StopwatchEvent[], i: number): boolean {
+        if (i === 0) {
+            return false;
+        }
+        const ev: StopwatchEvent = events[i];
+        return ev.ss ? ev.ss === events[i - 1].ss : ev.ss === events[i + 1]?.ss;
+    }
+
     removeDupes(events: StopwatchEvent[]): StopwatchEvent[] {
         const ret: StopwatchEvent[] = [];
         for (let i = 0; i < events.length; i++) {
-            const ev: StopwatchEvent = events[i];
-            if (i > 0 && ev.ss && ev.ss === events[i - 1].ss) {
-                // do not push
-            } else if (i > 0 && !ev.ss && ev.ss === events[i + 1]?.ss) {
-                // do not push
-            } else {
-                if (ev.inUse === undefined) {
-                    ev.inUse = true;
-                }
-                ret.push(ev);
+            if (this.isRedundantEvent(events, i)) {
+                continue;
             }
+            const ev: StopwatchEvent = events[i];
+            if (ev.inUse === undefined) {
+                ev.inUse = true;
+            }
+            ret.push(ev);
         }
         return ret;
     }

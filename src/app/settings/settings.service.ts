@@ -65,7 +65,8 @@ export class SettingsService {
         return this.get().enableRemoteSync;
     }
 
-    getEndpoint(creds: boolean = true): string | undefined {
+    /** Normalises the configured endpoint into a URL with a scheme and a port. */
+    private buildEndpointUrl(): URL {
         const defaultPort = '5984';
         let ret = this.get().endpoint || `${window.location.protocol}//${window.location.hostname}`;
         if (!ret.startsWith('http')) {
@@ -75,14 +76,26 @@ export class SettingsService {
         if (!url.port && url.protocol !== 'https:') {
             url.port = defaultPort;
         }
-        url.pathname = creds ? this.getDbName : '/';
-        if (creds && this.getUser && this.getPassword) {
+        return url;
+    }
+
+    /** Returns false when credentials are wanted but not fully configured. */
+    private applyCredentials(url: URL): boolean {
+        if (this.getUser && this.getPassword) {
             url.username = this.getUser;
             url.password = this.getPassword;
-        } else if (creds) {
+            return true;
+        }
+        return false;
+    }
+
+    getEndpoint(creds: boolean = true): string | undefined {
+        const url = this.buildEndpointUrl();
+        url.pathname = creds ? this.getDbName : '/';
+        if (creds && !this.applyCredentials(url)) {
             return undefined;
         }
-        ret = url.toString();
+        const ret = url.toString();
         url.password = '***';
         this.loggerService.log('getEndpoint', url.toString());
         return ret;

@@ -29,7 +29,7 @@
         {{ tsDate$ | async }}
       </span>
     </mat-card-subtitle>
-    @if ((item().timestamps && item().timestamps.length > 1) || false) {
+    @if (hasTimestampHistory()) {
       <mat-card-content>
         <button (click)="expandTimestamps = !expandTimestamps" class="more-timestamps">
           Recent entries
@@ -67,32 +67,13 @@
                   </mtx-datetimepicker-toggle>
                 </mat-form-field>
                 <span class="ts-label">{{ ts.label }}</span>
-                <span class="ts-actions">
-                  <mat-card-actions>
-                    <button
-                      mat-icon-button
-                      matTooltip="Actions"
-                      aria-label="Actions"
-                      [matMenuTriggerFor]="menu"
-                    >
-                      <mat-icon>more_vert</mat-icon>
-                      <mat-menu [overlapTrigger]="false" #menu="matMenu">
-                        <button
-                          mat-menu-item
-                          (click)="editTimestampLabel(ts, item().timestamps.length - i - 1)"
-                        >
-                          Label Timestamp
-                        </button>
-                        <button
-                          mat-menu-item
-                          (click)="removeTimestamp(ts, item().timestamps.length - i - 1)"
-                        >
-                          Remove Timestamp
-                        </button>
-                      </mat-menu>
-                    </button>
-                  </mat-card-actions>
-                </span>
+                <app-item-actions
+                  class="ts-actions"
+                  editLabel="Label Timestamp"
+                  removeLabel="Remove Timestamp"
+                  (edit)="editTimestampLabel(ts, item().timestamps.length - i - 1)"
+                  (remove)="removeTimestamp(ts, item().timestamps.length - i - 1)"
+                ></app-item-actions>
               </li>
             }
             @if (item().hasMoreTs) {
@@ -105,27 +86,11 @@
       </mat-card-content>
     }
     @if (statsContent) {
-      <mat-card-content class="stats">
-        @if (statsFreq) {
-          <p>
-            Frequency of events: every {{ statsFreq.avgDays.toFixed(2) }} days (or
-            {{ statsFreq.avgHours.toFixed(2) }} hours)
-          </p>
-        }
-        @for (stats of statsContent; track stats) {
-          <div>
-            <h4>{{ stats['name'] }}</h4>
-            <canvas
-              baseChart
-              class="chart"
-              [data]="stats['data']"
-              [options]="barChartOptions"
-              [type]="'bar'"
-            >
-            </canvas>
-          </div>
-        }
-      </mat-card-content>
+      <app-stats-content
+        [statsContent]="statsContent"
+        [statsFreq]="statsFreq"
+        [options]="barChartOptions"
+      ></app-stats-content>
     }
     <mat-card-actions class="bottom">
       <button mat-flat-button color="primary" (click)="touch()" aria-label="Touch">

@@ -27,9 +27,8 @@ import {
     inject,
     Signal,
 } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule } from '@angular/forms';
 import { AsyncPipe, NgClass } from '@angular/common';
-import { BaseChartDirective } from 'ng2-charts';
 import { Observable, tap } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ChartConfiguration } from 'chart.js';
@@ -50,6 +49,9 @@ import { StopwatchService } from './stopwatch.service';
 import { TimerService } from '../services/timer.service';
 import { UtilsService } from '../services/utils.service';
 import { StopwatchStore } from '../store/stopwatch.store';
+import { StatsContentComponent } from '../shared/stats-content.component';
+import { StopwatchEventsComponent } from './events/stopwatch-events.component';
+import { StopwatchRoundsComponent } from './rounds/stopwatch-rounds.component';
 
 @Component({
     selector: 'app-stopwatch',
@@ -58,10 +60,11 @@ import { StopwatchStore } from '../store/stopwatch.store';
     imports: [
         ...AppMaterialModules,
         AsyncPipe,
-        BaseChartDirective,
         FormsModule,
         NgClass,
-        ReactiveFormsModule,
+        StatsContentComponent,
+        StopwatchEventsComponent,
+        StopwatchRoundsComponent,
     ],
 })
 export class StopwatchComponent implements OnChanges, OnInit {
@@ -87,6 +90,9 @@ export class StopwatchComponent implements OnChanges, OnInit {
     protected revertedEvents: StopwatchEvent[] = [];
     protected roundsOnly: StopwatchEvent[] = [];
     protected roundsTime: StopwatchRoundTime[] = [];
+    // Replaced, never mutated in place: StopwatchRoundsComponent takes this as
+    // a signal input, so a new reference is what makes the running round's
+    // elapsed time re-render on each timer tick.
     protected roundsTimeStr: Record<string, string> = {};
     protected statsAvgDay: StatsAvgDay | null = null;
     protected statsContent: StatsContent[] | null = null;
@@ -163,11 +169,14 @@ export class StopwatchComponent implements OnChanges, OnInit {
                 const last = this.cacheLastRoundItem;
                 const t = last.timeDiff + (end - this.cacheLastItemTs);
                 const ret = UtilsService.getTimeDiff(t);
-                this.roundsTimeStr[last.id] = `[${ret}]`;
+                this.roundsTimeStr = { ...this.roundsTimeStr, [last.id]: `[${ret}]` };
             } else if (this.cacheLastRoundItem) {
                 return;
             } else {
-                this.roundsTimeStr[item.events[0]._id] = `[${this.titleTime}]`;
+                this.roundsTimeStr = {
+                    ...this.roundsTimeStr,
+                    [item.events[0]._id]: `[${this.titleTime}]`,
+                };
             }
             return;
         }
@@ -222,11 +231,12 @@ export class StopwatchComponent implements OnChanges, OnInit {
     }
 
     private prepareRoundsTimeStr() {
-        this.roundsTimeStr = {};
+        const roundsTimeStr: Record<string, string> = {};
         for (const r of this.roundsTime) {
             const ret = UtilsService.getTimeDiff(r.timeDiff);
-            this.roundsTimeStr[r.id] = `[${ret}]`;
+            roundsTimeStr[r.id] = `[${ret}]`;
         }
+        this.roundsTimeStr = roundsTimeStr;
         this.cacheLastRoundItem =
             this.item().events.length > 1 ? this.roundsTime[this.roundsTime.length - 1] : null;
     }
@@ -376,73 +386,76 @@ export class StopwatchComponent implements OnChanges, OnInit {
         }
     }
 
+    private static dayIndex(date: Date): string {
+        return `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}`;
+    }
+
+    private static addSeconds(acc: Record<string, number>, day: string, seconds: number): void {
+        acc[day] = (acc[day] || 0) + seconds;
+    }
+
+    /**
+     * Credits one start/stop span to the day(s) it covers. A span that crosses
+     * midnight is split into the tail of the first day, whole days in between,
+     * and the head of the last day.
+     */
+    private static accumulateSpan(
+        acc: Record<string, number>,
+        startEvent: StopwatchEvent,
+        stopEvent: StopwatchEvent,
+    ): void {
+        const startDate = new Date(startEvent.ts);
+        const stopDate = new Date(stopEvent.ts);
+        const startIndex = StopwatchComponent.dayIndex(startDate);
+        const stopIndex = StopwatchComponent.dayIndex(stopDate);
+
+        if (startIndex === stopIndex) {
+            StopwatchComponent.addSeconds(acc, startIndex, (stopEvent.ts - startEvent.ts) / 1000);
+            return;
+        }
+
+        const firstDayEnd = new Date(startDate);
+        firstDayEnd.setUTCHours(23, 59, 59, 999);
+        StopwatchComponent.addSeconds(
+            acc,
+            startIndex,
+            (firstDayEnd.getTime() - startEvent.ts) / 1000,
+        );
+
+        const lastDayStart = new Date(stopDate);
+        lastDayStart.setUTCHours(0, 0, 0, 0);
+        StopwatchComponent.addSeconds(
+            acc,
+            stopIndex,
+            (stopEvent.ts - lastDayStart.getTime()) / 1000,
+        );
+
+        const startDay = startDate.getUTCDate();
+        const daysInBetween = stopDate.getUTCDate() - startDay + 1;
+        for (let j = 1; j < daysInBetween - 1; j++) {
+            const currentDate = new Date(startDate);
+            currentDate.setUTCDate(startDay + j);
+            const day = `${startDate.getUTCFullYear()}-${startDate.getUTCMonth() + 1}-${currentDate.getUTCDate()}`;
+            StopwatchComponent.addSeconds(acc, day, 24 * 60 * 60);
+        }
+    }
+
     calcStatsAvgDay(events: StopwatchEvent[]): StatsAvgDay {
-        // Create an object to hold the total combined time for each day
         const combinedTimeByDay: Record<string, number> = {};
-
-        // Loop through the events and calculate the combined time taken for each day
         for (let i = 0; i < events.length - 1; i += 2) {
-            const startEvent = events[i];
-            const stopEvent = events[i + 1];
-
-            const startDate = new Date(startEvent.ts);
-            const stopDate = new Date(stopEvent.ts);
-
-            const startDay = startDate.getUTCDate();
-            const stopDay = stopDate.getUTCDate();
-
-            const startMonth = startDate.getUTCMonth() + 1;
-            const stopMonth = stopDate.getUTCMonth() + 1;
-
-            const startYear = startDate.getUTCFullYear();
-            const stopYear = stopDate.getUTCFullYear();
-
-            const startIndex = `${startYear}-${startMonth}-${startDay}`;
-            const stopIndex = `${stopYear}-${stopMonth}-${stopDay}`;
-
-            if (startDay === stopDay && startMonth === stopMonth && startYear === stopYear) {
-                const timeDiffInSeconds = (stopEvent.ts - startEvent.ts) / 1000;
-                combinedTimeByDay[startIndex] =
-                    (combinedTimeByDay[startIndex] || 0) + timeDiffInSeconds;
-            } else {
-                // If the event spans across multiple days, calculate the time taken for each day
-                const firstDayEnd = new Date(startDate);
-                firstDayEnd.setUTCHours(23, 59, 59, 999);
-                const timeDiffInSeconds1 = (firstDayEnd.getTime() - startEvent.ts) / 1000;
-                combinedTimeByDay[startIndex] =
-                    (combinedTimeByDay[startIndex] || 0) + timeDiffInSeconds1;
-
-                const lastDayStart = new Date(stopDate);
-                lastDayStart.setUTCHours(0, 0, 0, 0);
-                const timeDiffInSeconds2 = (stopEvent.ts - lastDayStart.getTime()) / 1000;
-                combinedTimeByDay[stopIndex] =
-                    (combinedTimeByDay[stopIndex] || 0) + timeDiffInSeconds2;
-
-                // Calculate the time taken for each day in between the first and last day
-                const daysInBetween = stopDay - startDay + 1;
-                for (let j = 1; j < daysInBetween - 1; j++) {
-                    const currentDate = new Date(startDate);
-                    currentDate.setUTCDate(startDay + j);
-                    const timeDiffInSeconds = 24 * 60 * 60;
-                    combinedTimeByDay[`${startYear}-${startMonth}-${currentDate.getUTCDate()}`] =
-                        (combinedTimeByDay[
-                            `${startYear}-${startMonth}-${currentDate.getUTCDate()}`
-                        ] || 0) + timeDiffInSeconds;
-                }
-            }
+            StopwatchComponent.accumulateSpan(combinedTimeByDay, events[i], events[i + 1]);
         }
         const combinedTimeByDayValues = Object.values(combinedTimeByDay);
         const sumTimeByDay: number = combinedTimeByDayValues.reduce(
             (acc: number, v: number) => acc + v,
             0,
-        ) as number;
+        );
         const avgTimeByDay = sumTimeByDay / combinedTimeByDayValues.length;
-        const avgTimeByDayMinutes = Math.round(avgTimeByDay / 60);
         return {
             combinedTimeByDay: combinedTimeByDay,
             sumTimeByDay: sumTimeByDay,
             avgTimeByDay: avgTimeByDay,
-            avgTimeByDayMinutes: avgTimeByDayMinutes,
+            avgTimeByDayMinutes: Math.round(avgTimeByDay / 60),
         };
     }
 }

@@ -38,6 +38,7 @@ import {
     persistentLocalCache,
     persistentMultipleTabManager,
     query,
+    QueryConstraint,
     setDoc,
     updateDoc,
     where,
@@ -154,15 +155,15 @@ export class FirestoreDbService extends DbService {
         };
     }
 
-    async find<T>(props: DbFind): Promise<T[]> {
-        this.isSyncActive = true;
-        const queryConstraints = [];
+    /** Translates a DbFind selector/sort/limit into Firestore query constraints. */
+    private static buildQueryConstraints(props: DbFind): QueryConstraint[] {
+        const queryConstraints: QueryConstraint[] = [];
         if (props.selector.type) {
             queryConstraints.push(where('type', '==', props.selector.type));
         }
         if (typeof props.selector.ref === 'object' && !props.selector.ref.$exists) {
             queryConstraints.push(where('ref', '==', null));
-        } else if (props.selector.ref && props.selector.ref) {
+        } else if (props.selector.ref) {
             queryConstraints.push(where('ref', '==', props.selector.ref));
         }
         if (props.sort) {
@@ -175,21 +176,30 @@ export class FirestoreDbService extends DbService {
         if (props.limit) {
             queryConstraints.push(limit(props.limit));
         }
-        const q = query(this.collection, ...queryConstraints);
+        return queryConstraints;
+    }
+
+    private reportFindError(err: unknown): void {
+        if (!(err instanceof FirebaseError)) {
+            this.loggerService.log(err);
+            return;
+        }
+        this.loggerService.log(err.message);
+        if (this.dialog.openDialogs.length === 0) {
+            this.dialog.open(AppDialogComponent, {
+                data: { title: 'Google Firebase Error', message: err.message },
+            });
+        }
+    }
+
+    async find<T>(props: DbFind): Promise<T[]> {
+        this.isSyncActive = true;
+        const q = query(this.collection, ...FirestoreDbService.buildQueryConstraints(props));
         try {
             const querySnapshot = await getDocs(q);
             return querySnapshot.docs.map((doc) => doc.data()) as T[];
         } catch (err: unknown) {
-            if (err instanceof FirebaseError) {
-                this.loggerService.log(err.message);
-                if (this.dialog.openDialogs.length === 0) {
-                    this.dialog.open(AppDialogComponent, {
-                        data: { title: 'Google Firebase Error', message: err.message },
-                    });
-                }
-            } else {
-                this.loggerService.log(err);
-            }
+            this.reportFindError(err);
         } finally {
             this.isSyncActive = false;
         }
