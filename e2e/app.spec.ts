@@ -207,6 +207,9 @@ test.describe('Time Tracker', () => {
 
         await page.getByRole('tab', { name: 'Info & Update' }).click();
         await expect(page.getByRole('button', { name: 'check for update' })).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'github.com/wojciechpolak/time-tracker' }),
+        ).toHaveAttribute('href', 'https://github.com/wojciechpolak/time-tracker');
     });
 
     test('shows the debug tab when persisted settings enable it', async ({ page }) => {
